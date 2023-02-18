@@ -109,7 +109,7 @@ GenerateClassCluster=0
 DocumentUniqueId=CCMKSKFH
 
 [Document5]
-DocumentPath=connectors.SchDog.SchDoc
+DocumentPath=connectors.SchDoc
 AnnotationEnabled=1
 AnnotateStartValue=1
 AnnotationIndexControlEnabled=0
