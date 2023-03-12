@@ -7,8 +7,9 @@ module LaserTransmitter(
     output logic done
 );
     logic [7:0] data1, data2;
+    logic [10:0] data1_compiled, data2_compiled;
     logic [3:0] count;
-    logic data_ready, load, count_en, count_clear;
+    logic data_ready, load, count_en, count_clear, mux1_out, mux2_out;
 
     enum logic [1:0] {RESET, WAIT, SEND}
         currState, nextState;
@@ -16,7 +17,7 @@ module LaserTransmitter(
     Register laser1_data (
         .D(data_in1),
         .en(load),
-        .clear(),
+        .clear(1'b0),
         .clock(clock),
         .Q(data1)
     );
@@ -24,32 +25,22 @@ module LaserTransmitter(
     Register laser2_data (
         .D(data_in2),
         .en(load),
-        .clear(),
+        .clear(1'b0),
         .clock(clock),
         .Q(data2)
     );
 
-    Multiplexer #(10) laser1_mux (
-        .I({ 1'b1, data_in1, 1'b0 }),
-        .S(count),
-        .Y(laser1_out[1])
-    );
+    assign data1_compiled = {1'b0, data_in1, 1'b1, 1'b0};
+    assign data2_compiled = {1'b0, data_in2, 1'b1, 1'b0};
 
-    Multiplexer #(10) laser2_mux (
-        .I({ 1'b1, data_in2, 1'b0 }),
-        .S(count),
-        .Y(laser2_out[1])
-    );
+    assign mux1_out = data1_compiled[count];
+    assign mux2_out = data2_compiled[count];
 
-    // Passive. Always on when transmitting to reduce laser switching time
-    assign laser1_out[0] = en;
-    assign laser2_out[0] = en;
-
-    Counter #(4) (
-        .D('b0),
+    Counter #(4) bit_count (
+        .D(4'b0),
         .en(count_en),
         .clear(count_clear),
-        .load(),
+        .load(1'b0),
         .clock(clock),
         .up(1'b1),
         .reset(reset),
@@ -74,6 +65,9 @@ module LaserTransmitter(
         count_clear = 'b0;
         load = 'b0;
         done = 'b0;
+        laser1_out = { mux1_out, en };
+        laser2_out = { mux2_out, en };
+
         case (currState)
             WAIT: load = data_ready;
             // TODO: depending on timing, have space to optimize one clock cycle
@@ -96,7 +90,8 @@ endmodule: LaserTransmitter
 module LaserReceiver
     #(parameter DIVIDER=3)
     (input logic clock, reset,
-     input logic laser1_in, laser2_in, data_valid,
+     input logic laser1_in, laser2_in,
+     output logic data_valid,
      output logic [7:0] data1_in, data2_in);
 
     enum logic [2:0] {
@@ -113,7 +108,7 @@ module LaserReceiver
     // NOTE: May become bottleneck if speed becomes extremely slow
     // eg. DIVIDER >= 8
     Counter #(8) counter_divided (
-        .D('b1),
+        .D(8'b1),
         .en(clock_en),
         .clear(1'b0),
         .load(clock_clear),
@@ -130,12 +125,13 @@ module LaserReceiver
     assign vote1_en = vote_en && laser1_in;
     assign vote2_en = vote_en && laser2_in;
     assign vote_clear = (clock_counter == 'd8);
+    assign clock_clear = (clock_counter == 'd8);
     assign byte_read = (bits_read == 'd10);
     // TODO: Change
     assign data_valid = byte_read;
 
     Counter #(8) num_bits (
-        .D('b0),
+        .D(8'b0),
         .en(clock_counter == 'd8),
         .clear(byte_read),
         .load(1'b0),
@@ -146,10 +142,10 @@ module LaserReceiver
     );
 
     Counter #(2) majority_vote1 (
-        .D('b0),
+        .D(2'b0),
         .en(vote1_en),
         .clear(vote_clear),
-        .load('b0),
+        .load(1'b0),
         .clock,
         .up(1'b1),
         .reset,
@@ -157,10 +153,10 @@ module LaserReceiver
     );
 
     Counter #(2) majority_vote2 (
-        .D('b0),
+        .D(2'b0),
         .en(vote2_en),
         .clear(vote_clear),
-        .load('b0),
+        .load(1'b0),
         .clock,
         .up(1'b1),
         .reset,
@@ -170,7 +166,7 @@ module LaserReceiver
     ShiftRegister #(10) data_shift1 (
         .D(vote1[1]),
         .en(clock_counter == 'd8),
-        .left('d1),
+        .left(1'd1),
         .clock,
         .reset,
         .Q(data1_register)
@@ -179,7 +175,7 @@ module LaserReceiver
     ShiftRegister #(10) data_shift2 (
         .D(vote2[1]),
         .en(clock_counter == 'd8),
-        .left('d1),
+        .left(1'd1),
         .clock,
         .reset,
         .Q(data2_register)
@@ -210,11 +206,9 @@ module LaserReceiver
 
     always_comb begin
         clock_en = 1'b0;
-        clock_clear = 1'b0;
         case (currState)
             RECEIVE: begin
                 clock_en = 1'b1;
-                clock_clear = byte_read;
             end
         endcase
     end

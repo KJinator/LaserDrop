@@ -21,7 +21,7 @@ module TB;
     .GPIO_0_D14(gpio[0]),
     .GPIO_0_D15(gpio[1]),
     .GPIO_0_D16(gpio[2]),
-    .GPIO_0_D17(gpio[3]),
+    .GPIO_0_D17(gpio[3])
 );
 
 
@@ -39,8 +39,6 @@ module TB;
   end
 
   initial begin
-    disp_sel = 1'b0;
-
     resetN = 1'b1;
     resetN <= 1'b0;
     resetN <= #1 1'b1;

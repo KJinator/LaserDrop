@@ -5,9 +5,10 @@
 
 module ChipInterface (
     input  logic CLOCK_50,
+    input  logic GPIO_1_D0, GPIO_1_D1, GPIO_1_D2, GPIO_1_D3,
     input  logic GPIO_1_D14, GPIO_1_D15, GPIO_1_D16, GPIO_1_D17,
     input  logic [9:0] SW,
-    input  logic KEY,
+    input  logic [3:0] KEY,
     output logic [17:0] LEDR,
     output logic [6:0] HEX5, HEX4, HEX1, HEX0,
     output logic GPIO_0_D14, GPIO_0_D15, GPIO_0_D16, GPIO_0_D17
@@ -17,13 +18,16 @@ module ChipInterface (
 
     logic [7:0] data1_in, data2_in;
 
-    assign reset = ~KEY;
+    assign reset = ~KEY[0];
 
-    assign LEDR[0] = GPIO_1_D14;
-    assign LEDR[1] = GPIO_1_D15;
-    assign LEDR[8] = GPIO_1_D16;
-    assign LEDR[9] = GPIO_1_D17;
+    assign LEDR[0] = GPIO_1_D15;
+    assign LEDR[1] = GPIO_0_D15;
+    // assign LEDR[8] = GPIO_1_D16;
+    // assign LEDR[9] = GPIO_1_D17;
+    assign LEDR[8] = GPIO_1_D17;
+    assign LEDR[9] = GPIO_0_D17;
 
+    assign LEDR[6] = data_valid;
     /*
     ShiftRegisterQueue sample_data (
         .D(1'b1), // Change later
@@ -37,7 +41,7 @@ module ChipInterface (
 
     LaserTransmitter transmit (
         .data_in1(8'h08),
-        .data_in2(8'h17),
+        .data_in2(8'hff),
         .en(SW[0]),
         .clock(CLOCK_6_25),
         .reset,
@@ -49,11 +53,13 @@ module ChipInterface (
     );
 
     LaserReceiver receive (
-        .laser1_in(GPIO_1_D15),
+        .laser1_in(GPIO_1_D0),
         .laser2_in(GPIO_1_D17),
+        // .laser1_in(GPIO_1_D15),
+        // .laser2_in(GPIO_1_D17),
         .clock(CLOCK_50),
         .reset,
-        .data_valid(data_valid),
+        .data_valid,
         .data1_in,
         .data2_in
     );
@@ -62,7 +68,7 @@ module ChipInterface (
         .CLOCK_50,
         .reset,
         .en(SW[0]),
-        .divider('b1),
+        .divider(8'b1),
         .clk_divided(CLOCK_25)
     );
 
@@ -70,7 +76,7 @@ module ChipInterface (
         .CLOCK_50,
         .reset,
         .en(SW[0]),
-        .divider('d4),
+        .divider(8'd4),
         .clk_divided(CLOCK_12_5)
     );
 
@@ -78,7 +84,7 @@ module ChipInterface (
         .CLOCK_50,
         .reset,
         .en(SW[0]),
-        .divider('d8),
+        .divider(8'd8),
         .clk_divided(CLOCK_6_25)
     );
 
@@ -118,9 +124,9 @@ endmodule: ChipInterface
 //     } currState, nextState;
 // 	logic [2:0] divider;
 // 	logic [7:0] counter;
-    
-// 	assign LEDR[0] = SW[0];	
-    
+
+// 	assign LEDR[0] = SW[0];
+
 // 	always_comb begin
 // 		if (SW[0]) begin
 // 			GPIO_0_D0 = 'bz;
@@ -129,7 +135,7 @@ endmodule: ChipInterface
 // 		else if (SW[1]) begin
 // 			GPIO_0_D0 = 'b1;
 // 			GPIO_0_D1 = 'b1;
-// 		end		
+// 		end
 // 		else begin
 // 			GPIO_0_D0 = 'b0;
 // 			GPIO_0_D1 = 'b0;
@@ -154,8 +160,8 @@ module ChipInterface (
     } currState, nextState;
     logic [2:0] divider;
     logic [7:0] counter;
-    
-    assign LEDR[0] = SW[0];	
+
+    assign LEDR[0] = SW[0];
     assign divider = 1;
     // Divider: max value 7
     // 0: 25M
@@ -164,18 +170,18 @@ module ChipInterface (
     // 3: 3.125M
     // 4: 1.5625M
     // 5: 781.25kHz
-    
+
     BCDtoSevenSegment bcd0 (
        .bcd({1'b0, divider[2:0]}),
        .segment(HEX0)
    );
-   
+
     // GPIO outputs
     assign GPIO_0_D0 = counter[divider];
     assign GPIO_0_D1 = ~counter[divider];
     assign GPIO_1_D0 = counter[divider];
     assign GPIO_1_D1 = ~counter[divider];
-    
+
     always_comb begin
         case (currState)
             COUNT1: nextState = COUNT2;
@@ -184,14 +190,14 @@ module ChipInterface (
             default: nextState = COUNT1;
         endcase
     end
-    
+
    always_ff @(posedge CLOCK_50) begin
         if (SW[0]) begin
             currState <= nextState;
             if (currState == COUNT1) begin
                 counter <= counter + 1;
             end
-        end 
+        end
         else begin
             currState <= COUNT1;
             counter <= 0;
@@ -213,8 +219,8 @@ module ChipInterface (
 );
    logic [2:0] divider;
     logic [7:0] counter;
-    
-    assign LEDR[0] = SW[0];	
+
+    assign LEDR[0] = SW[0];
     assign divider = 0;
     // Divider: max value 7
     // 0: 25M
@@ -223,22 +229,22 @@ module ChipInterface (
     // 3: 3.125M
     // 4: 1.5625M
     // 5: 781.25kHz
-    
+
     BCDtoSevenSegment bcd0 (
        .bcd({1'b0, divider[2:0]}),
        .segment(HEX0)
    );
-   
+
     // GPIO outputs
     assign GPIO_0_D0 = counter[divider];
     assign GPIO_0_D1 = ~counter[divider];
     assign GPIO_1_D0 = counter[divider];
     assign GPIO_1_D1 = ~counter[divider];
-    
+
    always_ff @(posedge CLOCK_50) begin
         if (SW[0]) begin
             counter <= counter + 1;
-        end 
+        end
         else begin
             counter <= 0;
         end
@@ -281,7 +287,7 @@ module ChipInterface (
         .bcd(counter[31:28]),
         .segment(HEX0)
     );
-   
+
    always_ff @(posedge CLOCK_50) begin
         counter <= counter + 1;
     end
@@ -302,7 +308,7 @@ module ChipInterface (
         .bcd(counter),
         .segment(HEX5)
     );
-   
+
    SimpleFSM DUT (
           .clock(CLOCK_50),
         .counter_n(KEY[0]),
@@ -340,7 +346,7 @@ module SimpleFSM (
             if (counterReleased2) begin
                 nextState = WAIT;
             end
-        end            
+        end
     end
 
     // Avoid metastability for keys
@@ -373,7 +379,7 @@ endmodule: SimpleFSM
 module BCDtoSevenSegment
 (input logic [3:0] bcd, output logic [6:0] segment);
 
-always_comb 
+always_comb
     case (bcd)
         4'b0000: segment = 7'b100_0000;
         4'b0001: segment = 7'b111_1001;

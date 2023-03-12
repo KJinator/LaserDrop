@@ -94,9 +94,9 @@ module Counter
    
   always_ff @(posedge clock, posedge reset) begin
     if (reset)
-	   Q <= 0;
+	    Q <= 0;
 	  else if (clear)
-		Q <= 0;
+		  Q <= 0;
     else if (load)
       Q <= D;
     else if (en)
