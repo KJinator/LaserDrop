@@ -1,0 +1,5 @@
+.*
+**/fpga/output_files/**
+**/fpga/db/**
+**/fpga/incremental_db/**
+*.bak
