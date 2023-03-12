@@ -15,14 +15,15 @@ module ClockDivider (
 	 assign clear_count = reset;
 
     logic [7:0] counter;
-    
+
     Counter count (
-        .D(1'b0),
+        .D(8'b0),
         .en(count_en),
         .clear(clear_count),
         .load(1'b0),
         .clock(CLOCK_50),
         .up(1'b1),
+        .reset,
         .Q(counter)
     );
 
@@ -40,7 +41,7 @@ module ClockDivider (
             clk_divided = ~clk_divided;
             // clear_count <= 1'b1;
         end
-        
+
     end
 
 endmodule: ClockDivider

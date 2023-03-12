@@ -62,7 +62,7 @@ module ChipInterface (
         .CLOCK_50,
         .reset,
         .en(SW[0]),
-        .divider('b1),
+        .divider(8'b1),
         .clk_divided(CLOCK_25)
     );
 
@@ -70,7 +70,7 @@ module ChipInterface (
         .CLOCK_50,
         .reset,
         .en(SW[0]),
-        .divider('d4),
+        .divider(8'd4),
         .clk_divided(CLOCK_12_5)
     );
 
@@ -78,7 +78,7 @@ module ChipInterface (
         .CLOCK_50,
         .reset,
         .en(SW[0]),
-        .divider('d8),
+        .divider(8'd8),
         .clk_divided(CLOCK_6_25)
     );
 
@@ -118,9 +118,9 @@ endmodule: ChipInterface
 //     } currState, nextState;
 // 	logic [2:0] divider;
 // 	logic [7:0] counter;
-    
-// 	assign LEDR[0] = SW[0];	
-    
+
+// 	assign LEDR[0] = SW[0];
+
 // 	always_comb begin
 // 		if (SW[0]) begin
 // 			GPIO_0_D0 = 'bz;
@@ -129,7 +129,7 @@ endmodule: ChipInterface
 // 		else if (SW[1]) begin
 // 			GPIO_0_D0 = 'b1;
 // 			GPIO_0_D1 = 'b1;
-// 		end		
+// 		end
 // 		else begin
 // 			GPIO_0_D0 = 'b0;
 // 			GPIO_0_D1 = 'b0;
@@ -154,8 +154,8 @@ module ChipInterface (
     } currState, nextState;
     logic [2:0] divider;
     logic [7:0] counter;
-    
-    assign LEDR[0] = SW[0];	
+
+    assign LEDR[0] = SW[0];
     assign divider = 1;
     // Divider: max value 7
     // 0: 25M
@@ -164,18 +164,18 @@ module ChipInterface (
     // 3: 3.125M
     // 4: 1.5625M
     // 5: 781.25kHz
-    
+
     BCDtoSevenSegment bcd0 (
        .bcd({1'b0, divider[2:0]}),
        .segment(HEX0)
    );
-   
+
     // GPIO outputs
     assign GPIO_0_D0 = counter[divider];
     assign GPIO_0_D1 = ~counter[divider];
     assign GPIO_1_D0 = counter[divider];
     assign GPIO_1_D1 = ~counter[divider];
-    
+
     always_comb begin
         case (currState)
             COUNT1: nextState = COUNT2;
@@ -184,14 +184,14 @@ module ChipInterface (
             default: nextState = COUNT1;
         endcase
     end
-    
+
    always_ff @(posedge CLOCK_50) begin
         if (SW[0]) begin
             currState <= nextState;
             if (currState == COUNT1) begin
                 counter <= counter + 1;
             end
-        end 
+        end
         else begin
             currState <= COUNT1;
             counter <= 0;
@@ -213,8 +213,8 @@ module ChipInterface (
 );
    logic [2:0] divider;
     logic [7:0] counter;
-    
-    assign LEDR[0] = SW[0];	
+
+    assign LEDR[0] = SW[0];
     assign divider = 0;
     // Divider: max value 7
     // 0: 25M
@@ -223,22 +223,22 @@ module ChipInterface (
     // 3: 3.125M
     // 4: 1.5625M
     // 5: 781.25kHz
-    
+
     BCDtoSevenSegment bcd0 (
        .bcd({1'b0, divider[2:0]}),
        .segment(HEX0)
    );
-   
+
     // GPIO outputs
     assign GPIO_0_D0 = counter[divider];
     assign GPIO_0_D1 = ~counter[divider];
     assign GPIO_1_D0 = counter[divider];
     assign GPIO_1_D1 = ~counter[divider];
-    
+
    always_ff @(posedge CLOCK_50) begin
         if (SW[0]) begin
             counter <= counter + 1;
-        end 
+        end
         else begin
             counter <= 0;
         end
@@ -281,7 +281,7 @@ module ChipInterface (
         .bcd(counter[31:28]),
         .segment(HEX0)
     );
-   
+
    always_ff @(posedge CLOCK_50) begin
         counter <= counter + 1;
     end
@@ -302,7 +302,7 @@ module ChipInterface (
         .bcd(counter),
         .segment(HEX5)
     );
-   
+
    SimpleFSM DUT (
           .clock(CLOCK_50),
         .counter_n(KEY[0]),
@@ -340,7 +340,7 @@ module SimpleFSM (
             if (counterReleased2) begin
                 nextState = WAIT;
             end
-        end            
+        end
     end
 
     // Avoid metastability for keys
@@ -373,7 +373,7 @@ endmodule: SimpleFSM
 module BCDtoSevenSegment
 (input logic [3:0] bcd, output logic [6:0] segment);
 
-always_comb 
+always_comb
     case (bcd)
         4'b0000: segment = 7'b100_0000;
         4'b0001: segment = 7'b111_1001;

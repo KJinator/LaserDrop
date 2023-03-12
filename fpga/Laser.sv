@@ -45,8 +45,8 @@ module LaserTransmitter(
     assign laser1_out[0] = en;
     assign laser2_out[0] = en;
 
-    Counter #(4) (
-        .D('b0),
+    Counter #(4) bit_count (
+        .D(4'b0),
         .en(count_en),
         .clear(count_clear),
         .load(),
@@ -96,7 +96,8 @@ endmodule: LaserTransmitter
 module LaserReceiver
     #(parameter DIVIDER=3)
     (input logic clock, reset,
-     input logic laser1_in, laser2_in, data_valid,
+     input logic laser1_in, laser2_in,
+     output logic data_valid,
      output logic [7:0] data1_in, data2_in);
 
     enum logic [2:0] {
@@ -113,7 +114,7 @@ module LaserReceiver
     // NOTE: May become bottleneck if speed becomes extremely slow
     // eg. DIVIDER >= 8
     Counter #(8) counter_divided (
-        .D('b1),
+        .D(8'b1),
         .en(clock_en),
         .clear(1'b0),
         .load(clock_clear),
@@ -135,7 +136,7 @@ module LaserReceiver
     assign data_valid = byte_read;
 
     Counter #(8) num_bits (
-        .D('b0),
+        .D(8'b0),
         .en(clock_counter == 'd8),
         .clear(byte_read),
         .load(1'b0),
@@ -146,10 +147,10 @@ module LaserReceiver
     );
 
     Counter #(2) majority_vote1 (
-        .D('b0),
+        .D(2'b0),
         .en(vote1_en),
         .clear(vote_clear),
-        .load('b0),
+        .load(1'b0),
         .clock,
         .up(1'b1),
         .reset,
@@ -157,10 +158,10 @@ module LaserReceiver
     );
 
     Counter #(2) majority_vote2 (
-        .D('b0),
+        .D(2'b0),
         .en(vote2_en),
         .clear(vote_clear),
-        .load('b0),
+        .load(1'b0),
         .clock,
         .up(1'b1),
         .reset,
@@ -170,7 +171,7 @@ module LaserReceiver
     ShiftRegister #(10) data_shift1 (
         .D(vote1[1]),
         .en(clock_counter == 'd8),
-        .left('d1),
+        .left(1'd1),
         .clock,
         .reset,
         .Q(data1_register)
@@ -179,7 +180,7 @@ module LaserReceiver
     ShiftRegister #(10) data_shift2 (
         .D(vote2[1]),
         .en(clock_counter == 'd8),
-        .left('d1),
+        .left(1'd1),
         .clock,
         .reset,
         .Q(data2_register)
