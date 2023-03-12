@@ -108,53 +108,19 @@ module Counter
         
 endmodule : Counter
 
-// Shift Register Queue
-// Takes in bits the size of WIDTH in serial, and outputs them as a 
-// WIDTH bit data on read
-// NOTE: Can only read when it's full. Can only write when it's not full.
-module ShiftRegisterQueue
-    #(parameter WIDTH=8)
-    (input logic D, clock, load, reset,
-    input logic read,
-    output logic full, data_valid,
-    output logic [WIDTH-1:0] data);
-
-    logic [$clog2(WIDTH)-1:0] size;
-
-    assign data_valid = full;
-    assign full = (size == WIDTH);
-
-    always_ff @(posedge clock, negedge reset) begin
-        if (reset) begin
-            data <= 'b0;
-            size <= 'b0;
-        end else if (load && ~full) begin
-            data <= {(data << 1), D};
-            size <= size + 1;
-        end else if (read && full) begin
-            data <= 'b0;
-            size <= 'b0;
-        end
-    end
-endmodule : ShiftRegisterQueue
-
-// Shifts D 1 bit to left (left = 1) or right (left = 0)
-// at clock edge, and outputs to Q.
-// Priority: load > en
 module ShiftRegister
   #(parameter WIDTH=8)
-  (input  logic [WIDTH-1:0] D,
-   input  logic             en, left, load, clock,
+  (input  logic             D, en, left, clock, reset,
    output logic [WIDTH-1:0] Q);
    
-  always_ff @(posedge clock)
-    if (load)
-      Q <= D;
+  always_ff @(posedge clock, posedge reset)
+    if (reset)
+      Q <= 'b0;
     else if (en)
       if (left)
-        Q <= {Q[WIDTH-2:0], 1'b0};
+        Q <= {Q[WIDTH-2:0], D};
       else
-        Q <= {1'b0, Q[WIDTH-1:1]};
+        Q <= {D, Q[WIDTH-1:1]};
         
 endmodule : ShiftRegister
 

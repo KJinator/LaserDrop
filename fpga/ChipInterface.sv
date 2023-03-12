@@ -4,20 +4,25 @@
 // The divider should be set to adjust the baud rate.
 
 module ChipInterface (
-    input  logic       CLOCK_50,
+    input  logic CLOCK_50,
     input  logic GPIO_1_D14, GPIO_1_D15, GPIO_1_D16, GPIO_1_D17,
     input  logic [9:0] SW,
-    input  logic [3:0] KEY,
+    input  logic KEY,
     output logic [17:0] LEDR,
     output logic [6:0] HEX5, HEX4, HEX1, HEX0,
     output logic GPIO_0_D14, GPIO_0_D15, GPIO_0_D16, GPIO_0_D17
 );
     logic CLOCK_25, CLOCK_12_5, CLOCK_6_25;
-    logic reset;
+    logic reset, data_valid;
 
     logic [7:0] data1_in, data2_in;
 
-    assign reset = ~KEY[0];
+    assign reset = ~KEY;
+
+    assign LEDR[0] = GPIO_1_D14;
+    assign LEDR[1] = GPIO_1_D15;
+    assign LEDR[8] = GPIO_1_D16;
+    assign LEDR[9] = GPIO_1_D17;
 
     /*
     ShiftRegisterQueue sample_data (
@@ -31,8 +36,8 @@ module ChipInterface (
     */
 
     LaserTransmitter transmit (
-        .data_in1(8'hf1),
-        .data_in2(8'hf0),
+        .data_in1(8'h08),
+        .data_in2(8'h17),
         .en(SW[0]),
         .clock(CLOCK_6_25),
         .reset,
@@ -48,6 +53,7 @@ module ChipInterface (
         .laser2_in(GPIO_1_D17),
         .clock(CLOCK_50),
         .reset,
+        .data_valid(data_valid),
         .data1_in,
         .data2_in
     );

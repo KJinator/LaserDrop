@@ -96,14 +96,19 @@ endmodule: LaserTransmitter
 module LaserReceiver
     #(parameter DIVIDER=3)
     (input logic clock, reset,
-     input logic laser1_in, laser2_in,
+     input logic laser1_in, laser2_in, data_valid,
      output logic [7:0] data1_in, data2_in);
 
-    logic clock_en, clock_clear;
-    logic [7:0] clock_divided;
+    enum logic [2:0] {
+        WAIT, RECEIVE
+    } currState, nextState;
 
-    assign data1_in = 8'h12;
-    assign data2_in = 8'h34;
+    logic clock_en, clock_clear, clock_divided;
+    logic vote_en, vote_clear, vote1_en, vote2_en;
+    logic byte_read, data1_start, data1_end, data2_start, data2_end;
+    logic [9:0] data1_register, data2_register;
+    logic [7:0] clock_counter, bits_read;
+    logic [1:0] vote1, vote2;
 
     // NOTE: May become bottleneck if speed becomes extremely slow
     // eg. DIVIDER >= 8
@@ -115,12 +120,112 @@ module LaserReceiver
         .clock,
         .up(1'b1),
         .reset,
-        .Q(clock_divided)
+        .Q(clock_counter)
     );
 
-    always_ff @(posedge laser1_in, laser2_in, clock_divided[DIVIDER]) begin
-        if (laser1_in && laser2_in && currState == WAIT) begin
-            currState <= RECEIVE;
-        end
+    assign vote_en = (
+        (clock_counter == 'd4) | (clock_counter == 'd5) |
+        (clock_counter == 'd6)
+    );
+    assign vote1_en = vote_en && laser1_in;
+    assign vote2_en = vote_en && laser2_in;
+    assign vote_clear = (clock_counter == 'd8);
+    assign byte_read = (bits_read == 'd10);
+    // TODO: Change
+    assign data_valid = byte_read;
+
+    Counter #(8) num_bits (
+        .D('b0),
+        .en(clock_counter == 'd8),
+        .clear(byte_read),
+        .load(1'b0),
+        .clock,
+        .up(1'b1),
+        .reset,
+        .Q(bits_read)
+    );
+
+    Counter #(2) majority_vote1 (
+        .D('b0),
+        .en(vote1_en),
+        .clear(vote_clear),
+        .load('b0),
+        .clock,
+        .up(1'b1),
+        .reset,
+        .Q(vote1)
+    );
+
+    Counter #(2) majority_vote2 (
+        .D('b0),
+        .en(vote2_en),
+        .clear(vote_clear),
+        .load('b0),
+        .clock,
+        .up(1'b1),
+        .reset,
+        .Q(vote2)
+    );
+
+    ShiftRegister #(10) data_shift1 (
+        .D(vote1[1]),
+        .en(clock_counter == 'd8),
+        .left('d1),
+        .clock,
+        .reset,
+        .Q(data1_register)
+    );
+
+    ShiftRegister #(10) data_shift2 (
+        .D(vote2[1]),
+        .en(clock_counter == 'd8),
+        .left('d1),
+        .clock,
+        .reset,
+        .Q(data2_register)
+    );
+
+    Register #(10) data1 (
+        .D(data1_register),
+        .en(byte_read),
+        .clear(1'b0),
+        .clock,
+        .Q({ data1_start, data1_in, data1_end })
+    );
+
+    Register #(10) data2 (
+        .D(data2_register),
+        .en(byte_read),
+        .clear(1'b0),
+        .clock,
+        .Q({ data2_start, data2_in, data2_end })
+    );
+
+    always_comb begin
+        case (currState)
+            WAIT: nextState <= WAIT;
+            RECEIVE: nextState <= byte_read ? WAIT : RECEIVE;
+        endcase
     end
+
+    always_comb begin
+        clock_en = 1'b0;
+        clock_clear = 1'b0;
+        case (currState)
+            RECEIVE: begin
+                clock_en = 1'b1;
+                clock_clear = byte_read;
+            end
+        endcase
+    end
+
+    always_ff @(
+        posedge laser1_in, posedge laser2_in, posedge clock, posedge reset
+    ) begin
+        if (reset) currState <= WAIT;
+        else if (laser1_in) currState <= RECEIVE;
+        else if (laser2_in) currState <= RECEIVE;
+        else currState <= nextState;
+    end
+
 endmodule: LaserReceiver
