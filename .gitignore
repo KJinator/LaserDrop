@@ -3,3 +3,4 @@
 **/fpga/db/**
 **/fpga/incremental_db/**
 *.bak
+*.qsf
