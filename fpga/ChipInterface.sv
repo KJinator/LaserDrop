@@ -10,7 +10,7 @@ module ChipInterface (
     input  logic [9:0] SW,
     input  logic [3:0] KEY,
     output logic [17:0] LEDR,
-    output logic [6:0] HEX5, HEX4, HEX1, HEX0,
+    output logic [6:0] HEX5, HEX4, HEX3, HEX2, HEX1, HEX0,
     output logic GPIO_0_D14, GPIO_0_D15, GPIO_0_D16, GPIO_0_D17
 );
     logic CLOCK_25, CLOCK_12_5, CLOCK_6_25;
@@ -39,10 +39,14 @@ module ChipInterface (
     );
     */
 
+    logic [7:0] data_in1, data_in2;
+    assign data_in1 = SW[9] ? 8'h12 : 8'hc8;
+    assign data_in2 = SW[8] ? 8'h34 : 8'h77;
+
     // Need to use clock at double the speed because using posedge (1/2)
     LaserTransmitter transmit (
-        .data_in1(8'h12),
-        .data_in2(8'h34),
+        .data_in1(data_in1),
+        .data_in2(data_in2),
         .en(SW[0]),
         .clock(CLOCK_12_5),
         .reset,
@@ -98,6 +102,9 @@ module ChipInterface (
         .bcd(data1_in[3:0]),
         .segment(HEX4)
     );
+
+    assign HEX3 = 7'b111_1111;
+    assign HEX2 = 7'b111_1111;
 
     BCDtoSevenSegment laser2_1 (
         .bcd(data2_in[7:4]),
