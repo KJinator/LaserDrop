@@ -39,11 +39,12 @@ module ChipInterface (
     );
     */
 
+    // Need to use clock at double the speed because using posedge (1/2)
     LaserTransmitter transmit (
-        .data_in1(8'h08),
-        .data_in2(8'hff),
+        .data_in1(8'h12),
+        .data_in2(8'h34),
         .en(SW[0]),
-        .clock(CLOCK_6_25),
+        .clock(CLOCK_12_5),
         .reset,
         .data_ready1(1'b1),
         .data_ready2(1'b1),
@@ -53,7 +54,7 @@ module ChipInterface (
     );
 
     LaserReceiver receive (
-        .laser1_in(GPIO_1_D0),
+        .laser1_in(GPIO_1_D15),
         .laser2_in(GPIO_1_D17),
         // .laser1_in(GPIO_1_D15),
         // .laser2_in(GPIO_1_D17),

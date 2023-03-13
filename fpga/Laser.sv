@@ -30,8 +30,8 @@ module LaserTransmitter(
         .Q(data2)
     );
 
-    assign data1_compiled = {1'b0, data_in1, 1'b1, 1'b0};
-    assign data2_compiled = {1'b0, data_in2, 1'b1, 1'b0};
+    assign data1_compiled = { data_in1, 1'b1, 1'b0};
+    assign data2_compiled = { data_in2, 1'b1, 1'b0};
 
     assign mux1_out = data1_compiled[count];
     assign mux2_out = data2_compiled[count];
@@ -120,7 +120,7 @@ module LaserReceiver
 
     assign vote_en = (
         (clock_counter == 'd4) | (clock_counter == 'd5) |
-        (clock_counter == 'd6)
+        (clock_counter == 'd3)
     );
     assign vote1_en = vote_en && laser1_in;
     assign vote2_en = vote_en && laser2_in;
@@ -166,7 +166,7 @@ module LaserReceiver
     ShiftRegister #(10) data_shift1 (
         .D(vote1[1]),
         .en(clock_counter == 'd8),
-        .left(1'd1),
+        .left(1'd0),
         .clock,
         .reset,
         .Q(data1_register)
@@ -175,7 +175,7 @@ module LaserReceiver
     ShiftRegister #(10) data_shift2 (
         .D(vote2[1]),
         .en(clock_counter == 'd8),
-        .left(1'd1),
+        .left(1'd0),
         .clock,
         .reset,
         .Q(data2_register)

@@ -32,7 +32,7 @@ module TB;
   end
 
   initial begin
-    #10000
+    #100000
 
     $display("@%0t: Error timeout!", $time);
     $finish;
@@ -47,6 +47,7 @@ module TB;
     @(posedge dut.data_valid);
     #100
 
+    $display("@%0t: Data1: %h, Data2: %h", $time, dut.data1_in, dut.data2_in);
     $display("@%0t: Finished!", $time);
     $finish;
   end
