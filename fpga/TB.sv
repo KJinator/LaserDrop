@@ -12,7 +12,7 @@ module TB;
     .GPIO_1_D16(gpio[2]),
     .GPIO_1_D17(gpio[3]),
     .SW({ 9'b0, 1'b1 }),
-    .KEY(resetN),
+    .KEY({ 3'b1, resetN }),
     .LEDR(ledr),
     .HEX5(HEX_D[5]),
     .HEX4(HEX_D[4]),
@@ -41,7 +41,8 @@ module TB;
   initial begin
     resetN = 1'b1;
     resetN <= 1'b0;
-    resetN <= #1 1'b1;
+    #1
+    resetN <= 1'b1;
 
     @(posedge dut.data_valid);
     #100
