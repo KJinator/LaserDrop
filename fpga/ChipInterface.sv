@@ -5,13 +5,12 @@
 
 module ChipInterface (
     input  logic CLOCK_50,
-    input  logic GPIO_1_D0, GPIO_1_D1, GPIO_1_D2, GPIO_1_D3,
-    input  logic GPIO_1_D14, GPIO_1_D15, GPIO_1_D16, GPIO_1_D17,
+    input  logic [35:0] GPIO_1,
     input  logic [9:0] SW,
     input  logic [3:0] KEY,
     output logic [17:0] LEDR,
     output logic [6:0] HEX5, HEX4, HEX3, HEX2, HEX1, HEX0,
-    output logic GPIO_0_D14, GPIO_0_D15, GPIO_0_D16, GPIO_0_D17
+    output logic [35:0] GPIO_0
 );
     logic CLOCK_25, CLOCK_12_5, CLOCK_6_25;
     logic reset, data_valid;
@@ -20,12 +19,12 @@ module ChipInterface (
 
     assign reset = ~KEY[0];
 
-    assign LEDR[0] = GPIO_1_D15;
-    assign LEDR[1] = GPIO_0_D15;
-    // assign LEDR[8] = GPIO_1_D16;
-    // assign LEDR[9] = GPIO_1_D17;
-    assign LEDR[8] = GPIO_1_D17;
-    assign LEDR[9] = GPIO_0_D17;
+    assign LEDR[0] = GPIO_1[15];
+    assign LEDR[1] = GPIO_0[15];
+    // assign LEDR[8] = GPIO_1[16];
+    // assign LEDR[9] = GPIO_1[17];
+    assign LEDR[8] = GPIO_1[17];
+    assign LEDR[9] = GPIO_0[17];
 
     assign LEDR[6] = data_valid;
     /*
@@ -43,6 +42,8 @@ module ChipInterface (
     assign data_in1 = SW[9] ? 8'h12 : 8'hc8;
     assign data_in2 = SW[8] ? 8'h34 : 8'h77;
 
+    LaserDrop main ();
+
     // Need to use clock at double the speed because using posedge (1/2)
     LaserTransmitter transmit (
         .data_in1(data_in1),
@@ -52,16 +53,16 @@ module ChipInterface (
         .reset,
         .data_ready1(1'b1),
         .data_ready2(1'b1),
-        .laser1_out({ GPIO_0_D15, GPIO_0_D14 }),
-        .laser2_out({ GPIO_0_D17, GPIO_0_D16 }),
+        .laser1_out({ GPIO_0[15], GPIO_0[14] }),
+        .laser2_out({ GPIO_0[17], GPIO_0[16] }),
         .done(LEDR[5])
     );
 
     LaserReceiver receive (
-        .laser1_in(GPIO_1_D15),
-        .laser2_in(GPIO_1_D17),
-        // .laser1_in(GPIO_1_D15),
-        // .laser2_in(GPIO_1_D17),
+        .laser1_in(GPIO_1[15]),
+        .laser2_in(GPIO_1[17]),
+        // .laser1_in(GPIO_1[15]),
+        // .laser2_in(GPIO_1[17]),
         .clock(CLOCK_50),
         .reset,
         .data_valid,
@@ -70,7 +71,7 @@ module ChipInterface (
     );
 
     ClockDivider clock_25 (
-        .CLOCK_50,
+        .clk_base(CLOCK_50),
         .reset,
         .en(1'b1),
         .divider(8'b1),
@@ -78,7 +79,7 @@ module ChipInterface (
     );
 
     ClockDivider clock_12_5 (
-        .CLOCK_50,
+        .clk_base(CLOCK_50),
         .reset,
         .en(1'b1),
         .divider(8'd4),
@@ -86,7 +87,7 @@ module ChipInterface (
     );
 
     ClockDivider clock_6_25 (
-        .CLOCK_50,
+        .clk_base(CLOCK_50),
         .reset,
         .en(1'b1),
         .divider(8'd8),

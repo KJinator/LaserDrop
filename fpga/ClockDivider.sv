@@ -2,7 +2,7 @@
 
 // Divider should be >= 1 (else, why use a divider)
 module ClockDivider (
-    input  logic        CLOCK_50, reset, en,
+    input  logic        clk_base, reset, en,
     input  logic [7:0]  divider,
     output logic        clk_divided
 );
@@ -17,25 +17,22 @@ module ClockDivider (
         .en,
         .clear(1'b0),
         .load(clear_count),
-        .clock(CLOCK_50),
+        .clock(clk_base),
         .up(1'b1),
         .reset,
         .Q(counter)
     );
 
-    always_ff @(posedge CLOCK_50, posedge reset) begin
-        // clear_count <= 1'b0;
+    always_ff @(posedge clk_base, posedge reset) begin
         count_en <= en;
         if (reset) begin
             clk_divided <= 'b0;
-            // clear_count <= 1'b1;
         end
         else if (~en) begin
             clk_divided <= 'b0;
         end
         else if (counter == divider) begin
             clk_divided <= ~clk_divided;
-            // clear_count <= 1'b1;
         end
 
     end
