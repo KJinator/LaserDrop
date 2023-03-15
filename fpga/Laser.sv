@@ -30,6 +30,7 @@ module LaserTransmitter(
         .Q(data2)
     );
 
+    // 1'b1 is start bit, and it wraps around to 0 at the end -> sent LSB first
     assign data1_compiled = { data_in1, 1'b1, 1'b0};
     assign data2_compiled = { data_in2, 1'b1, 1'b0};
 
@@ -54,17 +55,17 @@ module LaserTransmitter(
     always_comb
         case (currState)
             RESET: nextState = WAIT;
-            WAIT: nextState = data_ready ? SEND : WAIT;
+            WAIT: nextState = (data_ready && en) ? SEND : WAIT;
             // TODO: depending on timing, have space to optimize one clock cycle
-            SEND: nextState = (count == 'd10) ? WAIT : SEND;
+            SEND: nextState = (count == 4'd10 || ~en) ? WAIT : SEND;
         endcase
 
     //// Logic for each state
     always_comb begin
-        count_en = 'b0;
-        count_clear = 'b0;
-        load = 'b0;
-        done = 'b0;
+        count_en = 1'b0;
+        count_clear = ~en;
+        load = 1'b0;
+        done = 1'b0;
         laser1_out = { mux1_out, en };
         laser2_out = { mux2_out, en };
 
@@ -72,9 +73,9 @@ module LaserTransmitter(
             WAIT: load = data_ready;
             // TODO: depending on timing, have space to optimize one clock cycle
             SEND: begin
-                count_en = 'b1;
-                count_clear = count == 'd10;
-                done = count == 'd10;
+                count_en = 1'b1;
+                count_clear = count == 4'd10;
+                done = count == 4'd10;
             end
         endcase
     end
@@ -132,7 +133,7 @@ module LaserReceiver
     assign vote_clear = sampled_bit;
     assign clock_clear = sampled_bit;
     
-    assign data_valid = (byte_read & ~data1_stop & ~data2_stop);
+    assign data_valid = (byte_read & ~data1_register[9] & ~data2_register[9]);
 
     Counter #(8) num_bits (
         .D(8'b0),
@@ -190,7 +191,7 @@ module LaserReceiver
         .en(byte_read),
         .clear(1'b0),
         .clock,
-        .Q({ data1_start, data1_in, data1_stop })
+        .Q({ data1_stop, data1_in, data1_start })   // Sent LSB first
     );
 
     Register #(10) data2 (
@@ -198,7 +199,7 @@ module LaserReceiver
         .en(byte_read),
         .clear(1'b0),
         .clock,
-        .Q({ data2_start, data2_in, data2_stop })
+        .Q({ data2_stop, data2_in, data2_start })
     );
 
     logic switch_to_wait;

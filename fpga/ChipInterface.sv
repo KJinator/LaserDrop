@@ -72,7 +72,7 @@ module ChipInterface (
     ClockDivider clock_25 (
         .CLOCK_50,
         .reset,
-        .en(SW[0]),
+        .en(1'b1),
         .divider(8'b1),
         .clk_divided(CLOCK_25)
     );
@@ -80,7 +80,7 @@ module ChipInterface (
     ClockDivider clock_12_5 (
         .CLOCK_50,
         .reset,
-        .en(SW[0]),
+        .en(1'b1),
         .divider(8'd4),
         .clk_divided(CLOCK_12_5)
     );
@@ -88,7 +88,7 @@ module ChipInterface (
     ClockDivider clock_6_25 (
         .CLOCK_50,
         .reset,
-        .en(SW[0]),
+        .en(1'b1),
         .divider(8'd8),
         .clk_divided(CLOCK_6_25)
     );
