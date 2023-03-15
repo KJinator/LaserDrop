@@ -100,7 +100,8 @@ module LaserReceiver
 
     logic clock_en, clock_clear, clock_divided;
     logic vote_en, vote_clear, vote1_en, vote2_en;
-    logic byte_read, data1_start, data1_end, data2_start, data2_end;
+    logic sampled_bit, byte_read;
+    logic data1_start, data1_stop, data2_start, data2_stop;
     logic [9:0] data1_register, data2_register;
     logic [7:0] clock_counter, bits_read;
     logic [1:0] vote1, vote2;
@@ -119,20 +120,23 @@ module LaserReceiver
     );
 
     assign vote_en = (
-        (clock_counter == 'd4) | (clock_counter == 'd5) |
-        (clock_counter == 'd3)
+        (clock_counter == 8'd4) | (clock_counter == 8'd5) |
+        (clock_counter == 8'd3)
     );
+    assign sampled_bit = (clock_counter == 8'd8);
+    assign byte_read = (bits_read == 8'd10);
+
     assign vote1_en = vote_en && laser1_in;
     assign vote2_en = vote_en && laser2_in;
-    assign vote_clear = (clock_counter == 'd8);
-    assign clock_clear = (clock_counter == 'd8);
-    assign byte_read = (bits_read == 'd10);
-    // TODO: Change
-    assign data_valid = byte_read;
+
+    assign vote_clear = sampled_bit;
+    assign clock_clear = sampled_bit;
+    
+    assign data_valid = (byte_read & ~data1_stop & ~data2_stop);
 
     Counter #(8) num_bits (
         .D(8'b0),
-        .en(clock_counter == 'd8),
+        .en(sampled_bit),
         .clear(byte_read),
         .load(1'b0),
         .clock,
@@ -165,7 +169,7 @@ module LaserReceiver
 
     ShiftRegister #(10) data_shift1 (
         .D(vote1[1]),
-        .en(clock_counter == 'd8),
+        .en(sampled_bit),
         .left(1'd0),
         .clock,
         .reset,
@@ -174,7 +178,7 @@ module LaserReceiver
 
     ShiftRegister #(10) data_shift2 (
         .D(vote2[1]),
-        .en(clock_counter == 'd8),
+        .en(sampled_bit),
         .left(1'd0),
         .clock,
         .reset,
@@ -186,7 +190,7 @@ module LaserReceiver
         .en(byte_read),
         .clear(1'b0),
         .clock,
-        .Q({ data1_start, data1_in, data1_end })
+        .Q({ data1_start, data1_in, data1_stop })
     );
 
     Register #(10) data2 (
@@ -194,32 +198,36 @@ module LaserReceiver
         .en(byte_read),
         .clear(1'b0),
         .clock,
-        .Q({ data2_start, data2_in, data2_end })
+        .Q({ data2_start, data2_in, data2_stop })
+    );
+
+    logic switch_to_wait;
+
+    assign switch_to_wait = byte_read || (
+        bits_read == 8'b1 && (!data1_register[9] || !data2_register[9]) 
     );
 
     always_comb begin
         case (currState)
-            WAIT: nextState <= WAIT;
-            RECEIVE: nextState <= byte_read ? WAIT : RECEIVE;
+            WAIT: nextState = WAIT;
+            RECEIVE: nextState = switch_to_wait ? WAIT : RECEIVE;
         endcase
     end
 
     always_comb begin
         clock_en = 1'b0;
         case (currState)
-            RECEIVE: begin
-                clock_en = 1'b1;
-            end
+            RECEIVE: clock_en = 1'b1;
         endcase
     end
 
     always_ff @(
-        posedge laser1_in, posedge laser2_in, posedge clock, posedge reset
+        posedge laser1_in, posedge laser2_in, posedge reset, posedge byte_read
     ) begin
         if (reset) currState <= WAIT;
+        else if (byte_read) currState <= WAIT;
         else if (laser1_in) currState <= RECEIVE;
         else if (laser2_in) currState <= RECEIVE;
-        else currState <= nextState;
     end
 
 endmodule: LaserReceiver
