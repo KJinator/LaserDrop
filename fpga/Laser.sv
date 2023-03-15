@@ -1,5 +1,87 @@
 `default_nettype none
 
+`define START_PKT_LEN   10'd512
+`define STOP_PKT_LEN    10'd6
+`define ACK_PKT_LEN     10'd4
+`define FAIL_PKT_LEN    10'd4
+`define DONE_PKT_LEN    10'd2
+
+`define START_SEQ       8'hcc
+`define STOP_SEQ        8'h55
+`define ACK_SEQ         8'h11
+`define FAIL_SEQ        8'hbb
+`define DONE_SEQ        8'haa
+
+// NOTE: may need to increase depending on how fast CPU interface is
+`define TIMEOUT_RX_LEN  8'd40
+
+// SYNTAX NOTES
+// rx/tx: In reference to laser transmission and receiver
+// read/send: In reference to FTDI chip in/out
+
+module LaserDrop (
+    input logic clock, reset,
+    input logic data_valid, rxf,
+    input logic [511:0] rx
+);
+    logic finished_hs, timeout;
+    logic [511:0]   read;
+    logic [  9:0]   read_ct, tx_ct;
+    logic [  7:0]   timeout_ct;
+    logic [  3:0]   saw_consecutive;
+
+    enum logic [4:0] {
+        RESET, HS_INIT_TX, HS_FIN_TX,
+        LOAD_READ, WAIT_READ, RECEIVE, WAIT_RESEND
+    } currState, nextState;
+
+    assign finished_hs = saw_consecutive >= 4'd4;
+    assign timeout = timeout_ct == `TIMEOUT_RX_LEN;
+
+    // State transition logic
+    always_comb begin
+        case (currState)
+            RESET:
+                if (rxf) nextState = HS_INIT_TX;
+                else nextState = RESET;
+            HS_INIT_TX: nextState = finished_hs ? LOAD_READ : HS_INIT_TX;
+            LOAD_READ: nextState = WAIT_READ;
+            WAIT_READ:
+                // NOTE: Should never be >
+                if ((read[7:0] == `START_SEQ && read_ct == `START_PKT_LEN && tx_ct >= `START_PKT_LEN) ||
+                    (read[7:0] == `STOP_SEQ && read_ct == `STOP_PKT_LEN && tx_ct >= `STOP_PKT_LEN))
+                    nextState = RECEIVE;
+                // Transmission less. Wait until all packets sent over lasers
+                else if (rxf ||
+                         (read[7:0] == `START_SEQ && read_ct == `START_PKT_LEN) ||
+                         (read[7:0] == `STOP_SEQ && read_ct == `STOP_PKT_LEN))
+                    nextState = WAIT_READ;
+                else nextState = LOAD_READ;
+            RECEIVE:
+                if (data_valid && rx[7:0] == `ACK_SEQ) nextState = LOAD_READ;
+                else if (data_valid && rx[7:0] == `DONE_SEQ) nextState = HS_FIN_TX;
+                else if (timeout || data_valid) nextState = WAIT_RESEND;
+                else nextState = RECEIVE;
+            WAIT_RESEND:
+                if ((read[7:0] == `START_SEQ && tx_ct == `START_PKT_LEN) ||
+                    (read[7:0] == `STOP_SEQ && tx_ct == `STOP_PKT_LEN))
+                    nextState = RECEIVE;
+                else nextState = WAIT_RESEND;
+            HS_FIN_TX: nextState = finished_hs ? LOAD_READ : HS_FIN_TX;
+        endcase
+    end
+
+    always_ff @(posedge clock, posedge reset) begin
+        if (reset) currState <= RESET;
+        else currState <= nextState;
+    end
+
+endmodule: LaserDrop
+
+// Laser Transmission module
+// Transmits data_in on data_out if data_ready is asserted. Asserts done when
+// transmission finished.
+// NOTE: Currently, configured so it only transmits if both lasers are ready.
 module LaserTransmitter(
     input logic [7:0] data_in1, data_in2,
     input logic en, clock, reset, data_ready1, data_ready2,
@@ -11,8 +93,7 @@ module LaserTransmitter(
     logic [3:0] count;
     logic data_ready, load, count_en, count_clear, mux1_out, mux2_out;
 
-    enum logic [1:0] {RESET, WAIT, SEND}
-        currState, nextState;
+    enum logic { WAIT, SEND } currState, nextState;
 
     Register laser1_data (
         .D(data_in1),
@@ -54,7 +135,6 @@ module LaserTransmitter(
     //// Transition States
     always_comb
         case (currState)
-            RESET: nextState = WAIT;
             WAIT: nextState = (data_ready && en) ? SEND : WAIT;
             // TODO: depending on timing, have space to optimize one clock cycle
             SEND: nextState = (count == 4'd10 || ~en) ? WAIT : SEND;
@@ -81,15 +161,19 @@ module LaserTransmitter(
     end
 
     always_ff @(posedge clock, posedge reset) begin
-        if (reset) currState <= RESET;
+        if (reset) currState <= WAIT;
         else currState <= nextState;
     end
 
 endmodule: LaserTransmitter
 
 
+// Laser Receiver module
+// Listens in on laser1_in and laser2_in, asserting data_valid for a single
+// clock cycle if a whole byte with valid start and stop bits read on both.
+// NOTE: currently coded so this only works when data received simultaneously on
+//       both lasers.
 module LaserReceiver
-    #(parameter DIVIDER=3)
     (input logic clock, reset,
      input logic laser1_in, laser2_in,
      output logic data_valid,

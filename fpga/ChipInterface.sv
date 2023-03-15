@@ -5,6 +5,7 @@
 
 module ChipInterface (
     input  logic CLOCK_50,
+    input  logic [35:0] GPIO_0, GPIO_1,
     input  logic GPIO_1_D0, GPIO_1_D1, GPIO_1_D2, GPIO_1_D3,
     input  logic GPIO_1_D14, GPIO_1_D15, GPIO_1_D16, GPIO_1_D17,
     input  logic [9:0] SW,
@@ -43,6 +44,8 @@ module ChipInterface (
     assign data_in1 = SW[9] ? 8'h12 : 8'hc8;
     assign data_in2 = SW[8] ? 8'h34 : 8'h77;
 
+    LaserDrop main ();
+
     // Need to use clock at double the speed because using posedge (1/2)
     LaserTransmitter transmit (
         .data_in1(data_in1),
@@ -70,7 +73,7 @@ module ChipInterface (
     );
 
     ClockDivider clock_25 (
-        .CLOCK_50,
+        .clk_base(CLOCK_50),
         .reset,
         .en(1'b1),
         .divider(8'b1),
@@ -78,7 +81,7 @@ module ChipInterface (
     );
 
     ClockDivider clock_12_5 (
-        .CLOCK_50,
+        .clk_base(CLOCK_50),
         .reset,
         .en(1'b1),
         .divider(8'd4),
@@ -86,7 +89,7 @@ module ChipInterface (
     );
 
     ClockDivider clock_6_25 (
-        .CLOCK_50,
+        .clk_base(CLOCK_50),
         .reset,
         .en(1'b1),
         .divider(8'd8),
