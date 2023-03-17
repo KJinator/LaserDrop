@@ -5,64 +5,116 @@
 
 module ChipInterface (
     input  logic CLOCK_50,
-    input  logic [35:0] GPIO_1,
     input  logic [9:0] SW,
     input  logic [3:0] KEY,
     output logic [17:0] LEDR,
     output logic [6:0] HEX5, HEX4, HEX3, HEX2, HEX1, HEX0,
-    output logic [35:0] GPIO_0
+    inout  logic [35:0] GPIO_0, GPIO_1
 );
     logic CLOCK_25, CLOCK_12_5, CLOCK_6_25;
     logic reset, data_valid;
 
     logic [7:0] data1_in, data2_in;
 
+    //------------------FPGA Pin Configurations---------------------//
+    logic [7:0] ADBUS;
+    logic [9:0] ACBUS;
+    logic [1:0] IR_TX, GREEN_TX;
+    logic GREEN_AMB_n, GREEN_RX, GREEN_EN_n, IR_AMB_n, IR_RX, IR_EN_n;
+    logic RESET_FTDI;
+
+    // NOTE: For future, 1'bz becomes input, and any variable becomes output.
+    // In order to do bidirectional, must do tri ? var : 1'bz
+    assign GPIO_0[ 0] = ADBUS[7];
+    assign GPIO_0[ 1] = ACBUS[9];
+    assign GPIO_0[ 2] = ADBUS[6];
+    assign GPIO_0[ 3] = ACBUS[8];
+    assign GPIO_0[ 4] = ADBUS[5];
+    assign GPIO_0[ 5] = ACBUS[7];
+    assign GPIO_0[ 6] = ADBUS[4];
+    assign GPIO_0[ 7] = ACBUS[6];
+    assign GPIO_0[ 8] = ADBUS[3];
+    assign GPIO_0[ 9] = ACBUS[5];
+    assign GPIO_0[10] = ADBUS[2];
+    assign GPIO_0[11] = ACBUS[4];
+    assign GPIO_0[12] = ADBUS[1];
+    assign GPIO_0[13] = ACBUS[3];
+    assign GPIO_0[14] = ADBUS[0];
+    assign GPIO_0[15] = ACBUS[2];
+    assign GPIO_0[16] = IR_TX[1];
+    assign GPIO_0[17] = ACBUS[1];
+    assign GPIO_0[18] = IR_TX[0];
+    assign GPIO_0[19] = ACBUS[0];
+    assign GPIO_0[20] = GREEN_TX[1];
+    assign GPIO_0[21] = RESET_FTDI;
+    assign GPIO_0[22] = GREEN_TX[0];
+    assign GPIO_0[23] = 1'bz;
+    assign GPIO_0[24] = GREEN_AMB_n;
+    assign GPIO_0[25] = 1'bz;
+    assign GPIO_0[26] = 1'bz;
+    assign GPIO_0[27] = 1'bz;
+    assign GPIO_0[28] = GREEN_EN_n;
+    assign GPIO_0[29] = 1'bz;
+    assign GPIO_0[30] = IR_AMB_n;
+    assign GPIO_0[31] = 1'bz;
+    assign GPIO_0[32] = 1'bz;
+    assign GPIO_0[33] = 1'bz;
+    assign GPIO_0[34] = IR_EN_n;
+    assign GPIO_0[35] = 1'bz;
+
+    // These should always be inputs
+    assign GREEN_RX = GPIO_0[26];
+    assign IR_RX = GPIO_0[32];
+
+    // Pin counts: 7 High z, 18 Bus, 4 TX, 2 RX, 5 Misc
+    assign ADBUS = 8'bz;
+    assign ACBUS = 10'bz;
+
+    // Pull-up, pull-down resistor exist. Output should be high z
+    assign GREEN_EN_n = 1'bz;       // default 0 (on)
+    assign IR_EN_n = 1'bz;
+    assign GREEN_AMB_n = 1'bz;      // default 0 (on)
+    assign IR_AMB_n = 1'bz;
+    assign RESET_FTDI = 1'bz;       // default
+
+
+    assign GPIO_1 = { 36'bz };
+    //--------------------------------------------------------------//
+
     assign reset = ~KEY[0];
 
-    assign LEDR[0] = GPIO_1[15];
-    assign LEDR[1] = GPIO_0[15];
+    assign LEDR[1:0] = GREEN_TX;
+    assign LEDR[3:2] = IR_TX;
     // assign LEDR[8] = GPIO_1[16];
     // assign LEDR[9] = GPIO_1[17];
-    assign LEDR[8] = GPIO_1[17];
-    assign LEDR[9] = GPIO_0[17];
+    assign LEDR[8] = GREEN_RX;
+    assign LEDR[9] = IR_RX;
 
-    assign LEDR[6] = data_valid;
-    /*
-    ShiftRegisterQueue sample_data (
-        .D(1'b1), // Change later
-        .clock(CLOCK_12_5),
-        .load(1'b1),
-        .reset,
-        .read(CLOCK_6_25),
-        .full()
-    );
-    */
+    assign LEDR[5] = data_valid;
 
-    logic [7:0] data_in1, data_in2;
-    assign data_in1 = SW[9] ? 8'h12 : 8'hc8;
-    assign data_in2 = SW[8] ? 8'h34 : 8'h77;
+    logic [7:0] data1_transmit, data2_transmit;
+    assign data1_transmit = SW[9] ? 8'h12 : 8'hc8;
+    assign data2_transmit = SW[8] ? 8'h34 : 8'h77;
 
     LaserDrop main ();
 
     // Need to use clock at double the speed because using posedge (1/2)
     LaserTransmitter transmit (
-        .data_in1(data_in1),
-        .data_in2(data_in2),
+        .data1_transmit(data1_transmit),
+        .data2_transmit(data2_transmit),
         .en(SW[0]),
         .clock(CLOCK_12_5),
         .reset,
-        .data_ready1(1'b1),
-        .data_ready2(1'b1),
-        .laser1_out({ GPIO_0[15], GPIO_0[14] }),
-        .laser2_out({ GPIO_0[17], GPIO_0[16] }),
-        .done(LEDR[5])
+        .data1_ready(1'b1),
+        .data2_ready(1'b1),
+        .laser1_out(GREEN_TX),
+        .laser2_out(IR_TX),
+        .done(LEDR[4])
     );
 
     LaserReceiver receive (
-        .laser1_in(GPIO_1[15]),
-        .laser2_in(GPIO_1[17]),
-        // .laser1_in(GPIO_1[15]),
-        // .laser2_in(GPIO_1[17]),
+        .laser1_in(GREEN_RX),
+        .laser2_in(IR_RX),
         .clock(CLOCK_50),
         .reset,
         .data_valid,

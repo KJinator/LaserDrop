@@ -83,8 +83,8 @@ endmodule: LaserDrop
 // transmission finished.
 // NOTE: Currently, configured so it only transmits if both lasers are ready.
 module LaserTransmitter(
-    input logic [7:0] data_in1, data_in2,
-    input logic en, clock, reset, data_ready1, data_ready2,
+    input logic [7:0] data1_transmit, data2_transmit,
+    input logic en, clock, reset, data1_ready, data2_ready,
     output logic [1:0] laser1_out, laser2_out,
     output logic done
 );
@@ -96,7 +96,7 @@ module LaserTransmitter(
     enum logic { WAIT, SEND } currState, nextState;
 
     Register laser1_data (
-        .D(data_in1),
+        .D(data1_transmit),
         .en(load),
         .clear(1'b0),
         .clock(clock),
@@ -104,7 +104,7 @@ module LaserTransmitter(
     );
 
     Register laser2_data (
-        .D(data_in2),
+        .D(data2_transmit),
         .en(load),
         .clear(1'b0),
         .clock(clock),
@@ -112,8 +112,8 @@ module LaserTransmitter(
     );
 
     // 1'b1 is start bit, and it wraps around to 0 at the end -> sent LSB first
-    assign data1_compiled = { data_in1, 1'b1, 1'b0};
-    assign data2_compiled = { data_in2, 1'b1, 1'b0};
+    assign data1_compiled = { data1_transmit, 1'b1, 1'b0};
+    assign data2_compiled = { data2_transmit, 1'b1, 1'b0};
 
     assign mux1_out = data1_compiled[count];
     assign mux2_out = data2_compiled[count];
@@ -130,7 +130,7 @@ module LaserTransmitter(
     );
 
     // FSM States
-    assign data_ready = data_ready1 & data_ready2;
+    assign data_ready = data1_ready & data2_ready;
 
     //// Transition States
     always_comb
@@ -217,6 +217,8 @@ module LaserReceiver
     assign vote_clear = sampled_bit;
     assign clock_clear = sampled_bit;
     
+    // TODO: SWITCH
+    // assign data_valid = byte_read;
     assign data_valid = (byte_read & ~data1_register[9] & ~data2_register[9]);
 
     Counter #(8) num_bits (
