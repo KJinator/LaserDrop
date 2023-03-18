@@ -9,7 +9,7 @@ module ChipInterface (
     input  logic [3:0] KEY,
     output logic [17:0] LEDR,
     output logic [6:0] HEX5, HEX4, HEX3, HEX2, HEX1, HEX0,
-    inout  logic [35:0] GPIO_0, GPIO_1
+    inout  wire  [35:0] GPIO_0, GPIO_1
 );
     logic CLOCK_25, CLOCK_12_5, CLOCK_6_25;
     logic reset, data_valid;
@@ -112,15 +112,42 @@ module ChipInterface (
         .done(LEDR[4])
     );
 
-    LaserReceiver receive (
+    //----------------------------//
+    // LaserReceiver receive (
+    //     .laser1_in(GREEN_RX),
+    //     .laser2_in(IR_RX),
+    //     .clock(CLOCK_50),
+    //     .simultaneous_mode(1'b1),
+    //     .reset,
+    //     .data_valid,
+    //     .data1_in,
+    //     .data2_in
+    // );
+    //----------------------------//
+    logic data_valid1, data_valid2;
+    logic [7:0] dummy_data1, dummy_data2;
+    assign data_valid = data_valid1 & data_valid2;
+    LaserReceiver receive1 (
         .laser1_in(GREEN_RX),
+        .laser2_in(1'b0),
+        .clock(CLOCK_50),
+        .simultaneous_mode(1'b0),
+        .reset,
+        .data_valid(data_valid2),
+        .data1_in,
+        .data2_in(dummy_data2)
+    );
+    LaserReceiver receive2 (
+        .laser1_in(1'b0),
         .laser2_in(IR_RX),
         .clock(CLOCK_50),
+        .simultaneous_mode(1'b0),
         .reset,
-        .data_valid,
-        .data1_in,
+        .data_valid(data_valid1),
+        .data1_in(dummy_data1),
         .data2_in
     );
+    //------------------------------//
 
     ClockDivider clock_25 (
         .clk_base(CLOCK_50),

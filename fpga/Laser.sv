@@ -175,7 +175,7 @@ endmodule: LaserTransmitter
 //       both lasers.
 module LaserReceiver
     (input logic clock, reset,
-     input logic laser1_in, laser2_in,
+     input logic laser1_in, laser2_in, simultaneous_mode,
      output logic data_valid,
      output logic [7:0] data1_in, data2_in);
 
@@ -216,13 +216,10 @@ module LaserReceiver
 
     assign vote_clear = sampled_bit;
     assign clock_clear = sampled_bit;
-    
-    assign data_valid = (
-		  byte_read &
-		  ~(receive_sel[0] & data1_register[9]) &
-		  ~(receive_sel[1] & data2_register[9])
-	 );
-    // assign data_valid = (byte_read & (~data1_register[9] | ~data2_register[9]));
+
+    assign data_valid = simultaneous_mode ?
+        (byte_read & ~data1_register[9] & ~data2_register[9]) :
+        (byte_read & (~data1_register[9] | ~data2_register[9]));
 
     Counter #(8) num_bits (
         .D(8'b0),
@@ -293,20 +290,9 @@ module LaserReceiver
 
     logic switch_to_wait;
 
-    assign switch_to_wait = byte_read || (
-        bits_read == 8'b1 && (!data1_register[9] && !data2_register[9]) 
-    );
-	 
-	 assign receive_sel_D = { data2_register[9], data1_register[9] };
-
-	 Register #(2) receive_sel_reg (
-	     .D(receive_sel_D),
-		  .en(bits_read == 8'b1),
-		  .clear(1'b0),
-		  .clock,
-		  .Q(receive_sel)
-    );
-	
+    assign switch_to_wait = simultaneous_mode ?
+        (byte_read | (bits_read == 8'b1 & ~data1_register[9] & ~data2_register[9])) :
+        (byte_read | (bits_read == 8'b1 & (~data1_register[9] | ~data2_register[9])));
 
     always_comb begin
         case (currState)
