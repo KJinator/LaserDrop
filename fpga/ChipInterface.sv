@@ -97,9 +97,7 @@ module ChipInterface (
     assign data2_transmit = SW[8] ? 8'h34 : 8'h77;
 
     LaserDrop main ();
-
-    LaserDrop main ();
-
+	 
     // Need to use clock at double the speed because using posedge (1/2)
     LaserTransmitter transmit (
         .data1_transmit(data1_transmit),
