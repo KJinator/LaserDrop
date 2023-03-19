@@ -12,9 +12,14 @@ module ChipInterface (
     inout  wire  [35:0] GPIO_0, GPIO_1
 );
     logic CLOCK_25, CLOCK_12_5, CLOCK_6_25;
-    logic reset, data_valid;
+    logic reset, data_valid, data_valid_sim, data_valid_test;
 
-    logic [7:0] data1_in, data2_in;
+    logic [7:0] data1_in, data2_in, data1_in_sim, data2_in_sim;
+    logic [7:0] data1_in_test, data2_in_test;
+    logic test_mode;
+    
+    logic data1_valid_test, data2_valid_test;
+    logic [7:0] dummy_data1, dummy_data2;
 
     //------------------FPGA Pin Configurations---------------------//
     logic [7:0] ADBUS;
@@ -90,6 +95,8 @@ module ChipInterface (
     assign LEDR[8] = GREEN_RX;
     assign LEDR[9] = IR_RX;
 
+    assign test_mode = SW[1];
+
     assign LEDR[5] = data_valid;
 
     logic [7:0] data1_transmit, data2_transmit;
@@ -112,29 +119,29 @@ module ChipInterface (
         .done(LEDR[4])
     );
 
-    //----------------------------//
-    // LaserReceiver receive (
-    //     .laser1_in(GREEN_RX),
-    //     .laser2_in(IR_RX),
-    //     .clock(CLOCK_50),
-    //     .simultaneous_mode(1'b1),
-    //     .reset,
-    //     .data_valid,
-    //     .data1_in,
-    //     .data2_in
-    // );
-    //----------------------------//
-    logic data_valid1, data_valid2;
-    logic [7:0] dummy_data1, dummy_data2;
-    assign data_valid = data_valid1 & data_valid2;
+    // Simultaneous mode lasers
+    LaserReceiver receive (
+        .laser1_in(GREEN_RX),
+        .laser2_in(IR_RX),
+        .clock(CLOCK_50),
+        .simultaneous_mode(1'b1),
+        .reset,
+        .data_valid(data_valid_sim),
+        .data1_in(data1_in_sim),
+        .data2_in(data2_in_sim)
+    );
+
+    // Non-simultaneous (test mode lasers)
+    assign data_valid_test = data1_valid_test | data2_valid_test;
+
     LaserReceiver receive1 (
         .laser1_in(GREEN_RX),
         .laser2_in(1'b0),
         .clock(CLOCK_50),
         .simultaneous_mode(1'b0),
         .reset,
-        .data_valid(data_valid2),
-        .data1_in,
+        .data_valid(data2_valid_test),
+        .data1_in(data1_in_test),
         .data2_in(dummy_data2)
     );
     LaserReceiver receive2 (
@@ -143,11 +150,14 @@ module ChipInterface (
         .clock(CLOCK_50),
         .simultaneous_mode(1'b0),
         .reset,
-        .data_valid(data_valid1),
+        .data_valid(data1_valid_test),
         .data1_in(dummy_data1),
-        .data2_in
+        .data2_in(data2_in_test)
     );
-    //------------------------------//
+
+    assign data_valid = test_mode ? data_valid_test : data_valid_sim;
+    assign data1_in = test_mode ? data1_in_test : data1_in_sim;
+    assign data2_in = test_mode ? data2_in_test : data2_in_sim;
 
     ClockDivider clock_25 (
         .clk_base(CLOCK_50),

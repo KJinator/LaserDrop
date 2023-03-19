@@ -274,7 +274,7 @@ module LaserReceiver
 
     Register #(10) data1 (
         .D(data1_register),
-        .en(byte_read),
+        .en(data_valid),
         .clear(1'b0),
         .clock,
         .Q({ data1_stop, data1_in, data1_start })   // Sent LSB first
@@ -282,7 +282,7 @@ module LaserReceiver
 
     Register #(10) data2 (
         .D(data2_register),
-        .en(byte_read),
+        .en(data_valid),
         .clear(1'b0),
         .clock,
         .Q({ data2_stop, data2_in, data2_start })
