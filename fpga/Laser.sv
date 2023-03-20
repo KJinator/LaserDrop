@@ -2,8 +2,8 @@
 
 `define START_PKT_LEN   10'd512
 `define STOP_PKT_LEN    10'd6
-`define ACK_PKT_LEN     10'd4
-`define FAIL_PKT_LEN    10'd4
+`define ACK_PKT_LEN     10'd2
+`define FAIL_PKT_LEN    10'd2
 `define DONE_PKT_LEN    10'd2
 
 `define START_SEQ       8'hcc
@@ -14,68 +14,346 @@
 
 // NOTE: may need to increase depending on how fast CPU interface is
 `define TIMEOUT_RX_LEN  8'd40
+`define MAX_RD_CT       8'd64
+`define MAX_RX_CT       8'd64
+
+`define HS_TX_LASER1    8'b0101_0101
+`define HS_TX_LASER2    8'b1010_1010
+
+`define HS_RX_LASER1    8'b1010_1010
+`define HS_RX_LASER2    8'b0101_0101
 
 // SYNTAX NOTES
 // rx/tx: In reference to laser transmission and receiver
 // read/send: In reference to FTDI chip in/out
 
 module LaserDrop (
-    input logic clock, reset,
-    input logic data_valid, rxf,
-    input logic [511:0] rx
+    input logic clock, reset, en, non_sim_mode,
+    input logic rxf, laser1_rx, laser2_rx,
+    input logic [7:0] adbus_in,
+    output logic ftdi_rd, ftdi_wr, tx_done, adbus_tri, data_valid,
+    output logic [1:0] laser1_tx, laser2_tx,
+    output logic [7:0] data1_in, data2_in, adbus_out
 );
-    logic finished_hs, timeout;
-    logic [511:0]   read;
-    logic [  9:0]   read_ct, tx_ct;
-    logic [  7:0]   timeout_ct;
+    logic [511:0]   rx, rx_D, read, read_D;
+    logic [  9:0]   rd_ct, tx_ct, rx_ct;
+    logic [  7:0]   timeout_ct, data1_tx, data2_tx,
+                    data1_in_sim, data2_in_sim, data1_in_test, data2_in_test,
+                    dummy_data1, dummy_data2;
     logic [  3:0]   saw_consecutive;
+    logic           CLOCK_25, CLOCK_12_5, CLOCK_6_25;
+    logic           timeout, data_valid_sim, data_valid_test, finished_hs,
+                    data1_valid_test, data2_valid_test, data1_ready,
+                    data2_ready, store_rd, store_rx,
+                    saw_consecutive_en, rd_ct_en, rx_ct_en, timeout_ct_en, 
+                    saw_consecutive_clear, timeout_ct_clear, rd_ct_clear,
+                    tx_ct_clear, rx_ct_clear;
 
+    //----------------------------LASER TRANSMITTER---------------------------//
+    // Need to use clock at double the speed because using posedge (1/2)
+    assign data1_tx = read[tx_ct*8 + 7:tx_ct*8];
+    assign data2_tx = read[(tx_ct+1)*8 + 7:(tx_ct+1)*8];
+    assign data1_ready = tx_ct < rd_ct;
+    assign data2_ready = (tx_ct + 1) < rd_ct;
+
+    LaserTransmitter transmit (
+        .data1_transmit(data1_tx),
+        .data2_transmit(data2_tx),
+        .en,
+        .clock(CLOCK_12_5),
+        .reset,
+        .data1_ready,
+        .data2_ready,
+        .laser1_out(laser1_tx),
+        .laser2_out(laser2_tx),
+        .done(tx_done)
+    );
+    //------------------------------------------------------------------------//
+    //------------------------------LASER RECEIVER----------------------------//
+    // Simultaneous mode lasers
+    LaserReceiver receive (
+        .laser1_in(laser1_rx),
+        .laser2_in(laser2_rx),
+        .clock,
+        .simultaneous_mode(1'b1),
+        .reset,
+        .data_valid(data_valid_sim),
+        .data1_in(data1_in_sim),
+        .data2_in(data2_in_sim)
+    );
+
+    // Non-simultaneous (test mode lasers)
+    assign data_valid_test = data1_valid_test | data2_valid_test;
+
+    LaserReceiver receive1 (
+        .laser1_in(laser1_rx),
+        .laser2_in(1'b0),
+        .clock,
+        .simultaneous_mode(1'b0),
+        .reset,
+        .data_valid(data2_valid_test),
+        .data1_in(data1_in_test),
+        .data2_in(dummy_data2)
+    );
+    LaserReceiver receive2 (
+        .laser1_in(1'b0),
+        .laser2_in(laser2_rx),
+        .clock,
+        .simultaneous_mode(1'b0),
+        .reset,
+        .data_valid(data1_valid_test),
+        .data1_in(dummy_data1),
+        .data2_in(data2_in_test)
+    );
+
+    assign data_valid = non_sim_mode ? data_valid_test : data_valid_sim;
+    assign data1_in = non_sim_mode ? data1_in_test : data1_in_sim;
+    assign data2_in = non_sim_mode ? data2_in_test : data2_in_sim;
+    //------------------------------------------------------------------------//
+    //---------------------------------REGISTERS------------------------------//
+    Register #(512) ftdi_input (
+        .D(read_D),
+        .en(store_rd),
+        .clear(1'b0),
+        .clock,
+        .Q(read)
+    );
+
+    Register #(512) rx_input (
+        .D(rx_D),
+        .en(store_rx),
+        .clear(1'b0),
+        .clock,
+        .Q(rx)
+    );
+    //------------------------------------------------------------------------//
+    //-----------------------------LOGIC COMPONENTS---------------------------//
+    Counter #(10) rd_counter (
+        .D(1'b0),
+        .en(rd_ct_en),
+        .clear(rd_ct_clear),
+        .load(1'b0),
+        .clock,
+        .up(1'b1),
+        .reset,
+        .Q(rd_ct)
+    );
+
+    Counter #(10) timeout_counter (
+        .D(1'b0),
+        .en(timeout_ct_en),
+        .clear(timeout_ct_clear),
+        .load(1'b0),
+        .clock,
+        .up(1'b1),
+        .reset,
+        .Q(timeout_ct)
+    );
+
+    Register #(10) tx_counter (
+        .D(tx_ct + 10'd2),
+        .en(tx_done),
+        .clear(tx_ct_clear),
+        .clock,
+        .Q(tx_ct)
+    );
+
+    Register #(10) rx_counter (
+        .D(rx_ct + 10'd2),
+        .en(rx_ct_en),
+        .clear(rx_ct_clear),
+        .clock,
+        .Q(rx_ct)
+    );
+
+    Counter #(4) hs_counter (
+        .D(1'b0),
+        .en(saw_consecutive_en),
+        .clear(saw_consecutive_clear),
+        .load(1'b0),
+        .clock,
+        .up(1'b1),
+        .reset,
+        .Q(saw_consecutive)
+    );
+    //------------------------------------------------------------------------//
+    //-------------------------------CLOCK DIVIDERS---------------------------//
+    ClockDivider clock_25 (
+        .clk_base(clock),
+        .reset,
+        .en(1'b1),
+        .divider(8'b1),
+        .clk_divided(CLOCK_25)
+    );
+
+    ClockDivider clock_12_5 (
+        .clk_base(clock),
+        .reset,
+        .en(1'b1),
+        .divider(8'd4),
+        .clk_divided(CLOCK_12_5)
+    );
+
+    ClockDivider clock_6_25 (
+        .clk_base(clock),
+        .reset,
+        .en(1'b1),
+        .divider(8'd8),
+        .clk_divided(CLOCK_6_25)
+    );
+    //------------------------------------------------------------------------//
     enum logic [4:0] {
-        RESET, HS_INIT_TX, HS_FIN_TX,
+        RESET, HS_TX_INIT, HS_TX_INIT2, HS_TX_FIN, HS_TX_FIN2,
         LOAD_READ, WAIT_READ, RECEIVE, WAIT_RESEND
     } currState, nextState;
 
-    assign finished_hs = saw_consecutive >= 4'd4;
+    assign finished_hs = saw_consecutive == 4'd4;
     assign timeout = timeout_ct == `TIMEOUT_RX_LEN;
 
-    // State transition logic
     always_comb begin
+        adbus_tri = 1'b0;
+        data1_ready = 1'b0;
+        data2_ready = 1'b0;
+        data1_tx = 8'b0000_0000;
+        data2_tx = 8'b0000_0000;
+        saw_consecutive_en = 1'b0;
+        saw_consecutive_clear = 1'b0;
+        ftdi_rd = 1'b1;
+        ftdi_wr = 1'b1;
+        store_rd = 1'b0;
+        rd_ct_en = 1'b0;
+        store_rx = 1'b0;
+        rx_ct_clear = 1'b0;
+        rx_ct_en = 1'b0;
+        timeout_ct_en = 1'b0;
+        timeout_ct_clear = 1'b0;
+        read_D = read;
+
         case (currState)
-            RESET:
-                if (rxf) nextState = HS_INIT_TX;
+            HS_TX_INIT: begin
+                data1_ready = 1'b1;
+                data2_ready = 1'b1;
+                data1_tx = `HS_TX_LASER1;
+                data2_tx = `HS_TX_LASER2;
+                if (data_valid && data1_in == `HS_RX_LASER1 && data2_in == `HS_RX_LASER2)
+                    saw_consecutive_en = 1'b1;
+                else saw_consecutive_clear = 1'b1;
+            end
+            HS_TX_INIT2: begin
+                data1_ready = 1'b1;
+                data2_ready = 1'b1;
+                data1_tx = `HS_TX_LASER1;
+                data2_tx = `HS_TX_LASER2;
+                timeout_ct_en = 1'b1;
+            end
+            LOAD_READ: begin
+                adbus_tri = 1'b0;
+                ftdi_rd = 1'b0;
+                store_rd = 1'b1;
+                rd_ct_en = 1'b1;
+                if (rd_ct == 10'b0)
+                    read_D = { read[511:8], adbus_in };
+                else if (rd_ct >= (`MAX_RD_CT - 1))
+                    read_D = { adbus_in, read[503:0] };
+                else
+                    read_D = { read[511:(rd_ct+1)*8], adbus_in, read[rd_ct*8-1:0] };
+            end
+            WAIT_READ: begin
+                adbus_tri = 1'b0;
+                ftdi_rd = 1'b1;
+            end
+            RECEIVE: begin
+                store_rx = data_valid;
+                rx_ct_en = data_valid;
+                if (rx_ct == 10'b0)
+                    rx_D = { rx[511:16], laser2_in, laser1_in };
+                else if (rx_ct >= (`MAX_RX_CT - 2))
+                    rx_D = { laser2_in, laser1_in, rx[495:0] };
+                else
+                    rx_D = { rx[511:(rx_ct+2)*8], laser2_in, laser1_in, rx[rx_ct*8-1:0] };
+            end
+            HS_TX_FIN: begin
+                data1_ready = 1'b1;
+                data2_ready = 1'b1;
+                data1_tx = `HS_TX_LASER1;
+                data2_tx = `HS_TX_LASER2;
+                if (data_valid && data1_in == `HS_RX_LASER1 && data2_in == `HS_RX_LASER2)
+                    saw_consecutive_en = 1'b1;
+                else saw_consecutive_clear = 1'b1;
+            end
+            HS_TX_FIN2: begin
+                data1_ready = 1'b1;
+                data2_ready = 1'b1;
+                data1_tx = `HS_TX_LASER1;
+                data2_tx = `HS_TX_LASER2;
+                timeout_ct_en = 1'b1;
+            end
+        endcase
+    end
+
+    //-------------------------STATE TRANSITION LOGIC-------------------------//
+    always_comb begin
+        rd_ct_clear = 1'b0;
+        tx_ct_clear = 1'b0;
+        case (currState)
+            RESET: begin
+                if (~rxf) nextState = HS_TX_INIT;
                 else nextState = RESET;
-            HS_INIT_TX: nextState = finished_hs ? LOAD_READ : HS_INIT_TX;
+            end
+            HS_TX_INIT: begin
+                nextState = finished_hs ? HS_TX_INIT2 : HS_TX_INIT;
+                timeout_ct_clear = finished_hs;
+            end
+            HS_TX_INIT2: begin
+                nextState = (timeout_ct >= 8'd2) ? LOAD_READ : HS_TX_INIT2;
+                rd_ct_clear = timeout_ct >= 8'd2;
+                tx_ct_clear = timeout_ct >= 8'd2;
+            end
             LOAD_READ: nextState = WAIT_READ;
             WAIT_READ:
                 // NOTE: Should never be >
-                if ((read[7:0] == `START_SEQ && read_ct == `START_PKT_LEN && tx_ct >= `START_PKT_LEN) ||
-                    (read[7:0] == `STOP_SEQ && read_ct == `STOP_PKT_LEN && tx_ct >= `STOP_PKT_LEN))
+                if ((read[7:0] == `START_SEQ && rd_ct == `START_PKT_LEN && tx_ct >= `START_PKT_LEN) ||
+                    (read[7:0] == `STOP_SEQ && rd_ct == `STOP_PKT_LEN && tx_ct >= `STOP_PKT_LEN)) begin
                     nextState = RECEIVE;
+                    rx_ct_clear = 1'b1;
+                end
                 // Transmission less. Wait until all packets sent over lasers
                 else if (rxf ||
-                         (read[7:0] == `START_SEQ && read_ct == `START_PKT_LEN) ||
-                         (read[7:0] == `STOP_SEQ && read_ct == `STOP_PKT_LEN))
+                         (read[7:0] == `START_SEQ && rd_ct == `START_PKT_LEN) ||
+                         (read[7:0] == `STOP_SEQ && rd_ct == `STOP_PKT_LEN))
                     nextState = WAIT_READ;
                 else nextState = LOAD_READ;
             RECEIVE:
-                if (data_valid && rx[7:0] == `ACK_SEQ) nextState = LOAD_READ;
-                else if (data_valid && rx[7:0] == `DONE_SEQ) nextState = HS_FIN_TX;
-                else if (timeout || data_valid) nextState = WAIT_RESEND;
+                if (data_valid && rx[7:0] == `ACK_SEQ) begin
+                    nextState = LOAD_READ;
+                    tx_ct_clear = 1'b1;
+                    rd_ct_clear = 1'b1;
+                end
+                else if (data_valid && rx[7:0] == `DONE_SEQ)
+                    nextState = HS_TX_FIN;
+                else if (timeout || data_valid) begin
+                    nextState = WAIT_RESEND;
+                    tx_ct_clear = 1'b1;
+                end
                 else nextState = RECEIVE;
             WAIT_RESEND:
                 if ((read[7:0] == `START_SEQ && tx_ct == `START_PKT_LEN) ||
                     (read[7:0] == `STOP_SEQ && tx_ct == `STOP_PKT_LEN))
                     nextState = RECEIVE;
                 else nextState = WAIT_RESEND;
-            HS_FIN_TX: nextState = finished_hs ? LOAD_READ : HS_FIN_TX;
+            HS_TX_FIN: begin
+                nextState = finished_hs ? HS_TX_FIN2 : HS_TX_FIN;
+                timeout_ct_clear = finished_hs;
+            end
+            HS_TX_FIN2: nextState = (timeout_ct >= 8'd2) ? RESET : HS_TX_FIN2;
         endcase
     end
+    //------------------------------------------------------------------------//
 
     always_ff @(posedge clock, posedge reset) begin
         if (reset) currState <= RESET;
         else currState <= nextState;
     end
-
 endmodule: LaserDrop
 
 // Laser Transmission module
