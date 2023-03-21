@@ -61,7 +61,7 @@ module TB;
   end
 
   initial begin
-    #100
+    #50000
 
     $display("@%0t: Error timeout!", $time);
     $finish;
@@ -80,6 +80,8 @@ module TB;
   assign GPIO_0[1][17] = txe_tri[1] ? txe[1] : 1'bz;
 
   initial begin
+    txe = 2'b11;
+    rxf = 2'b11;
     ADBUS[0] = 8'dz;
     ADBUS[1] = 8'dz;
 
@@ -186,8 +188,12 @@ module TB;
     #1
     resetN <= 1'b1;
 
-    @(posedge dut_tx.main.data_valid);
-    #100
+    for (int i = 0; i < 10; i++) begin
+      @(posedge dut_tx.main.data_valid);
+      @(posedge dut_tx.main.data_valid);
+      @(posedge dut_tx.main.data_valid);
+    end
+    #100;
 
     $display("@%0t: Data1: %h, Data2: %h", $time,
              dut_tx.data1_in,
