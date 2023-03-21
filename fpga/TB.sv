@@ -4,7 +4,7 @@ module TB;
   logic clock, resetN;
 
   logic [1:0][5:0][6:0] HEX_D;
-  wire   [1:0][35:0] GPIO_0, GPIO_1;
+  wire  [1:0][35:0] GPIO_0, GPIO_1;
   wire  [1:0][17:0] ledr;
   reg   [1:0][7:0] ADBUS;
 
@@ -80,10 +80,9 @@ module TB;
   assign GPIO_0[1][17] = txe_tri[1] ? txe[1] : 1'bz;
 
   initial begin
-    txe = 2'b11;
-    rxf = 2'b11;
+    txe[0] = 1'b1;
+    rxf[0] = 1'b1;
     ADBUS[0] = 8'dz;
-    ADBUS[1] = 8'dz;
 
     #10;
     fork
@@ -94,32 +93,32 @@ module TB;
 
         if (num_pkt < num_pkts - 1) begin
           ADBUS[0] = `START_SEQ;
-          wait(dut_tx.main.ftdi_rd); #1;
+          wait(dut_tx.main.ftdi_rd); #1
           ADBUS[0] = 8'dz;
           rxf[0] = 1'b1;
 
           for (int byte_num=1; byte_num < `START_PKT_LEN; byte_num++) begin
-            #2;
+            #2
             rxf[0] = 1'b0;
 
-            wait(~dut_tx.main.ftdi_rd); #1;
+            wait(~dut_tx.main.ftdi_rd); #1
             ADBUS[0] = byte_num;
-            wait(dut_tx.main.ftdi_rd); #1;
+            wait(dut_tx.main.ftdi_rd); #1
             ADBUS[0] = 8'dz;
             rxf[0] = 1'b1;
           end
         end
         else begin
           ADBUS[0] = `STOP_SEQ;
-          wait(dut_tx.main.ftdi_rd); #1;
+          wait(dut_tx.main.ftdi_rd); #1
           ADBUS[0] = 8'dz;
           rxf[0] = 1'b1;
 
           #2;
           rxf[0] = 1'b0;
-          wait(~dut_tx.main.ftdi_rd); #1;
+          wait(~dut_tx.main.ftdi_rd); #1
           ADBUS[0] = 8'd1;
-          wait(dut_tx.main.ftdi_rd); #1;
+          wait(dut_tx.main.ftdi_rd); #1
           ADBUS[0] = 8'dz;
           rxf[0] = 1'b1;
         end
@@ -128,57 +127,63 @@ module TB;
     fork
       #10;
       forever begin
+        txe[0] = 1'b0;
+        wait(~dut_tx.main.ftdi_wr); #1
+        txe[0] = 1'b1;
+        #1
+      end
+    join_none
+    fork
+    join_none
+  end
+
+  initial begin
+    txe[1] = 1'b1;
+    rxf[1] = 1'b1;
+    ADBUS[1] = 8'dz;
+    #10;
+    for (num_pkt_rx = 0; num_pkt_rx < num_pkts; num_pkt_rx++) begin
+      int pkt_len = (num_pkt_rx == num_pkts - 1) ? `STOP_PKT_LEN : `START_PKT_LEN;
+      for (int i = 0; i < pkt_len; i++) begin
         txe[1] = 1'b0;
         wait(~dut_rx.main.ftdi_wr); #1;
         txe[1] = 1'b1;
         #1;
       end
-    join_none
-    fork
-      #10;
-      for (num_pkt_rx = 0; num_pkt_rx < num_pkts; num_pkt_rx++) begin
-        int pkt_len = (num_pkt_rx == num_pkts - 1) ? `STOP_PKT_LEN : `START_PKT_LEN;
-        for (int i = 0; i < pkt_len; i++) begin
-          txe[1] = 1'b0;
-          wait(~dut_rx.main.ftdi_wr); #1;
-          txe[1] = 1'b1;
-          #1;
-        end
 
-        rxf[1]  = 1'b0;
-        wait(~dut_rx.main.ftdi_rd);
+      rxf[1]  = 1'b0;
+      wait(~dut_rx.main.ftdi_rd);
 
-        if (num_pkt_rx < num_pkts - 1) begin
-          ADBUS[0] = `ACK_SEQ;
-          wait(dut_rx.main.ftdi_rd); #1;
-          ADBUS[0] = 8'dz;
-          rxf[1] = 1'b1;
+      if (num_pkt_rx < num_pkts - 1) begin
+        ADBUS[1] = `ACK_SEQ;
+        wait(dut_rx.main.ftdi_rd); #1;
+        ADBUS[1] = 8'dz;
+        rxf[1] = 1'b1;
 
-          #2;
-          rxf[1] = 1'b0;
+        #2;
+        rxf[1] = 1'b0;
 
-          wait(~dut_rx.main.ftdi_rd); #1;
-          ADBUS[0] = 8'h77;
-          wait(dut_rx.main.ftdi_rd); #1;
-          ADBUS[0] = 8'dz;
-          rxf[1] = 1'b1;
-        end
-        else begin
-          ADBUS[0] = `DONE_SEQ;
-          wait(dut_rx.main.ftdi_rd); #1;
-          ADBUS[0] = 8'dz;
-          rxf[1] = 1'b1;
-
-          #2;
-          rxf[1] = 1'b0;
-          wait(~dut_rx.main.ftdi_rd); #1;
-          ADBUS[0] = 8'd1;
-          wait(dut_rx.main.ftdi_rd); #1;
-          ADBUS[0] = 8'dz;
-          rxf[1] = 1'b1;
-        end
+        wait(~dut_rx.main.ftdi_rd); #1;
+        ADBUS[1] = 8'h77;
+        wait(dut_rx.main.ftdi_rd); #1;
+        ADBUS[1] = 8'dz;
+        rxf[1] = 1'b1;
       end
-    join_none
+      else begin
+        ADBUS[1] = `DONE_SEQ;
+        wait(dut_rx.main.ftdi_rd); #1;
+        ADBUS[1] = 8'dz;
+        rxf[1] = 1'b1;
+
+        #2;
+        rxf[1] = 1'b0;
+        wait(~dut_rx.main.ftdi_rd); #1;
+        ADBUS[1] = 8'd1;
+        wait(dut_rx.main.ftdi_rd); #1;
+        ADBUS[1] = 8'dz;
+        rxf[1] = 1'b1;
+      end
+      end
   end
 
 
