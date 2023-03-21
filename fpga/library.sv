@@ -150,6 +150,41 @@ module BarrelShiftRegister
     
 endmodule : BarrelShiftRegister
 
+module LaserDropQueue
+  (input  logic [15:0] D,
+   input  logic        clock, load, read, reset, clear,
+   output logic [ 7:0] Q,
+   output logic [ 5:0] size,
+   output logic        empty, full);
+
+  logic [63:0][7:0] queue;
+  logic [ 5:0] write, read;
+
+  assign Q = queue[read];
+  assign empty = (size == 6'd0);
+  assign full = (size == 6'd64);
+
+  always_ff @(posedge clock, posedge reset) begin
+    if (reset || clear) begin
+      size <= 6'b0;
+      read <= 6'b0;
+      write <= 6'b0;
+    end
+    else begin
+      if (read && !empty) begin
+        read <= read + 6'd1;
+        size <= size - 6'd1;
+      end
+      if (load && !full) begin
+        queue[write] <= D[7:0];
+        queue[write+1] <= D[15:8];
+        write <= write + 6'd2;
+        size <= size + 6'd2;
+      end
+    end
+  end
+endmodule: LaserDropQueue
+
 // A memory with addressing, read and write options, and
 // tristate data bus, triggered at clock.
 module Memory

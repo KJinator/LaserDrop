@@ -97,6 +97,7 @@ module ChipInterface (
         .laser2_tx(IR_TX),
         .data_valid(LEDR[5]),
         .rxf(ACBUS[0]),
+        .txe(ACBUS[1]),
         .ftdi_rd(ACBUS[2]),
         .ftdi_wr(ACBUS[3]),
         .tx_done,
