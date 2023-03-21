@@ -10,12 +10,12 @@ module ChipInterface (
     output logic [17:0] LEDR,
     output logic [6:0] HEX5, HEX4, HEX3, HEX2, HEX1, HEX0,
     inout  wire  [35:0] GPIO_0, GPIO_1
-);    
+);
     logic data_valid, tx_done, adbus_tri;
     logic [7:0] data1_in, data2_in;
 
     //------------------------FPGA Pin Configurations-------------------------//
-    logic [7:0] ADBUS;
+    logic [7:0] ADBUS, ADBUS_IN;
     logic [9:0] ACBUS;
     logic [1:0] IR_TX, GREEN_TX;
     logic   GREEN_AMB_n, GREEN_RX, GREEN_EN_n, IR_AMB_n, IR_RX, IR_EN_n,
@@ -91,13 +91,14 @@ module ChipInterface (
         .reset(~KEY[0]),
         .en(SW[0]),
         .non_sim_mode(SW[1]),
+        .rxf(ACBUS[0]),
+        .txe(ACBUS[1]),
         .laser1_rx(GREEN_RX),
         .laser2_rx(IR_RX),
+        .adbus_in(ADBUS_IN),
         .laser1_tx(GREEN_TX),
         .laser2_tx(IR_TX),
         .data_valid(LEDR[5]),
-        .rxf(ACBUS[0]),
-        .txe(ACBUS[1]),
         .ftdi_rd(ACBUS[2]),
         .ftdi_wr(ACBUS[3]),
         .tx_done,

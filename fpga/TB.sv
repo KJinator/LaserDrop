@@ -1,13 +1,12 @@
 `default_nettype none
-`include "Laser.sv"
 
 module TB;
   logic clock, resetN;
 
-  logic [1:0][6:0] HEX_D[6];
+  logic [1:0][5:0][6:0] HEX_D;
   wire  [1:0][35:0] GPIO_0, GPIO_1;
   wire  [1:0][17:0] ledr;
-  wire  [1:0][7:0] ADBUS;
+  reg  [1:0][7:0] ADBUS;
 
   ChipInterface dut_tx (
     .CLOCK_50(clock),
@@ -67,108 +66,109 @@ module TB;
     $display("@%0t: Error timeout!", $time);
     $finish;
   end
-  
+
+  logic [7:0] num_pkt_rx;
   parameter num_pkts = 2;
 
   initial begin
     ADBUS[0] = 8'dz;
     ADBUS[1] = 8'dz;
-    dut_tx.ACBUS[0] = 1'b1;   // rxf
-    dut_tx.ACBUS[1] = 1'b1;   // txe
-    dut_rx.ACBUS[0] = 1'b1;
-    dut_rx.ACBUS[1] = 1'b1;
+    dut_tx.GPIO_0[19] = 1'b1;   // rxf
+    dut_tx.GPIO_0[17] = 1'b1;   // txe
+    dut_rx.GPIO_0[19] = 1'b1;
+    dut_rx.GPIO_0[17] = 1'b1;
     #10
     forever begin
       fork
         #10;
         for (int num_pkt = 0; num_pkt < num_pkts; num_pkt++) begin
-          dut_tx.ACBUS[0]  = 1'b0;
-          wait(~dut_tx.ftdi_rd);
+          dut_tx.GPIO_0[19]  = 1'b0;
+          wait(~dut_tx.main.ftdi_rd);
 
           if (num_pkt < num_pkts - 1) begin
             ADBUS[0] = `START_SEQ;
-            wait(dut_tx.ftdi_rd);
+            wait(dut_tx.main.ftdi_rd);
             ADBUS[0] = 8'dz;
-            dut_tx.ACBUS[0] = 1'b1;
+            dut_tx.GPIO_0[19] = 1'b1;
 
             for (int byte_num=1; byte_num < `START_PKT_LEN; byte_num++) begin
               #2;
-              dut_tx.ACBUS[0] = 1'b0;
+              dut_tx.GPIO_0[19] = 1'b0;
 
-              wait(~dut_tx.ftdi_rd);
+              wait(~dut_tx.main.ftdi_rd);
               ADBUS[0] = byte_num;
-              wait(dut_tx.ftdi_rd);
+              wait(dut_tx.main.ftdi_rd);
               ADBUS[0] = 8'dz;
-              dut_tx.ACBUS[0] = 1'b1;
+              dut_tx.GPIO_0[19] = 1'b1;
             end
           end
           else begin
             ADBUS[0] = `STOP_SEQ;
-            wait(dut_tx.ftdi_rd);
+            wait(dut_tx.main.ftdi_rd);
             ADBUS[0] = 8'dz;
-            dut_tx.ACBUS[0] = 1'b1;
-            
+            dut_tx.GPIO_0[19] = 1'b1;
+
             #2;
-            dut_tx.ACBUS[0] = 1'b0;
-            wait(~dut_tx.ftdi_rd);
+            dut_tx.GPIO_0[19] = 1'b0;
+            wait(~dut_tx.main.ftdi_rd);
             ADBUS[0] = 8'd1;
-            wait(dut_tx.ftdi_rd);
+            wait(dut_tx.main.ftdi_rd);
             ADBUS[0] = 8'dz;
-            dut_tx.ACBUS[0] = 1'b1;
+            dut_tx.GPIO_0[19] = 1'b1;
           end
         end
       join_none
       fork
         #10;
         forever begin
-          dut_rx.ACBUS[1] = 1'b0;
-          wait(~dut_rx.ftdi_wr);
-          dut_rx.ACBUS[1] = 1'b1;
+          dut_rx.GPIO_0[17] = 1'b0;
+          wait(~dut_rx.main.ftdi_wr);
+          dut_rx.GPIO_0[17] = 1'b1;
           #1;
         end
       join_none
       fork
         #10;
-        for (int num_pkt = 0; num_pkt < num_pkts; num_pkt++) begin
-          pkt_len = (num_pkt == num_pkts - 1) ? `STOP_PKT_LEN : `START_PKT_LEN;
+        for (num_pkt_rx = 0; num_pkt_rx < num_pkts; num_pkt_rx++) begin
+          int pkt_len = (num_pkt_rx == num_pkts - 1) ? `STOP_PKT_LEN : `START_PKT_LEN;
           for (int i = 0; i < pkt_len; i++) begin
-            dut_rx.ACBUS[1] = 1'b0;
-            wait(~dut_rx.ftdi_wr);
-            dut_rx.ACBUS[1] = 1'b1;
+            dut_rx.GPIO_0[17] = 1'b0;
+            wait(~dut_rx.main.ftdi_wr);
+            dut_rx.GPIO_0[17] = 1'b1;
             #1;
           end
 
-          dut_rx.ACBUS[0]  = 1'b0;
-          wait(~dut_rx.ftdi_rd);
+          dut_rx.GPIO_0[19]  = 1'b0;
+          wait(~dut_rx.main.ftdi_rd);
 
-          if (num_pkt < num_pkts - 1) begin
+          if (num_pkt_rx < num_pkts - 1) begin
             ADBUS[0] = `ACK_SEQ;
-            wait(dut_rx.ftdi_rd);
+            wait(dut_rx.main.ftdi_rd);
             ADBUS[0] = 8'dz;
-            dut_rx.ACBUS[0] = 1'b1;
+            dut_rx.GPIO_0[19] = 1'b1;
 
             #2;
-            dut_rx.ACBUS[0] = 1'b0;
+            dut_rx.GPIO_0[19] = 1'b0;
 
-            wait(~dut_rx.ftdi_rd);
-            ADBUS[0] = byte_num;
-            wait(dut_rx.ftdi_rd);
+            wait(~dut_rx.main.ftdi_rd);
+            ADBUS[0] = 8'h77;
+            wait(dut_rx.main.ftdi_rd);
             ADBUS[0] = 8'dz;
-            dut_rx.ACBUS[0] = 1'b1;
+            dut_rx.GPIO_0[19] = 1'b1;
           end
           else begin
             ADBUS[0] = `DONE_SEQ;
-            wait(dut_rx.ftdi_rd);
+            wait(dut_rx.main.ftdi_rd);
             ADBUS[0] = 8'dz;
-            dut_rx.ACBUS[0] = 1'b1;
-            
+            dut_rx.GPIO_0[19] = 1'b1;
+
             #2;
-            dut_rx.ACBUS[0] = 1'b0;
-            wait(~dut_rx.ftdi_rd);
+            dut_rx.GPIO_0[19] = 1'b0;
+            wait(~dut_rx.main.ftdi_rd);
             ADBUS[0] = 8'd1;
-            wait(dut_rx.ftdi_rd);
+            wait(dut_rx.main.ftdi_rd);
             ADBUS[0] = 8'dz;
-            dut_rx.ACBUS[0] = 1'b1;
+            dut_rx.GPIO_0[19] = 1'b1;
           end
         end
       join_none
@@ -181,10 +181,13 @@ module TB;
     #1
     resetN <= 1'b1;
 
-    @(posedge dut.data_valid);
+    @(posedge dut_tx.main.data_valid);
     #100
 
-    $display("@%0t: Data1: %h, Data2: %h", $time, dut.data1_in, dut.data2_in);
+    $display("@%0t: Data1: %h, Data2: %h", $time,
+             dut_tx.data1_in,
+             dut_tx.data2_in
+            );
     $display("@%0t: Finished!", $time);
     $finish;
   end

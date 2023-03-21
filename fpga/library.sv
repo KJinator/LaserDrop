@@ -21,9 +21,9 @@ module Adder
    input  logic             Cin,
    output logic [WIDTH-1:0] S,
    output logic             Cout);
-   
+
    assign {Cout, S} = A + B + Cin;
-   
+
 endmodule : Adder
 
 // A multiplexer that takes in a variable and return a bit specfied by
@@ -33,9 +33,9 @@ module Multiplexer
   (input  logic [WIDTH-1:0]         I,
    input  logic [$clog2(WIDTH)-1:0] S,
    output logic                     Y);
-   
+
    assign Y = I[S];
-   
+
 endmodule : Multiplexer
 
 
@@ -46,9 +46,9 @@ module Mux2to1
   (input  logic [WIDTH-1:0] I0, I1,
    input  logic             S,
    output logic [WIDTH-1:0] Y);
-   
+
   assign Y = (S) ? I1 : I0;
-  
+
 endmodule : Mux2to1
 
 // Outputs D, whose bit is 1 at specified location by I.
@@ -57,13 +57,13 @@ module Decoder
   (input  logic [$clog2(WIDTH)-1:0] I,
    input  logic                     en,
    output logic [WIDTH-1:0]         D);
-   
+
   always_comb begin
     D = 0;
     if (en)
       D = 1'b1 << I;
   end
-  
+
 endmodule : Decoder
 
 // A register with D input and Q outputs.
@@ -73,13 +73,13 @@ module Register
   (input  logic [WIDTH-1:0] D,
    input  logic             en, clear, clock,
    output logic [WIDTH-1:0] Q);
-   
+
   always_ff @(posedge clock)
     if (clear)
       Q <= 0;
     else if (en)
       Q <= D;
-      
+
 endmodule : Register
 
 // Adds 1 to Q at each clock edge.
@@ -91,7 +91,7 @@ module Counter
   (input  logic [WIDTH-1:0] D,
    input  logic             en, clear, load, clock, up, reset,
    output logic [WIDTH-1:0] Q);
-   
+
   always_ff @(posedge clock, posedge reset) begin
     if (reset)
 	    Q <= 0;
@@ -105,14 +105,14 @@ module Counter
       else
         Q <= Q - 1'b1;
   end
-        
+
 endmodule : Counter
 
 module ShiftRegister
   #(parameter WIDTH=8)
   (input  logic             D, en, left, clock, reset,
    output logic [WIDTH-1:0] Q);
-   
+
   always_ff @(posedge clock, posedge reset)
     if (reset)
       Q <= 'b0;
@@ -121,7 +121,7 @@ module ShiftRegister
         Q <= {Q[WIDTH-2:0], D};
       else
         Q <= {D, Q[WIDTH-1:1]};
-        
+
 endmodule : ShiftRegister
 
 // Shifts D by specified bit, by (max 3 bit),to the left.
@@ -132,7 +132,7 @@ module BarrelShiftRegister
    input  logic             en, load, clock,
    input  logic [      1:0] by,
    output logic [WIDTH-1:0] Q);
-   
+
   logic [WIDTH-1:0] shifted;
   always_comb
     case (by)
@@ -141,45 +141,45 @@ module BarrelShiftRegister
       2'b10: shifted = {Q[WIDTH-3:0], 2'b0};
       2'b11: shifted = {Q[WIDTH-4:0], 3'b0};
     endcase
-   
+
   always_ff @(posedge clock)
     if (load)
         Q <= D;
     else if (en)
         Q <= shifted;
-    
+
 endmodule : BarrelShiftRegister
 
 module LaserDropQueue
   (input  logic [15:0] D,
    input  logic        clock, load, read, reset, clear,
    output logic [ 7:0] Q,
-   output logic [ 5:0] size,
+   output logic [ 7:0] size,
    output logic        empty, full);
 
   logic [63:0][7:0] queue;
-  logic [ 5:0] write, read;
+  logic [ 5:0] write_i, read_i;
 
-  assign Q = queue[read];
-  assign empty = (size == 6'd0);
-  assign full = (size == 6'd64);
+  assign Q = queue[read_i];
+  assign empty = (size == 7'd0);
+  assign full = (size == 7'd64);
 
   always_ff @(posedge clock, posedge reset) begin
     if (reset || clear) begin
-      size <= 6'b0;
-      read <= 6'b0;
-      write <= 6'b0;
+      size <= 8'b0;
+      read_i <= 6'b0;
+      write_i <= 6'b0;
     end
     else begin
       if (read && !empty) begin
-        read <= read + 6'd1;
-        size <= size - 6'd1;
+        read_i <= read_i + 6'd1;
+        size <= size - 8'd1;
       end
       if (load && !full) begin
-        queue[write] <= D[7:0];
-        queue[write+1] <= D[15:8];
-        write <= write + 6'd2;
-        size <= size + 6'd2;
+        queue[write_i] <= D[7:0];
+        queue[write_i+1] <= D[15:8];
+        write_i <= write_i + 6'd2;
+        size <= size + 8'd2;
       end
     end
   end
@@ -194,17 +194,17 @@ module Memory
    input  logic          re, we, clock);
 
   localparam WORDS = 2 ** AW;
-  
+
   logic [DW-1:0] M[WORDS];
   logic [DW-1:0] out;
 
   assign data = (re) ? out: {DW {1'bz}};
 
   always_ff @(posedge clock)
-    if (we) 
+    if (we)
       M[address] <= data;
 
   always_comb
     out = M[address];
-   
+
 endmodule : Memory

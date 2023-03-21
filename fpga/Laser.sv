@@ -13,7 +13,7 @@
 `define DONE_SEQ        8'haa
 
 // NOTE: may need to increase depending on how fast CPU interface is
-`define TIMEOUT_RX_LEN  8'd64
+`define TIMEOUT_RX_LEN  10'd64
 `define MAX_RD_CT       8'd64
 `define MAX_RX_CT       8'd64
 
@@ -36,8 +36,8 @@ module LaserDrop (
     output logic [7:0] data1_in, data2_in, adbus_out
 );
     logic [511:0]   read, read_D;
-    logic [  9:0]   rd_ct, tx_ct, rx_ct;
-    logic [  7:0]   timeout_ct, data1_tx, data2_tx, rx_out, rx_q,
+    logic [  9:0]   rd_ct, tx_ct, rx_ct, timeout_ct;
+    logic [  7:0]   data1_tx, data2_tx, rx_out, rx_q,
                     data1_in_sim, data2_in_sim, data1_in_test, data2_in_test,
                     dummy_data1, dummy_data2;
     logic [  3:0]   saw_consecutive;
@@ -45,14 +45,14 @@ module LaserDrop (
     logic           timeout, data_valid_sim, data_valid_test, finished_hs,
                     data1_valid_test, data2_valid_test, data1_ready,
                     data2_ready, store_rd, store_rx, rx_read, rx_empty, rx_full,
-                    saw_consecutive_en, rd_ct_en, rx_ct_en, timeout_ct_en, 
+                    saw_consecutive_en, rd_ct_en, rx_ct_en, timeout_ct_en,
                     saw_consecutive_clear, timeout_ct_clear, rd_ct_clear,
                     tx_ct_clear, rx_ct_clear, queue_clear;
 
     //----------------------------LASER TRANSMITTER---------------------------//
     // Need to use clock at double the speed because using posedge (1/2)
-    assign data1_tx = read[tx_ct*8 + 7:tx_ct*8];
-    assign data2_tx = read[(tx_ct+1)*8 + 7:(tx_ct+1)*8];
+    assign data1_tx = (read & (512'hff << (tx_ct<<3))) >> (tx_ct>>3);
+    assign data2_tx = (read & (512'hff << ((tx_ct+1)<<3))) >> ((tx_ct+1)>>3);
     assign data1_ready = tx_ct < rd_ct;
     assign data2_ready = (tx_ct + 1) < rd_ct;
 
@@ -125,7 +125,7 @@ module LaserDrop (
         .load(store_rx),
         .read(rx_read),
         .reset,
-        .clear(queue_clear)
+        .clear(queue_clear),
         .Q(rx_q),
         .size(),
         .empty(rx_empty),
@@ -134,7 +134,7 @@ module LaserDrop (
     //------------------------------------------------------------------------//
     //-----------------------------LOGIC COMPONENTS---------------------------//
     Counter #(10) rd_counter (
-        .D(1'b0),
+        .D(10'b0),
         .en(rd_ct_en),
         .clear(rd_ct_clear),
         .load(1'b0),
@@ -145,7 +145,7 @@ module LaserDrop (
     );
 
     Counter #(10) timeout_counter (
-        .D(1'b0),
+        .D(10'b0),
         .en(timeout_ct_en),
         .clear(timeout_ct_clear),
         .load(1'b0),
@@ -172,7 +172,7 @@ module LaserDrop (
     );
 
     Counter #(4) hs_counter (
-        .D(1'b0),
+        .D(4'b0),
         .en(saw_consecutive_en),
         .clear(saw_consecutive_clear),
         .load(1'b0),
@@ -289,16 +289,10 @@ module LaserDrop (
                 ftdi_rd = 1'b0;
                 store_rd = 1'b1;
                 rd_ct_en = 1'b1;
-                if (rd_ct == 10'b0)
-                    read_D = { read[511:8], adbus_in };
-                else if (rd_ct >= (`MAX_RD_CT - 1))
-                    read_D = { adbus_in, read[503:0] };
-                else
-                    read_D = {
-                        read[511:(rd_ct+1)*8],
-                        adbus_in,
-                        read[rd_ct*8-1:0]
-                    };
+                read_D = (
+                    (read & ~(512'hff << (rd_ct << 3))) +
+                    ({504'd0, adbus_in} << (rd_ct << 3))
+                );
             end
             WAIT_TX_READ: begin
                 if ((read[7:0] == `START_SEQ && rd_ct == `START_PKT_LEN && tx_ct >= `START_PKT_LEN) ||
@@ -323,9 +317,10 @@ module LaserDrop (
                     rd_ct_clear = 1'b1;
                     queue_clear = 1'b1;
                 end
-                else if (data_valid && rx_q == `DONE_SEQ)
+                else if (data_valid && rx_q == `DONE_SEQ) begin
                     nextState = HS_TX_FIN;
                     queue_clear = 1'b1;
+                end
                 else if (timeout || data_valid) begin
                     nextState = WAIT_RESEND;
                     tx_ct_clear = 1'b1;
@@ -341,7 +336,7 @@ module LaserDrop (
                     (read[7:0] == `STOP_SEQ && tx_ct == `STOP_PKT_LEN))
                     nextState = RECEIVE;
                 else nextState = WAIT_RESEND;
-                
+
                 data1_ready = 1'b1;
                 data2_ready = 1'b1;
                 data1_tx = `HS_TX_LASER1;
