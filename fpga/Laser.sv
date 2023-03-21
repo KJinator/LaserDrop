@@ -51,10 +51,6 @@ module LaserDrop (
 
     //----------------------------LASER TRANSMITTER---------------------------//
     // Need to use clock at double the speed because using posedge (1/2)
-    assign data1_tx = (read & (512'hff << (tx_ct<<3))) >> (tx_ct>>3);
-    assign data2_tx = (read & (512'hff << ((tx_ct+1)<<3))) >> ((tx_ct+1)>>3);
-    assign data1_ready = tx_ct < rd_ct;
-    assign data2_ready = (tx_ct + 1) < rd_ct;
 
     LaserTransmitter transmit (
         .data1_transmit(data1_tx),
@@ -219,10 +215,10 @@ module LaserDrop (
     assign timeout = timeout_ct == `TIMEOUT_RX_LEN;
 
     always_comb begin
-        data1_ready = 1'b0;
-        data2_ready = 1'b0;
-        data1_tx = 8'b0000_0000;
-        data2_tx = 8'b0000_0000;
+        data1_tx = (read & (512'hff << (tx_ct<<3))) >> (tx_ct>>3);
+        data2_tx = (read & (512'hff << ((tx_ct+1)<<3))) >> ((tx_ct+1)>>3);
+        data1_ready = tx_ct < rd_ct;
+        data2_ready = (tx_ct + 1) < rd_ct;
         ftdi_rd = 1'b1;
         ftdi_wr = 1'b1;
         adbus_tri = 1'b0;
