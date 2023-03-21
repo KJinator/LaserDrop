@@ -13,7 +13,7 @@
 `define DONE_SEQ        8'haa
 
 // NOTE: may need to increase depending on how fast CPU interface is
-`define TIMEOUT_RX_LEN  8'd40
+`define TIMEOUT_RX_LEN  8'd64
 `define MAX_RD_CT       8'd64
 `define MAX_RX_CT       8'd64
 
