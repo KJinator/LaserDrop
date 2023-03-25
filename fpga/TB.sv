@@ -60,7 +60,11 @@ module TB;
     forever #5 clock = ~clock;
   end
 
+  logic [1:0] rxf, txe;
+  logic [1:0] rxf_tri, txe_tri;
   initial begin
+    $monitor(
+      "@%0t: rxf: %b (%b), txe: %b (%b)", $time, rxf, rxf_tri, txe, txe_tri);
     #50000
 
     $display("@%0t: Error timeout!", $time);
@@ -68,8 +72,6 @@ module TB;
   end
 
   logic [7:0] num_pkt_rx;
-  logic [1:0] rxf, txe;
-  logic [1:0] rxf_tri, txe_tri;
   parameter num_pkts = 2;
 
   assign rxf_tri = 2'b11;
@@ -80,106 +82,117 @@ module TB;
   assign GPIO_0[1][17] = txe_tri[1] ? txe[1] : 1'bz;
 
   initial begin
-    txe[0] <= 1'b1;
-    rxf[0] <= 1'b1;
-    ADBUS[0] <= 8'dz;
+    txe[0] = 1'b1;
+    rxf[0] = 1'b1;
+    ADBUS[0] = 8'dz;
 
-    #10;
+    #20;
     fork
       #10;
       for (int num_pkt = 0; num_pkt < num_pkts; num_pkt++) begin
-        rxf[0] <= 1'b0;
+        rxf[0] = 1'b0;
         wait(~dut_tx.main.ftdi_rd); #1;
 
         if (num_pkt < num_pkts - 1) begin
-          ADBUS[0] <= `START_SEQ;
+          ADBUS[0] = `START_SEQ;
           wait(dut_tx.main.ftdi_rd); #1
-          ADBUS[0] <= 8'dz;
-          rxf[0] <= 1'b1;
+          ADBUS[0] = 8'dz;
+          rxf[0] = 1'b1;
 
           for (int byte_num=1; byte_num < `START_PKT_LEN; byte_num++) begin
             #2
-            rxf[0] <= 1'b0;
+            rxf[0] = 1'b0;
 
             wait(~dut_tx.main.ftdi_rd); #1
-            ADBUS[0] <= byte_num;
+            ADBUS[0] = byte_num;
             wait(dut_tx.main.ftdi_rd); #1
-            ADBUS[0] <= 8'dz;
-            rxf[0] <= 1'b1;
+            ADBUS[0] = 8'dz;
+            rxf[0] = 1'b1;
           end
         end
         else begin
-          ADBUS[0] <= `STOP_SEQ;
+          ADBUS[0] = `STOP_SEQ;
           wait(dut_tx.main.ftdi_rd); #1
-          ADBUS[0] <= 8'dz;
-          rxf[0] <= 1'b1;
+          ADBUS[0] = 8'dz;
+          rxf[0] = 1'b1;
 
           #2;
-          rxf[0] <= 1'b0;
+          rxf[0] = 1'b0;
           wait(~dut_tx.main.ftdi_rd); #1
-          ADBUS[0] <= 8'd1;
+          ADBUS[0] = 8'd1;
           wait(dut_tx.main.ftdi_rd); #1
-          ADBUS[0] <= 8'dz;
-          rxf[0] <= 1'b1;
+          ADBUS[0] = 8'dz;
+          rxf[0] = 1'b1;
         end
       end
     join_none
     fork
       #10;
       forever begin
-        txe[0] <= 1'b0;
+        txe[0] = 1'b0;
         wait(~dut_tx.main.ftdi_wr); #1
-        txe[0] <= 1'b1;
-        #1
+        txe[0] = 1'b1;
+        #1;
       end
     join_none
   end
 
+  mailbox mbxrx = new(num_pkts);
   initial begin
-    txe[1] <= 1'b1;
-    rxf[1] <= 1'b1;
-    ADBUS[1] <= 8'dz;
+    txe[1] = 1'b1;
+    rxf[1] = 1'b1;
+    ADBUS[1] = 8'dz;
     #10;
     for (num_pkt_rx = 0; num_pkt_rx < num_pkts; num_pkt_rx++) begin
-      int pkt_len = (num_pkt_rx == num_pkts - 1) ? `STOP_PKT_LEN : `START_PKT_LEN;
+      int pkt_len;
+      /*
+      if (num_pkt_rx == num_pkts - 1) begin
+        pkt_len = `STOP_PKT_LEN;
+      end else
+        pkt_len = `START_PKT_LEN;
+      */
+      pkt_len = (num_pkt_rx == num_pkts - 1) ? (`STOP_PKT_LEN) : (`START_PKT_LEN);
+      $display("Pkt_len: %d", pkt_len);
       for (int i = 0; i < pkt_len; i++) begin
-        txe[1] <= 1'b0;
-        wait(~dut_rx.main.ftdi_wr); #1;
-        txe[1] <= 1'b1;
-        #1;
+        txe[1] = 1'b0;
+        @(posedge ~dut_rx.main.ftdi_wr);
+        @(posedge clock);
+        txe[1] = 1'b1;
+        #1 mbxrx.put(i);
       end
 
-      rxf[1]  <= 1'b0;
+      $display("@%0t: Pulling rxf[1] down at line 155", $time);
+      rxf[1]  = 1'b0;
       wait(~dut_rx.main.ftdi_rd);
 
       if (num_pkt_rx < num_pkts - 1) begin
-        ADBUS[1] <= `ACK_SEQ;
-        wait(dut_rx.main.ftdi_rd); #1;
-        ADBUS[1] <= 8'dz;
-        rxf[1] <= 1'b1;
+        ADBUS[1] = `ACK_SEQ;
+        @(posedge dut_rx.main.ftdi_rd); #1;
+        ADBUS[1] = 8'dz;
+        rxf[1] = 1'b1;
 
         #2;
-        rxf[1] <= 1'b0;
+        rxf[1] = 1'b0;
 
         wait(~dut_rx.main.ftdi_rd); #1;
-        ADBUS[1] <= 8'h77;
+        ADBUS[1] = 8'h77;
         wait(dut_rx.main.ftdi_rd); #1;
-        ADBUS[1] <= 8'dz;
-        rxf[1] <= 1'b1;
+        ADBUS[1] = 8'dz;
+        rxf[1] = 1'b1;
       end
       else begin
-        ADBUS[1] <= `DONE_SEQ;
+        ADBUS[1] = `DONE_SEQ;
         wait(dut_rx.main.ftdi_rd); #1;
-        ADBUS[1] <= 8'dz;
-        rxf[1] <= 1'b1;
+        ADBUS[1] = 8'dz;
+        rxf[1] = 1'b1;
 
         #2;
-        rxf[1] <= 1'b0;
+        rxf[1] = 1'b0;
         wait(~dut_rx.main.ftdi_rd); #1;
-        ADBUS[1] <= 8'd1;
+        ADBUS[1] = 8'd1;
         wait(dut_rx.main.ftdi_rd); #1;
-        ADBUS[1] <= 8'dz;
-        rxf[1] <= 1'b1;
+        ADBUS[1] = 8'dz;
+        rxf[1] = 1'b1;
       end
     end
   end
@@ -189,7 +202,7 @@ module TB;
     resetN = 1'b1;
     resetN <= 1'b0;
     #1
-    resetN <= 1'b1;
+    resetN = 1'b1;
 
     for (int i = 0; i < 10; i++) begin
       @(posedge dut_tx.main.data_valid);

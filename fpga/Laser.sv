@@ -381,7 +381,7 @@ module LaserDrop (
                 else if (data_valid) saw_consecutive_clear = 1'b1;
             end
             HS_RX_INIT2: begin
-                nextState = (timeout_ct >= 8'd2) ? WAIT_RX_WRITE : HS_TX_INIT2;
+                nextState = (timeout_ct >= 8'd2) ? WAIT_RX_WRITE : HS_RX_INIT2;
                 timeout_ct_clear = (timeout_ct >= 8'd2);
                 rx_ct_clear = (timeout_ct >= 8'd2);
 
