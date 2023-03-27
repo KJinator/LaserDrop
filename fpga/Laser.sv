@@ -57,6 +57,7 @@ module LaserDrop (
         .data2_transmit(data2_tx),
         .en,
         .clock(CLOCK_12_5),
+        .clock_base(clock),
         .reset,
         .data1_ready,
         .data2_ready,
@@ -152,11 +153,20 @@ module LaserDrop (
         .Q(timeout_ct)
     );
 
+    Register #(10) tx_counter (
+        .D(tx_ct + 10'd2),
+        .en(tx_done),
+        .clear(tx_ct_clear),
+        .reset,
+        .clock,
+        .Q(tx_ct)
+    );
+
     Register #(10) rx_counter (
         .D(rx_ct + 10'd2),
         .en(rx_ct_en),
         .clear(rx_ct_clear),
-        .reset(reset),
+        .reset,
         .clock,
         .Q(rx_ct)
     );
@@ -462,14 +472,6 @@ module LaserDrop (
         if (reset) currState <= RESET;
         else currState <= nextState;
     end
-
-    logic sync_tx_ct_clear;
-    assign sync_tx_ct_clear = tx_ct_clear & clock;
-
-    always_ff @(posedge reset, posedge tx_done, posedge sync_tx_ct_clear) begin
-        if (sync_tx_ct_clear || reset) tx_ct <= 10'd0;
-        else tx_ct <= tx_ct + 10'd2;
-    end
     //------------------------------------------------------------------------//
 endmodule: LaserDrop
 
@@ -479,16 +481,16 @@ endmodule: LaserDrop
 // NOTE: Currently, configured so it only transmits if both lasers are ready.
 module LaserTransmitter(
     input logic [7:0] data1_transmit, data2_transmit,
-    input logic en, clock, reset, data1_ready, data2_ready,
+    input logic en, clock, clock_base, reset, data1_ready, data2_ready,
     output logic [1:0] laser1_out, laser2_out,
     output logic done
 );
     logic [7:0] data1, data2;
     logic [10:0] data1_compiled, data2_compiled;
     logic [3:0] count;
-    logic data_ready, load, count_en, count_clear, mux1_out, mux2_out;
+    logic data_ready, load, count_en, count_reset, mux1_out, mux2_out;
 
-    enum logic { WAIT, SEND } currState, nextState;
+    enum logic [1:0] { WAIT, SEND, DONE } currState, nextState;
 
     Register laser1_data (
         .D(data1_transmit),
@@ -518,11 +520,11 @@ module LaserTransmitter(
     Counter #(4) bit_count (
         .D(4'b0),
         .en(count_en),
-        .clear(count_clear),
+        .clear(1'b0),
         .load(1'b0),
         .clock(clock),
         .up(1'b1),
-        .reset(reset),
+        .reset(reset || count_reset),
         .Q(count)
     );
 
@@ -534,13 +536,18 @@ module LaserTransmitter(
         case (currState)
             WAIT: nextState = (data_ready && en) ? SEND : WAIT;
             // TODO: depending on timing, have space to optimize one clock cycle
-            SEND: nextState = (count == 4'd10 || ~en) ? WAIT : SEND;
+            SEND: begin 
+                if (~en) nextState = WAIT;
+                else if (count == 4'd10) nextState = DONE;
+                else nextState = SEND;
+            end
+            DONE: nextState = WAIT;
         endcase
 
     //// Logic for each state
     always_comb begin
         count_en = 1'b0;
-        count_clear = ~en;
+        count_reset = ~en;
         load = 1'b0;
         done = 1'b0;
         laser1_out = { mux1_out, en };
@@ -551,13 +558,15 @@ module LaserTransmitter(
             // TODO: depending on timing, have space to optimize one clock cycle
             SEND: begin
                 count_en = 1'b1;
-                count_clear = count == 4'd10;
-                done = count == 4'd10;
+            end
+            DONE: begin
+                done = 1'b1;
+                count_reset = 1'b1;
             end
         endcase
     end
 
-    always_ff @(posedge clock, posedge reset) begin
+    always_ff @(posedge clock_base, posedge reset) begin
         if (reset) currState <= WAIT;
         else currState <= nextState;
     end
