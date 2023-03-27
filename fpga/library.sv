@@ -71,11 +71,11 @@ endmodule : Decoder
 module Register
   #(parameter WIDTH=8)
   (input  logic [WIDTH-1:0] D,
-   input  logic             en, clear, clock,
+   input  logic             en, clear, clock, reset,
    output logic [WIDTH-1:0] Q);
 
-  always_ff @(posedge clock)
-    if (clear)
+  always_ff @(posedge clock, posedge reset)
+    if (clear || reset)
       Q <= 0;
     else if (en)
       Q <= D;

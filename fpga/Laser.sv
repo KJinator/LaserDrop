@@ -47,7 +47,7 @@ module LaserDrop (
                     data2_ready, store_rd, store_rx, rx_read, rx_empty, rx_full,
                     saw_consecutive_en, rd_ct_en, rx_ct_en, timeout_ct_en,
                     saw_consecutive_clear, timeout_ct_clear, rd_ct_clear,
-                    tx_ct_clear, rx_ct_clear, queue_clear;
+                    tx_ct_clear, rx_ct_clear, queue_clear, finished_hs2;
 
     //----------------------------LASER TRANSMITTER---------------------------//
     // Need to use clock at double the speed because using posedge (1/2)
@@ -111,6 +111,7 @@ module LaserDrop (
         .D(read_D),
         .en(store_rd),
         .clear(1'b0),
+        .reset,
         .clock,
         .Q(read)
     );
@@ -151,18 +152,11 @@ module LaserDrop (
         .Q(timeout_ct)
     );
 
-    Register #(10) tx_counter (
-        .D(tx_ct + 10'd2),
-        .en(tx_done),
-        .clear(tx_ct_clear),
-        .clock,
-        .Q(tx_ct)
-    );
-
     Register #(10) rx_counter (
         .D(rx_ct + 10'd2),
         .en(rx_ct_en),
         .clear(rx_ct_clear),
+        .reset(reset),
         .clock,
         .Q(rx_ct)
     );
@@ -212,6 +206,7 @@ module LaserDrop (
     } currState, nextState;
 
     assign finished_hs = saw_consecutive == 4'd4;
+    assign finished_hs2 = tx_ct == 10'd4;
     assign timeout = timeout_ct == `TIMEOUT_RX_LEN;
 
     always_comb begin
@@ -254,7 +249,7 @@ module LaserDrop (
             end
             HS_TX_INIT: begin
                 nextState = finished_hs ? HS_TX_INIT2 : HS_TX_INIT;
-                timeout_ct_clear = finished_hs;
+                tx_ct_clear = finished_hs;
 
                 data1_ready = 1'b1;
                 data2_ready = 1'b1;
@@ -268,15 +263,14 @@ module LaserDrop (
                 else if (data_valid) saw_consecutive_clear = 1'b1;
             end
             HS_TX_INIT2: begin
-                nextState = (timeout_ct >= 8'd2) ? LOAD_TX_READ : HS_TX_INIT2;
-                rd_ct_clear = timeout_ct >= 8'd2;
-                tx_ct_clear = timeout_ct >= 8'd2;
+                nextState = finished_hs2 ? LOAD_TX_READ : HS_TX_INIT2;
+                rd_ct_clear = finished_hs2;
+                tx_ct_clear = finished_hs2;
 
                 data1_ready = 1'b1;
                 data2_ready = 1'b1;
                 data1_tx = `HS_TX_LASER1;
                 data2_tx = `HS_TX_LASER2;
-                timeout_ct_en = tx_done;
             end
             LOAD_TX_READ: begin
                 nextState = WAIT_TX_READ;
@@ -343,7 +337,7 @@ module LaserDrop (
             end
             HS_TX_FIN: begin
                 nextState = finished_hs ? HS_TX_FIN2 : HS_TX_FIN;
-                timeout_ct_clear = finished_hs;
+                tx_ct_clear = finished_hs;
 
                 data1_ready = 1'b1;
                 data2_ready = 1'b1;
@@ -357,17 +351,17 @@ module LaserDrop (
                 else if (data_valid) saw_consecutive_clear = 1'b1;
             end
             HS_TX_FIN2: begin
-                nextState = (timeout_ct >= 8'd2) ? RESET : HS_TX_FIN2;
+                nextState = finished_hs2 ? RESET : HS_TX_FIN2;
+                timeout_ct_clear = finished_hs2;
 
                 data1_ready = 1'b1;
                 data2_ready = 1'b1;
                 data1_tx = `HS_TX_LASER1;
                 data2_tx = `HS_TX_LASER2;
-                timeout_ct_en = tx_done;
             end
             HS_RX_INIT: begin
                 nextState = finished_hs ? HS_RX_INIT2 : HS_RX_INIT;
-                timeout_ct_clear = finished_hs;
+                tx_ct_clear = finished_hs;
 
                 data1_ready = 1'b1;
                 data2_ready = 1'b1;
@@ -381,15 +375,14 @@ module LaserDrop (
                 else if (data_valid) saw_consecutive_clear = 1'b1;
             end
             HS_RX_INIT2: begin
-                nextState = (timeout_ct >= 8'd2) ? WAIT_RX_WRITE : HS_RX_INIT2;
-                timeout_ct_clear = (timeout_ct >= 8'd2);
-                rx_ct_clear = (timeout_ct >= 8'd2);
+                nextState = finished_hs2 ? WAIT_RX_WRITE : HS_RX_INIT2;
+                timeout_ct_clear = finished_hs2;
+                rx_ct_clear = finished_hs2;
 
                 data1_ready = 1'b1;
                 data2_ready = 1'b1;
                 data1_tx = `HS_RX_LASER1;
                 data2_tx = `HS_RX_LASER2;
-                timeout_ct_en = tx_done;
             end
             WAIT_RX_WRITE: begin
                 if (~rxf) begin
@@ -439,7 +432,7 @@ module LaserDrop (
             end
             HS_RX_FIN: begin
                 nextState = finished_hs ? HS_RX_FIN2 : HS_RX_FIN;
-                timeout_ct_clear = finished_hs;
+                tx_ct_clear = finished_hs;
 
                 data1_ready = 1'b1;
                 data2_ready = 1'b1;
@@ -453,14 +446,13 @@ module LaserDrop (
                 else if (data_valid) saw_consecutive_clear = 1'b1;
             end
             HS_RX_FIN2: begin
-                nextState = (timeout_ct >= 8'd2) ? RESET : HS_RX_FIN2;
-                timeout_ct_clear = (timeout_ct >= 8'd2);
+                nextState = finished_hs2 ? RESET : HS_RX_FIN2;
+                tx_ct_clear = finished_hs2;
 
                 data1_ready = 1'b1;
                 data2_ready = 1'b1;
                 data1_tx = `HS_RX_LASER1;
                 data2_tx = `HS_RX_LASER2;
-                timeout_ct_en = tx_done;
             end
         endcase
     end
@@ -469,6 +461,14 @@ module LaserDrop (
     always_ff @(posedge clock, posedge reset) begin
         if (reset) currState <= RESET;
         else currState <= nextState;
+    end
+
+    logic sync_tx_ct_clear;
+    assign sync_tx_ct_clear = tx_ct_clear & clock;
+
+    always_ff @(posedge reset, posedge tx_done, posedge sync_tx_ct_clear) begin
+        if (sync_tx_ct_clear || reset) tx_ct <= 10'd0;
+        else tx_ct <= tx_ct + 10'd2;
     end
     //------------------------------------------------------------------------//
 endmodule: LaserDrop
@@ -494,6 +494,7 @@ module LaserTransmitter(
         .D(data1_transmit),
         .en(load),
         .clear(1'b0),
+        .reset,
         .clock(clock),
         .Q(data1)
     );
@@ -502,6 +503,7 @@ module LaserTransmitter(
         .D(data2_transmit),
         .en(load),
         .clear(1'b0),
+        .reset,
         .clock(clock),
         .Q(data2)
     );
@@ -559,7 +561,6 @@ module LaserTransmitter(
         if (reset) currState <= WAIT;
         else currState <= nextState;
     end
-
 endmodule: LaserTransmitter
 
 
@@ -580,7 +581,7 @@ module LaserReceiver
 
     logic clock_en, clock_clear, clock_divided;
     logic vote_en, vote_clear, vote1_en, vote2_en;
-    logic sampled_bit, byte_read;
+    logic sampled_bit, byte_read, uart_valid;
     logic data1_start, data1_stop, data2_start, data2_stop;
     logic [9:0] data1_register, data2_register;
     logic [7:0] clock_counter, bits_read;
@@ -612,7 +613,7 @@ module LaserReceiver
     assign vote_clear = sampled_bit;
     assign clock_clear = sampled_bit;
 
-    assign data_valid = simultaneous_mode ?
+    assign uart_valid = simultaneous_mode ?
         (byte_read & ~data1_register[9] & ~data2_register[9]) :
         (byte_read & (~data1_register[9] | ~data2_register[9]));
 
@@ -669,18 +670,29 @@ module LaserReceiver
 
     Register #(10) data1 (
         .D(data1_register),
-        .en(data_valid),
+        .en(uart_valid),
         .clear(1'b0),
+        .reset,
         .clock,
         .Q({ data1_stop, data1_in, data1_start })   // Sent LSB first
     );
 
     Register #(10) data2 (
         .D(data2_register),
-        .en(data_valid),
+        .en(uart_valid),
         .clear(1'b0),
+        .reset,
         .clock,
         .Q({ data2_stop, data2_in, data2_start })
+    );
+
+    Register #(1) data_valid_reg (
+        .D(1'd1),
+        .en(uart_valid),
+        .clear(~uart_valid),
+        .reset,
+        .clock,
+        .Q(data_valid)
     );
 
     logic switch_to_wait;
