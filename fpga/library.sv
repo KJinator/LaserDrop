@@ -166,6 +166,7 @@ module LaserDropQueue
 
   always_ff @(posedge clock, posedge reset) begin
     if (reset || clear) begin
+      queue <= 512'd0;
       size <= 8'b0;
       read_i <= 6'b0;
       write_i <= 6'b0;

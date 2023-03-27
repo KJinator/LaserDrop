@@ -64,6 +64,7 @@ module ChipInterface (
     assign GREEN_RX = GPIO_0[26];
     assign IR_RX = GPIO_0[32];
 
+    assign ADBUS_IN = { GPIO_0[0], GPIO_0[2], GPIO_0[4], GPIO_0[6], GPIO_0[8], GPIO_0[10], GPIO_0[12], GPIO_0[14] };
     assign ACBUS[0] = GPIO_0[19];       // RXF
     assign ACBUS[1] = GPIO_0[17];       // TXE
 

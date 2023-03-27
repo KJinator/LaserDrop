@@ -211,17 +211,19 @@ module LaserDrop (
     enum logic [5:0] {
         RESET, HS_TX_INIT, HS_TX_INIT2, HS_TX_FIN, HS_TX_FIN2,
         LOAD_TX_READ, WAIT_TX_READ, RECEIVE, WAIT_RESEND,
-        HS_RX_INIT, HS_RX_INIT2, HS_RX_FIN, HS_RX_FIN2, WAIT_RX_WRITE,
-        SET_RX_WRITE, RX_WRITE, LOAD_RX_READ, WAIT_RX_READ, WAIT_RX_TRANSMIT
+        HS_RX_INIT, HS_RX_INIT2, HS_RX_FIN, HS_RX_FIN2, WAIT_RX_WRITE, SET_RX_WRITE, RX_WRITE1, RX_WRITE2, LOAD_RX_READ, WAIT_RX_READ,
+        WAIT_RX_TRANSMIT
     } currState, nextState;
 
     assign finished_hs = saw_consecutive == 4'd4;
     assign finished_hs2 = tx_ct == 10'd4;
     assign timeout = timeout_ct == `TIMEOUT_RX_LEN;
+    logic [12:0] tx_ct_wide;
+    assign tx_ct_wide = {3'd0, tx_ct};
 
     always_comb begin
-        data1_tx = (read & (512'hff << (tx_ct<<3))) >> (tx_ct>>3);
-        data2_tx = (read & (512'hff << ((tx_ct+1)<<3))) >> ((tx_ct+1)>>3);
+        data1_tx = (read & (512'hff << (tx_ct_wide<<3))) >> (tx_ct_wide<<3);
+        data2_tx = (read & (512'hff << ((tx_ct_wide+1)<<3))) >> ((tx_ct_wide+1)<<3);
         data1_ready = tx_ct < rd_ct;
         data2_ready = (tx_ct + 1) < rd_ct;
         ftdi_rd = 1'b1;
@@ -229,6 +231,7 @@ module LaserDrop (
         adbus_tri = 1'b0;
         store_rx = 1'b0;
         store_rd = 1'b0;
+        rx_read = 1'b0;
         read_D = read;
 
         rx_ct_en = 1'b0;
@@ -290,8 +293,8 @@ module LaserDrop (
                 store_rd = 1'b1;
                 rd_ct_en = 1'b1;
                 read_D = (
-                    (read & ~(512'hff << (rd_ct << 3))) +
-                    ({504'd0, adbus_in} << (rd_ct << 3))
+                    (read & ~(512'hff << ({3'd0, rd_ct} << 3))) +
+                    ({504'd0, adbus_in} << ({3'd0, rd_ct} << 3))
                 );
             end
             WAIT_TX_READ: begin
@@ -404,18 +407,32 @@ module LaserDrop (
                     nextState = SET_RX_WRITE;
                 end
                 else nextState = WAIT_RX_WRITE;
+
+                store_rx = data_valid;
             end
             SET_RX_WRITE: begin
-                nextState = RX_WRITE;
+                nextState = RX_WRITE1;
+
                 adbus_out = rx_q;
+                store_rx = data_valid;
             end
-            RX_WRITE: begin
-                nextState = txe ? WAIT_RX_WRITE : RX_WRITE;
+            RX_WRITE1: begin
+                nextState = RX_WRITE2;
                 rx_read = txe;
 
                 adbus_tri = 1'b1;
                 ftdi_wr = 1'b0;
                 adbus_out = rx_q;
+                store_rx = data_valid;
+            end
+            RX_WRITE2: begin
+                nextState = WAIT_RX_WRITE;
+                rx_read = txe;
+
+                adbus_tri = 1'b1;
+                ftdi_wr = 1'b0;
+                adbus_out = rx_q;
+                store_rx = data_valid;
             end
             LOAD_RX_READ: begin
                 if (rd_ct < 10'd2) nextState = WAIT_RX_READ;
@@ -427,6 +444,7 @@ module LaserDrop (
                 end
 
                 ftdi_rd = 1'b0;
+                store_rx = data_valid;
             end
             WAIT_RX_TRANSMIT: begin
                 if (tx_ct >= rd_ct) begin
@@ -435,10 +453,14 @@ module LaserDrop (
                     rd_ct_clear = 1'b1;
                 end
                 else nextState = WAIT_RX_READ;
+
+                store_rx = data_valid;
             end
             WAIT_RX_READ: begin
                 nextState = rxf ? WAIT_RX_READ : LOAD_RX_READ;
+
                 rd_ct_en = ~rxf;
+                store_rx = data_valid;
             end
             HS_RX_FIN: begin
                 nextState = finished_hs ? HS_RX_FIN2 : HS_RX_FIN;
@@ -536,7 +558,7 @@ module LaserTransmitter(
         case (currState)
             WAIT: nextState = (data_ready && en) ? SEND : WAIT;
             // TODO: depending on timing, have space to optimize one clock cycle
-            SEND: begin 
+            SEND: begin
                 if (~en) nextState = WAIT;
                 else if (count == 4'd10) nextState = DONE;
                 else nextState = SEND;
@@ -588,13 +610,13 @@ module LaserReceiver
         WAIT, RECEIVE
     } currState, nextState;
 
-    logic clock_en, clock_clear, clock_divided;
+    logic clock_en, clock_clear;
     logic vote_en, vote_clear, vote1_en, vote2_en;
     logic sampled_bit, byte_read, uart_valid;
     logic data1_start, data1_stop, data2_start, data2_stop;
     logic [9:0] data1_register, data2_register;
     logic [7:0] clock_counter, bits_read;
-    logic [1:0] vote1, vote2, receive_sel_D, receive_sel;
+    logic [1:0] vote1, vote2;
 
     // NOTE: May become bottleneck if speed becomes extremely slow
     // eg. DIVIDER >= 8
@@ -614,7 +636,7 @@ module LaserReceiver
         (clock_counter == 8'd3)
     );
     assign sampled_bit = (clock_counter == 8'd8);
-    assign byte_read = (bits_read == 8'd10);
+    assign byte_read = (bits_read == 8'd9);
 
     assign vote1_en = vote_en && laser1_in;
     assign vote2_en = vote_en && laser2_in;
@@ -622,9 +644,9 @@ module LaserReceiver
     assign vote_clear = sampled_bit;
     assign clock_clear = sampled_bit;
 
-    assign uart_valid = simultaneous_mode ?
-        (byte_read & ~data1_register[9] & ~data2_register[9]) :
-        (byte_read & (~data1_register[9] | ~data2_register[9]));
+    assign uart_valid = byte_read;
+        // (byte_read & ~data1_register[9] & ~data2_register[9]) :
+        // (byte_read & (~data1_register[9] | ~data2_register[9]));
 
     Counter #(8) num_bits (
         .D(8'b0),
@@ -677,22 +699,22 @@ module LaserReceiver
         .Q(data2_register)
     );
 
-    Register #(10) data1 (
-        .D(data1_register),
+    Register #(9) data1 (
+        .D(data1_register[9:1]),
         .en(uart_valid),
         .clear(1'b0),
         .reset,
         .clock,
-        .Q({ data1_stop, data1_in, data1_start })   // Sent LSB first
+        .Q({ data1_in, data1_start })   // Sent LSB first
     );
 
-    Register #(10) data2 (
-        .D(data2_register),
+    Register #(9) data2 (
+        .D(data2_register[9:1]),
         .en(uart_valid),
         .clear(1'b0),
         .reset,
         .clock,
-        .Q({ data2_stop, data2_in, data2_start })
+        .Q({ data2_in, data2_start })
     );
 
     Register #(1) data_valid_reg (
@@ -725,7 +747,7 @@ module LaserReceiver
     end
 
     always_ff @(
-        posedge laser1_in, posedge laser2_in, posedge reset, posedge byte_read
+        posedge laser1_in, posedge laser2_in, posedge reset, posedge clock
     ) begin
         if (reset) currState <= WAIT;
         else if (byte_read) currState <= WAIT;

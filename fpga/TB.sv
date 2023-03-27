@@ -65,7 +65,7 @@ module TB;
   initial begin
     $monitor(
       "@%0t: rxf: %b (%b), txe: %b (%b)", $time, rxf, rxf_tri, txe, txe_tri);
-    #50000
+    #500000
 
     $display("@%0t: Error timeout!", $time);
     $finish;
