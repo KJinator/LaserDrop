@@ -209,10 +209,11 @@ module LaserDrop (
     //------------------------------------------------------------------------//
     //-------------------------STATE TRANSITION LOGIC-------------------------//
     enum logic [5:0] {
-        RESET, HS_TX_INIT, HS_TX_INIT2, HS_TX_FIN, HS_TX_FIN2,
-        LOAD_TX_READ, WAIT_TX_READ, RECEIVE, WAIT_RESEND,
-        HS_RX_INIT, HS_RX_INIT2, HS_RX_FIN, HS_RX_FIN2, WAIT_RX_WRITE, SET_RX_WRITE, RX_WRITE1, RX_WRITE2, LOAD_RX_READ, WAIT_RX_READ,
-        WAIT_RX_TRANSMIT
+        RESET, HS_TX_INIT, HS_TX_INIT2, HS_TX_FIN, HS_TX_FIN2, LOAD_TX_READ,
+        WAIT_TX_READ, RECEIVE, WAIT_RESEND, WAIT_TX_WRITE, SET_TX_WRITE,
+        TX_WRITE1, TX_WRITE2, HS_RX_INIT, HS_RX_INIT2, HS_RX_FIN, HS_RX_FIN2,
+        WAIT_RX_WRITE, SET_RX_WRITE, RX_WRITE1, RX_WRITE2, LOAD_RX_READ,
+        WAIT_RX_READ, WAIT_RX_TRANSMIT
     } currState, nextState;
 
     assign finished_hs = saw_consecutive == 4'd4;
@@ -334,6 +335,12 @@ module LaserDrop (
                 store_rx = data_valid;
                 rx_ct_en = data_valid;
             end
+            WAIT_TX_WRITE: begin
+                if (~txe & ~rx_empty) begin
+                    nextState = SET_TX_WRITE;
+                end
+                else nextState = WAIT_TX_WRITE;
+            end
             WAIT_RESEND: begin
                 if ((read[7:0] == `START_SEQ && tx_ct == `START_PKT_LEN) ||
                     (read[7:0] == `STOP_SEQ && tx_ct == `STOP_PKT_LEN))
@@ -418,7 +425,6 @@ module LaserDrop (
             end
             RX_WRITE1: begin
                 nextState = RX_WRITE2;
-                rx_read = txe;
 
                 adbus_tri = 1'b1;
                 ftdi_wr = 1'b0;
@@ -427,8 +433,8 @@ module LaserDrop (
             end
             RX_WRITE2: begin
                 nextState = WAIT_RX_WRITE;
-                rx_read = txe;
 
+                rx_read = 1'b1;
                 adbus_tri = 1'b1;
                 ftdi_wr = 1'b0;
                 adbus_out = rx_q;
@@ -443,7 +449,15 @@ module LaserDrop (
                     timeout_ct_clear = 1'b1;
                 end
 
+                adbus_tri = 1'b0;
                 ftdi_rd = 1'b0;
+                store_rd = 1'b1;
+                rd_ct_en = 1'b1;
+                read_D = (
+                    (read & ~(512'hff << ({3'd0, rd_ct} << 3))) +
+                    ({504'd0, adbus_in} << ({3'd0, rd_ct} << 3))
+                );
+
                 store_rx = data_valid;
             end
             WAIT_RX_TRANSMIT: begin

@@ -142,7 +142,7 @@ module BarrelShiftRegister
       2'b11: shifted = {Q[WIDTH-4:0], 3'b0};
     endcase
 
-  always_ff @(posedge clock)
+always_ff @(posedge clock)
     if (load)
         Q <= D;
     else if (en)
@@ -151,6 +151,7 @@ module BarrelShiftRegister
 endmodule : BarrelShiftRegister
 
 module LaserDropQueue
+  #(parameter   DATA_LOAD=2)
   (input  logic [15:0] D,
    input  logic        clock, load, read, reset, clear,
    output logic [ 7:0] Q,
@@ -177,14 +178,26 @@ module LaserDropQueue
         size <= size - 8'd1;
       end
       if (load && !full) begin
-        queue[write_i] <= D[7:0];
-        queue[write_i+1] <= D[15:8];
-        write_i <= write_i + 6'd2;
-        size <= size + 8'd2;
+        queue[write_i+DATA_LOAD-1:write_i] <= D;
+        write_i <= write_i + DATA_LOAD;
+        size <= size + DATA_LOAD;
       end
     end
   end
 endmodule: LaserDropQueue
+
+module ByteMultiplexer
+  #(parameter WIDTH=512)
+  (input  logic [WIDTH-1:0]               I,
+   input  logic [$clog2(WIDTH >> 3)-1:0]  S_byte,
+   output logic [7:0]                     Y);
+
+  logic [$clog2(WIDTH >> 3)-1:0] S_bit;
+  S_bit = {3'b0, S_byte} << 3;
+
+  assign Y = I[S_bit+7:S_bit];
+
+endmodule : ByteMultiplexer
 
 // A memory with addressing, read and write options, and
 // tristate data bus, triggered at clock.

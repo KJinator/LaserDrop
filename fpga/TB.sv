@@ -63,8 +63,8 @@ module TB;
   logic [1:0] rxf, txe;
   logic [1:0] rxf_tri, txe_tri;
   initial begin
-    $monitor(
-      "@%0t: rxf: %b (%b), txe: %b (%b)", $time, rxf, rxf_tri, txe, txe_tri);
+    // $monitor(
+    //   "@%0t: rxf: %b (%b), txe: %b (%b)", $time, rxf, rxf_tri, txe, txe_tri);
     #500000
 
     $display("@%0t: Error timeout!", $time);
@@ -137,7 +137,6 @@ module TB;
     join_none
   end
 
-  mailbox mbxrx = new(num_pkts);
   initial begin
     txe[1] = 1'b1;
     rxf[1] = 1'b1;
@@ -158,7 +157,6 @@ module TB;
         @(posedge ~dut_rx.main.ftdi_wr);
         @(posedge clock);
         txe[1] = 1'b1;
-        #1 mbxrx.put(i);
       end
 
       $display("@%0t: Pulling rxf[1] down at line 155", $time);
