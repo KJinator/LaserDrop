@@ -8,12 +8,12 @@ module Echo (
     output logic [1:0] laser1_tx, laser2_tx,
     output logic [7:0] data1_in, data2_in, adbus_out
 );
-    logic [511:0] read;
+    logic [63:0] read;
     logic [  9:0] rd_ct, wr_ct;
     logic [  7:0] q_size, q_out, data_wr;
     logic q_empty, q_full, data_wr_read, data_wr_valid, clear_counters;
 
-    assign clear_counters = rd_ct == 10'd512 && wr_ct == 10'd0;
+    assign clear_counters = rd_ct == 10'd64 && wr_ct == 10'd64;
 
     EchoQueue echo_queue (
         .D(adbus_in),
@@ -31,7 +31,7 @@ module Echo (
     Counter #(10) wr_counter (
         .D(10'b0),
         .en(data_wr_read),
-        .clear(rd_ct == 10'd512),
+        .clear(clear_counters),
         .load(1'b0),
         .clock,
         .up(1'b1),
@@ -41,7 +41,7 @@ module Echo (
 
     // NOTE: nonsim_mode uses queue, else uses ftdi_if and bytemux
     assign data_wr_valid = non_sim_mode ? ~q_empty : (rd_ct > wr_ct);
-    assign data_wr = non_sim_mode ? q_out : data2_in;
+    assign data_wr = non_sim_mode ? q_out : wr_ct[7:0];
 
     FTDI_Interface ftdi_if (
         .clock,
@@ -55,7 +55,7 @@ module Echo (
         .rd_ct_clear(clear_counters),
         .data_wr,
         .adbus_in,
-        .max_rd_ct(10'd512),
+        .max_rd_ct(10'd64),
         .adbus_tri,
         .ftdi_wr,
         .data_wr_read,
