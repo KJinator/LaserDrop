@@ -75,10 +75,9 @@ module Register
    output logic [WIDTH-1:0] Q);
 
   always_ff @(posedge clock, posedge reset)
-    if (clear || reset)
-      Q <= 0;
-    else if (en)
-      Q <= D;
+    if (reset) Q <= 0;
+	 else if (clear) Q <= 0;
+    else if (en) Q <= D;
 
 endmodule : Register
 
@@ -151,7 +150,6 @@ always_ff @(posedge clock)
 endmodule : BarrelShiftRegister
 
 module LaserDropQueue
-  #(parameter   DATA_LOAD=2)
   (input  logic [15:0] D,
    input  logic        clock, load, read, reset, clear,
    output logic [ 7:0] Q,
@@ -163,7 +161,7 @@ module LaserDropQueue
 
   assign Q = queue[read_i];
   assign empty = (size == 7'd0);
-  assign full = (size == 7'd64);
+  assign full = (size == 7'd64);	 
 
   always_ff @(posedge clock, posedge reset) begin
     if (reset || clear) begin
@@ -178,24 +176,63 @@ module LaserDropQueue
         size <= size - 8'd1;
       end
       if (load && !full) begin
-        queue[write_i+DATA_LOAD-1:write_i] <= D;
-        write_i <= write_i + DATA_LOAD;
-        size <= size + DATA_LOAD;
+        queue[write_i] <= D[7:0];
+        queue[write_i+1] <= D[15:8];
+        write_i <= write_i + 6'd2;
+        size <= size + 8'd2;
       end
     end
   end
 endmodule: LaserDropQueue
 
+module EchoQueue
+  (input  logic [7:0] D,
+   input  logic        clock, load, read, reset, clear,
+   output logic [ 7:0] Q,
+   output logic [ 7:0] size,
+   output logic        empty, full);
+
+  logic [63:0][7:0] queue;
+  logic [ 5:0] write_i, read_i;
+
+  assign Q = queue[read_i];
+  assign empty = (size == 7'd0);
+  assign full = (size == 7'd64);	 
+
+  always_ff @(posedge clock, posedge reset) begin
+    if (reset) begin
+      queue <= 512'd0;
+      size <= 8'b0;
+      read_i <= 6'b0;
+      write_i <= 6'b0;
+    end
+	 else if (clear) begin
+	   queue <= 512'd0;
+      size <= 8'b0;
+      read_i <= 6'b0;
+      write_i <= 6'b0;
+	 end
+    else begin
+      if (read && !empty) begin
+        read_i <= read_i + 6'd1;
+        size <= size - 8'd1;
+      end
+      if (load && !full) begin
+        queue[write_i] <= D;
+        write_i <= write_i + 6'd1;
+        size <= size + 8'd1;
+      end
+    end
+  end
+endmodule: EchoQueue
+
 module ByteMultiplexer
   #(parameter WIDTH=512)
   (input  logic [WIDTH-1:0]               I,
-   input  logic [$clog2(WIDTH >> 3)-1:0]  S_byte,
+   input  logic [$clog2(WIDTH)-1:0]  S_byte,
    output logic [7:0]                     Y);
 
-  logic [$clog2(WIDTH >> 3)-1:0] S_bit;
-  S_bit = {3'b0, S_byte} << 3;
-
-  assign Y = I[S_bit+7:S_bit];
+  assign Y = (I >> (S_byte << 3)) & 'hff;
 
 endmodule : ByteMultiplexer
 
