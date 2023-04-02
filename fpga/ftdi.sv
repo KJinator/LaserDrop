@@ -13,10 +13,10 @@ module FTDI_Interface #(WIDTH=64) (
 );
     logic rd_ct_en, store_rd;
     logic [WIDTH-1:0] read_D;
-	 
+
 	 parameter WIDTH_MINUS_8 = WIDTH - 8;
 
-    enum logic [2:0] { WAIT, SET_WRITE, WRITE1, WRITE2, READ }
+    enum logic [2:0] { WAIT, SET_WRITE, WRITE1, WRITE2, READ1, READ2 }
         currState, nextState;
 
     //// Datapath
@@ -65,7 +65,7 @@ module FTDI_Interface #(WIDTH=64) (
                 adbus_out = data_wr;
                 data_wr_read = 1'b1;
             end
-            READ: begin
+            READ1: begin
                 ftdi_rd = 1'b0;
                 store_rd = 1'b1;
                 rd_ct_en = 1'b1;
@@ -74,6 +74,10 @@ module FTDI_Interface #(WIDTH=64) (
                     ({{WIDTH_MINUS_8{1'b0}}, adbus_in} << ({3'd0, rd_ct} << 3))
                 );
             end
+            // RD active pulse width: min 30ns
+            READ2: begin
+                ftdi_rd = 1'b0;
+            end
         endcase
     end
 
@@ -81,14 +85,15 @@ module FTDI_Interface #(WIDTH=64) (
     always_comb
         case (currState)
             WAIT: begin
-                if (!rxf && rd_en && rd_ct < max_rd_ct) nextState = READ;
+                if (!rxf && rd_en && rd_ct < max_rd_ct) nextState = READ1;
                 else if (wr_en && !txe && data_wr_valid) nextState = SET_WRITE;
 					 else nextState = WAIT;
             end
             SET_WRITE: nextState = WRITE1;
             WRITE1: nextState = WRITE2;
             WRITE2: nextState = WAIT;
-            READ: nextState = WAIT;
+            READ1: nextState = READ2;
+            READ2: nextState = WAIT;
         endcase
 
     always_ff @(posedge clock, posedge reset) begin
