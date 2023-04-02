@@ -21,7 +21,7 @@
 
 :DownLoad
 set project.sof=ChipInterface.sof
-set project.jic=ChipInterface.jic
+set project.jic=Echo.jic
 set device_sfl.sof=sfl_enhanced_01_02b050dd.sof
 goto main
 

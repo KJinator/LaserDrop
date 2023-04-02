@@ -1,5 +1,5 @@
 Analysis & Synthesis report for ChipInterface
-Sat Apr  1 15:47:29 2023
+Sun Apr  2 14:25:52 2023
 Quartus Prime Version 22.1std.0 Build 915 10/25/2022 SC Lite Edition
 
 
@@ -57,13 +57,13 @@ https://fpgasoftware.intel.com/eula.
 +----------------------------------------------------------------------------------+
 ; Analysis & Synthesis Summary                                                     ;
 +---------------------------------+------------------------------------------------+
-; Analysis & Synthesis Status     ; Successful - Sat Apr  1 15:47:29 2023          ;
+; Analysis & Synthesis Status     ; Successful - Sun Apr  2 14:25:52 2023          ;
 ; Quartus Prime Version           ; 22.1std.0 Build 915 10/25/2022 SC Lite Edition ;
 ; Revision Name                   ; ChipInterface                                  ;
 ; Top-level Entity Name           ; ChipInterface                                  ;
 ; Family                          ; Cyclone V                                      ;
 ; Logic utilization (in ALMs)     ; N/A                                            ;
-; Total registers                 ; 621                                            ;
+; Total registers                 ; 622                                            ;
 ; Total pins                      ; 147                                            ;
 ; Total virtual pins              ; 0                                              ;
 ; Total block memory bits         ; 0                                              ;
@@ -200,16 +200,16 @@ https://fpgasoftware.intel.com/eula.
 +---------------------------------------------+--------------------------+
 ; Resource                                    ; Usage                    ;
 +---------------------------------------------+--------------------------+
-; Estimate of Logic utilization (ALMs needed) ; 453                      ;
+; Estimate of Logic utilization (ALMs needed) ; 454                      ;
 ;                                             ;                          ;
-; Combinational ALUT usage for logic          ; 466                      ;
+; Combinational ALUT usage for logic          ; 467                      ;
 ;     -- 7 input functions                    ; 0                        ;
-;     -- 6 input functions                    ; 221                      ;
-;     -- 5 input functions                    ; 99                       ;
-;     -- 4 input functions                    ; 32                       ;
-;     -- <=3 input functions                  ; 114                      ;
+;     -- 6 input functions                    ; 223                      ;
+;     -- 5 input functions                    ; 97                       ;
+;     -- 4 input functions                    ; 40                       ;
+;     -- <=3 input functions                  ; 107                      ;
 ;                                             ;                          ;
-; Dedicated logic registers                   ; 621                      ;
+; Dedicated logic registers                   ; 622                      ;
 ;                                             ;                          ;
 ; I/O pins                                    ; 147                      ;
 ;                                             ;                          ;
@@ -217,8 +217,8 @@ https://fpgasoftware.intel.com/eula.
 ;                                             ;                          ;
 ; Maximum fan-out node                        ; Echo:main|clear_counters ;
 ; Maximum fan-out                             ; 683                      ;
-; Total fan-out                               ; 5683                     ;
-; Average fan-out                             ; 3.91                     ;
+; Total fan-out                               ; 5699                     ;
+; Average fan-out                             ; 3.92                     ;
 +---------------------------------------------+--------------------------+
 
 
@@ -227,16 +227,16 @@ https://fpgasoftware.intel.com/eula.
 +-------------------------------------+---------------------+---------------------------+-------------------+------------+------+--------------+-------------------------------------------------------------------+-------------------+--------------+
 ; Compilation Hierarchy Node          ; Combinational ALUTs ; Dedicated Logic Registers ; Block Memory Bits ; DSP Blocks ; Pins ; Virtual Pins ; Full Hierarchy Name                                               ; Entity Name       ; Library Name ;
 +-------------------------------------+---------------------+---------------------------+-------------------+------------+------+--------------+-------------------------------------------------------------------+-------------------+--------------+
-; |ChipInterface                      ; 466 (0)             ; 621 (0)                   ; 0                 ; 0          ; 147  ; 0            ; |ChipInterface                                                    ; ChipInterface     ; work         ;
+; |ChipInterface                      ; 467 (0)             ; 622 (0)                   ; 0                 ; 0          ; 147  ; 0            ; |ChipInterface                                                    ; ChipInterface     ; work         ;
 ;    |BCDtoSevenSegment:laser1_0|     ; 7 (7)               ; 0 (0)                     ; 0                 ; 0          ; 0    ; 0            ; |ChipInterface|BCDtoSevenSegment:laser1_0                         ; BCDtoSevenSegment ; work         ;
 ;    |BCDtoSevenSegment:laser1_1|     ; 7 (7)               ; 0 (0)                     ; 0                 ; 0          ; 0    ; 0            ; |ChipInterface|BCDtoSevenSegment:laser1_1                         ; BCDtoSevenSegment ; work         ;
 ;    |BCDtoSevenSegment:laser2_0|     ; 7 (7)               ; 0 (0)                     ; 0                 ; 0          ; 0    ; 0            ; |ChipInterface|BCDtoSevenSegment:laser2_0                         ; BCDtoSevenSegment ; work         ;
 ;    |BCDtoSevenSegment:laser2_1|     ; 7 (7)               ; 0 (0)                     ; 0                 ; 0          ; 0    ; 0            ; |ChipInterface|BCDtoSevenSegment:laser2_1                         ; BCDtoSevenSegment ; work         ;
-;    |Echo:main|                      ; 438 (12)            ; 621 (0)                   ; 0                 ; 0          ; 0    ; 0            ; |ChipInterface|Echo:main                                          ; Echo              ; work         ;
+;    |Echo:main|                      ; 439 (12)            ; 622 (0)                   ; 0                 ; 0          ; 0    ; 0            ; |ChipInterface|Echo:main                                          ; Echo              ; work         ;
 ;       |ByteMultiplexer:recent_read| ; 26 (26)             ; 0 (0)                     ; 0                 ; 0          ; 0    ; 0            ; |ChipInterface|Echo:main|ByteMultiplexer:recent_read              ; ByteMultiplexer   ; work         ;
 ;       |Counter:wr_counter|          ; 11 (11)             ; 10 (10)                   ; 0                 ; 0          ; 0    ; 0            ; |ChipInterface|Echo:main|Counter:wr_counter                       ; Counter           ; work         ;
 ;       |EchoQueue:echo_queue|        ; 123 (123)           ; 532 (532)                 ; 0                 ; 0          ; 0    ; 0            ; |ChipInterface|Echo:main|EchoQueue:echo_queue                     ; EchoQueue         ; work         ;
-;       |FTDI_Interface:ftdi_if|      ; 266 (255)           ; 79 (5)                    ; 0                 ; 0          ; 0    ; 0            ; |ChipInterface|Echo:main|FTDI_Interface:ftdi_if                   ; FTDI_Interface    ; work         ;
+;       |FTDI_Interface:ftdi_if|      ; 267 (256)           ; 80 (6)                    ; 0                 ; 0          ; 0    ; 0            ; |ChipInterface|Echo:main|FTDI_Interface:ftdi_if                   ; FTDI_Interface    ; work         ;
 ;          |Counter:Read_Ctr|         ; 10 (10)             ; 10 (10)                   ; 0                 ; 0          ; 0    ; 0            ; |ChipInterface|Echo:main|FTDI_Interface:ftdi_if|Counter:Read_Ctr  ; Counter           ; work         ;
 ;          |Register:Read_Reg|        ; 1 (1)               ; 64 (64)                   ; 0                 ; 0          ; 0    ; 0            ; |ChipInterface|Echo:main|FTDI_Interface:ftdi_if|Register:Read_Reg ; Register          ; work         ;
 +-------------------------------------+---------------------+---------------------------+-------------------+------------+------+--------------+-------------------------------------------------------------------+-------------------+--------------+
@@ -244,17 +244,18 @@ Note: For table entries with two numbers listed, the numbers in parentheses indi
 
 
 Encoding Type:  One-Hot
-+-------------------------------------------------------------------------------------------------------------------+
-; State Machine - |ChipInterface|Echo:main|FTDI_Interface:ftdi_if|currState                                         ;
-+---------------------+------------------+------------------+---------------------+----------------+----------------+
-; Name                ; currState.WRITE2 ; currState.WRITE1 ; currState.SET_WRITE ; currState.WAIT ; currState.READ ;
-+---------------------+------------------+------------------+---------------------+----------------+----------------+
-; currState.WAIT      ; 0                ; 0                ; 0                   ; 0              ; 0              ;
-; currState.SET_WRITE ; 0                ; 0                ; 1                   ; 1              ; 0              ;
-; currState.WRITE1    ; 0                ; 1                ; 0                   ; 1              ; 0              ;
-; currState.WRITE2    ; 1                ; 0                ; 0                   ; 1              ; 0              ;
-; currState.READ      ; 0                ; 0                ; 0                   ; 1              ; 1              ;
-+---------------------+------------------+------------------+---------------------+----------------+----------------+
++--------------------------------------------------------------------------------------------------------------------------------------+
+; State Machine - |ChipInterface|Echo:main|FTDI_Interface:ftdi_if|currState                                                            ;
++---------------------+-----------------+-----------------+------------------+------------------+---------------------+----------------+
+; Name                ; currState.READ2 ; currState.READ1 ; currState.WRITE2 ; currState.WRITE1 ; currState.SET_WRITE ; currState.WAIT ;
++---------------------+-----------------+-----------------+------------------+------------------+---------------------+----------------+
+; currState.WAIT      ; 0               ; 0               ; 0                ; 0                ; 0                   ; 0              ;
+; currState.SET_WRITE ; 0               ; 0               ; 0                ; 0                ; 1                   ; 1              ;
+; currState.WRITE1    ; 0               ; 0               ; 0                ; 1                ; 0                   ; 1              ;
+; currState.WRITE2    ; 0               ; 0               ; 1                ; 0                ; 0                   ; 1              ;
+; currState.READ1     ; 0               ; 1               ; 0                ; 0                ; 0                   ; 1              ;
+; currState.READ2     ; 1               ; 0               ; 0                ; 0                ; 0                   ; 1              ;
++---------------------+-----------------+-----------------+------------------+------------------+---------------------+----------------+
 
 
 +-------------------------------------------------------------------+
@@ -264,7 +265,8 @@ Encoding Type:  One-Hot
 +----------------------------------------------+--------------------+
 ; Echo:main|FTDI_Interface:ftdi_if|currState~4 ; Lost fanout        ;
 ; Echo:main|FTDI_Interface:ftdi_if|currState~5 ; Lost fanout        ;
-; Total Number of Removed Registers = 2        ;                    ;
+; Echo:main|FTDI_Interface:ftdi_if|currState~6 ; Lost fanout        ;
+; Total Number of Removed Registers = 3        ;                    ;
 +----------------------------------------------+--------------------+
 
 
@@ -273,10 +275,10 @@ Encoding Type:  One-Hot
 +----------------------------------------------+-------+
 ; Statistic                                    ; Value ;
 +----------------------------------------------+-------+
-; Total registers                              ; 621   ;
+; Total registers                              ; 622   ;
 ; Number of registers using Synchronous Clear  ; 614   ;
 ; Number of registers using Synchronous Load   ; 0     ;
-; Number of registers using Asynchronous Clear ; 621   ;
+; Number of registers using Asynchronous Clear ; 622   ;
 ; Number of registers using Asynchronous Load  ; 0     ;
 ; Number of registers using Clock Enable       ; 616   ;
 ; Number of registers using Preset             ; 0     ;
@@ -473,24 +475,24 @@ Note: In order to hide this table in the UI and the text report file, please set
 +-----------------------+-----------------------------+
 ; Type                  ; Count                       ;
 +-----------------------+-----------------------------+
-; arriav_ff             ; 621                         ;
-;     CLR               ; 5                           ;
+; arriav_ff             ; 622                         ;
+;     CLR               ; 6                           ;
 ;     ENA CLR           ; 2                           ;
 ;     ENA CLR SCLR      ; 614                         ;
 ; arriav_io_obuf        ; 72                          ;
-; arriav_lcell_comb     ; 472                         ;
+; arriav_lcell_comb     ; 473                         ;
 ;     arith             ; 92                          ;
 ;         1 data inputs ; 21                          ;
-;         3 data inputs ; 7                           ;
+;         4 data inputs ; 7                           ;
 ;         5 data inputs ; 64                          ;
-;     normal            ; 380                         ;
+;     normal            ; 381                         ;
 ;         0 data inputs ; 2                           ;
 ;         1 data inputs ; 4                           ;
 ;         2 data inputs ; 16                          ;
 ;         3 data inputs ; 70                          ;
-;         4 data inputs ; 32                          ;
-;         5 data inputs ; 35                          ;
-;         6 data inputs ; 221                         ;
+;         4 data inputs ; 33                          ;
+;         5 data inputs ; 33                          ;
+;         6 data inputs ; 223                         ;
 ; boundary_port         ; 147                         ;
 ;                       ;                             ;
 ; Max LUT depth         ; 9.30                        ;
@@ -503,7 +505,7 @@ Note: In order to hide this table in the UI and the text report file, please set
 +----------------+--------------+
 ; Partition Name ; Elapsed Time ;
 +----------------+--------------+
-; Top            ; 00:00:01     ;
+; Top            ; 00:00:00     ;
 +----------------+--------------+
 
 
@@ -513,7 +515,7 @@ Note: In order to hide this table in the UI and the text report file, please set
 Info: *******************************************************************
 Info: Running Quartus Prime Analysis & Synthesis
     Info: Version 22.1std.0 Build 915 10/25/2022 SC Lite Edition
-    Info: Processing started: Sat Apr  1 15:47:15 2023
+    Info: Processing started: Sun Apr  2 14:25:36 2023
 Info: Command: quartus_map --read_settings_files=on --write_settings_files=off ChipInterface -c ChipInterface
 Warning (18236): Number of processors has not been specified which may cause overloading on shared machines.  Set the global assignment NUM_PARALLEL_PROCESSORS in your QSF to an appropriate value for best performance.
 Info (20030): Parallel compilation is enabled and will use 4 of the 4 processors detected
@@ -538,6 +540,8 @@ Info (12021): Found 13 design units, including 13 entities, in source file /user
     Info (12023): Found entity 13: Memory File: C:/Users/anjua/Documents/18-500 ECE Capstone/LaserDrop/fpga/library.sv Line: 241
 Info (12021): Found 1 design units, including 1 entities, in source file echo.sv
     Info (12023): Found entity 1: Echo File: C:/Users/anjua/Documents/18-500 ECE Capstone/LaserDrop/fpga_echo/Echo.sv Line: 3
+Info (12021): Found 1 design units, including 1 entities, in source file ram_1k.v
+    Info (12023): Found entity 1: ram_1k File: C:/Users/anjua/Documents/18-500 ECE Capstone/LaserDrop/fpga_echo/ram_1k.v Line: 40
 Warning (10222): Verilog HDL Parameter Declaration warning at ftdi.sv(17): Parameter Declaration in module "FTDI_Interface" behaves as a Local Parameter Declaration because the module has a Module Parameter Port List File: C:/Users/anjua/Documents/18-500 ECE Capstone/LaserDrop/fpga/ftdi.sv Line: 17
 Info (12127): Elaborating entity "ChipInterface" for the top level hierarchy
 Warning (10034): Output port "LEDR[17..10]" at ChipInterface.sv(10) has no driver File: C:/Users/anjua/Documents/18-500 ECE Capstone/LaserDrop/fpga_echo/ChipInterface.sv Line: 10
@@ -602,7 +606,7 @@ Warning (13024): Output pins are stuck at VCC or GND
 Info (286030): Timing-Driven Synthesis is running
 Warning (14632): Output pin "LEDR[8]" driven by bidirectional pin "GPIO_0[26]" cannot be tri-stated File: C:/Users/anjua/Documents/18-500 ECE Capstone/LaserDrop/fpga_echo/ChipInterface.sv Line: 10
 Warning (14632): Output pin "LEDR[9]" driven by bidirectional pin "GPIO_0[32]" cannot be tri-stated File: C:/Users/anjua/Documents/18-500 ECE Capstone/LaserDrop/fpga_echo/ChipInterface.sv Line: 10
-Info (17049): 2 registers lost all their fanouts during netlist optimizations.
+Info (17049): 3 registers lost all their fanouts during netlist optimizations.
 Warning (20013): Ignored 24 assignments for entity "DE0_CV_Default" -- entity does not exist in design
     Warning (20014): Assignment for entity set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -entity DE0_CV_Default -section_id Top was ignored
     Warning (20014): Assignment for entity set_global_assignment -name PARTITION_NETLIST_TYPE SOURCE -entity DE0_CV_Default -section_id Top was ignored
@@ -642,16 +646,16 @@ Warning (21074): Design contains 10 input pin(s) that do not drive logic
     Warning (15610): No output dependent on input pin "KEY[1]" File: C:/Users/anjua/Documents/18-500 ECE Capstone/LaserDrop/fpga_echo/ChipInterface.sv Line: 9
     Warning (15610): No output dependent on input pin "KEY[2]" File: C:/Users/anjua/Documents/18-500 ECE Capstone/LaserDrop/fpga_echo/ChipInterface.sv Line: 9
     Warning (15610): No output dependent on input pin "KEY[3]" File: C:/Users/anjua/Documents/18-500 ECE Capstone/LaserDrop/fpga_echo/ChipInterface.sv Line: 9
-Info (21057): Implemented 1127 device resources after synthesis - the final resource count might be different
+Info (21057): Implemented 1129 device resources after synthesis - the final resource count might be different
     Info (21058): Implemented 15 input pins
     Info (21059): Implemented 60 output pins
     Info (21060): Implemented 72 bidirectional pins
-    Info (21061): Implemented 980 logic cells
+    Info (21061): Implemented 982 logic cells
 Info: Quartus Prime Analysis & Synthesis was successful. 0 errors, 91 warnings
     Info: Peak virtual memory: 4839 megabytes
-    Info: Processing ended: Sat Apr  1 15:47:29 2023
-    Info: Elapsed time: 00:00:14
-    Info: Total CPU time (on all processors): 00:00:25
+    Info: Processing ended: Sun Apr  2 14:25:52 2023
+    Info: Elapsed time: 00:00:16
+    Info: Total CPU time (on all processors): 00:00:16
 
 
 +------------------------------------------+
