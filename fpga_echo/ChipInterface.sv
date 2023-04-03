@@ -12,7 +12,7 @@ module ChipInterface (
     inout  wire  [35:0] GPIO_0, GPIO_1
 );
     logic data_valid, tx_done, adbus_tri;
-    logic [7:0] data1_in, data2_in;
+    logic [7:0] hex1, hex2;
 
     //------------------------FPGA Pin Configurations-------------------------//
     logic [7:0] ADBUS, ADBUS_IN;
@@ -86,36 +86,35 @@ module ChipInterface (
     assign LEDR[8] = GREEN_RX;
     assign LEDR[9] = IR_RX;
     assign LEDR[4] = tx_done;
+    assign IR_TX = 2'b0;
 
     Echo main (
         .clock(CLOCK_50),
         .reset(~KEY[0]),
         .en(SW[0]),
-        .non_sim_mode(SW[1]),
+        .echo_mode(SW[1]),
         .rxf(ACBUS[0]),
         .txe(ACBUS[1]),
-        .laser1_rx(GREEN_RX),
-        .laser2_rx(IR_RX),
+        .laser_rx(GREEN_RX),
         .adbus_in(ADBUS_IN),
-        .laser1_tx(GREEN_TX),
-        .laser2_tx(IR_TX),
+        .laser_tx(GREEN_TX),
         .data_valid(LEDR[5]),
         .ftdi_rd(ACBUS[2]),
         .ftdi_wr(ACBUS[3]),
         .tx_done,
         .adbus_tri,
-        .data1_in,
-        .data2_in,
+        .hex1,
+        .hex2,
         .adbus_out(ADBUS)
     );
 
     BCDtoSevenSegment laser1_1 (
-        .bcd(data1_in[7:4]),
+        .bcd(hex1[7:4]),
         .segment(HEX5)
     );
 
     BCDtoSevenSegment laser1_0 (
-        .bcd(data1_in[3:0]),
+        .bcd(hex1[3:0]),
         .segment(HEX4)
     );
 
@@ -123,12 +122,12 @@ module ChipInterface (
     assign HEX2 = 7'b111_1111;
 
     BCDtoSevenSegment laser2_1 (
-        .bcd(data2_in[7:4]),
+        .bcd(hex2[7:4]),
         .segment(HEX1)
     );
 
     BCDtoSevenSegment laser2_0 (
-        .bcd(data2_in[3:0]),
+        .bcd(hex2[3:0]),
         .segment(HEX0)
     );
 

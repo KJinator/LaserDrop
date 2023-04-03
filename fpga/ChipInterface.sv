@@ -91,7 +91,7 @@ module ChipInterface (
         .clock(CLOCK_50),
         .reset(~KEY[0]),
         .en(SW[0]),
-        .non_sim_mode(SW[1]),
+        .echo_mode(SW[1]),
         .rxf(ACBUS[0]),
         .txe(ACBUS[1]),
         .laser1_rx(GREEN_RX),

@@ -1,78 +1,69 @@
 `default_nettype none
 
 // FTDI Interface for asynchronous FIFO mode
-module FTDI_Interface #(WIDTH=64) (
+module FTDI_Interface (
     input  logic clock, reset, clear,
-    input  logic txe, data_wr_valid, wr_en, rxf, rd_en, rd_ct_clear,
-    input  logic [  7:0] data_wr, adbus_in,
-    input  logic [  9:0] max_rd_ct,
-    output logic adbus_tri, ftdi_wr, data_wr_read, ftdi_rd,
-    output logic [  7:0] adbus_out,
-    output logic [  9:0] rd_ct,
-    output logic [WIDTH-1:0] read
+    input  logic txe, rxf, wrreq, rdreq, wr_en, rd_en,
+    input  logic [7:0] data_wr, adbus_in,
+    output logic adbus_tri, ftdi_wr, ftdi_rd, rdq_full, rdq_empty, wrq_full,
+                 wrq_empty,
+    output logic [7:0] data_rd, adbus_out,
+    output logic [9:0] qsize
 );
-    logic rd_ct_en, store_rd;
-    logic [WIDTH-1:0] read_D;
-
-	 parameter WIDTH_MINUS_8 = WIDTH - 8;
-
-    enum logic [2:0] { WAIT, SET_WRITE, WRITE1, WRITE2, READ1, READ2 }
+    enum logic [2:0] { WAIT, SET_WRITE, WRITE1, WRITE2, READ1, READ2, READ3 }
         currState, nextState;
 
+    logic wrq_rdreq, store_rd;
+
     //// Datapath
-    Counter #(10) Read_Ctr (
-        .D(10'b0),
-        .en(rd_ct_en),
-        .clear(clear || rd_ct_clear),
-        .load(1'b0),
+    fifo_1k read_queue (
+        .aclr(reset),
         .clock,
-        .up(1'b1),
-        .reset,
-        .Q(rd_ct)
+        .data(adbus_in),
+        .rdreq,
+        .sclr(clear),
+        .wrreq(store_rd),
+        .empty(rdq_empty),
+        .full(rdq_full),
+        .q(data_rd),
+        .usedw(qsize)
     );
 
-    Register #(WIDTH) Read_Reg (
-        .D(read_D),
-        .en(store_rd),
-        .clear(clear || rd_ct_clear),
-        .reset,
+    fifo_1k write_queue (
+        .aclr(reset),
         .clock,
-        .Q(read)
+        .data(data_wr),
+        .rdreq(wrq_rdreq),
+        .sclr(clear),
+        .wrreq,
+        .empty(wrq_empty),
+        .full(wrq_full),
+        .q(adbus_out),
+        .usedw()
     );
 
     //// FSM Outputs
     always_comb begin
         adbus_tri = 1'b0;
-        adbus_out = 8'b0;
-        data_wr_read = 1'b0;
         ftdi_wr = 1'b1;
         ftdi_rd = 1'b1;
-		  store_rd = 1'b0;
-		  rd_ct_en = 1'b0;
-        read_D = 'b0;
+        store_rd = 1'b0;
+		  wrq_rdreq = 1'b0;
 
         case (currState)
             // NOTE: FTDI Chip: data setup time 5ns before write
-            SET_WRITE: adbus_out = data_wr;
             WRITE1: begin
                 adbus_tri = 1'b1;
                 ftdi_wr = 1'b0;
-                adbus_out = data_wr;
             end
             WRITE2: begin
                 adbus_tri = 1'b1;
                 ftdi_wr = 1'b0;
-                adbus_out = data_wr;
-                data_wr_read = 1'b1;
+                wrq_rdreq = 1'b1;
             end
             READ1: begin
                 ftdi_rd = 1'b0;
                 store_rd = 1'b1;
-                rd_ct_en = 1'b1;
-                read_D = (
-                    (read & ~('hff << ({3'd0, rd_ct} << 3))) +
-                    ({{WIDTH_MINUS_8{1'b0}}, adbus_in} << ({3'd0, rd_ct} << 3))
-                );
             end
             // RD active pulse width: min 30ns
             READ2: begin
@@ -85,20 +76,24 @@ module FTDI_Interface #(WIDTH=64) (
     always_comb
         case (currState)
             WAIT: begin
-                if (!rxf && rd_en && rd_ct < max_rd_ct) nextState = READ1;
-                else if (wr_en && !txe && data_wr_valid) nextState = SET_WRITE;
-					 else nextState = WAIT;
+                if (!rxf && rd_en && !rdq_full) nextState = READ1;
+                else if (wr_en && !txe && !wrq_empty) nextState = SET_WRITE;
+                else nextState = WAIT;
             end
             SET_WRITE: nextState = WRITE1;
             WRITE1: nextState = WRITE2;
             WRITE2: nextState = WAIT;
             READ1: nextState = READ2;
-            READ2: nextState = WAIT;
+            READ2: begin
+                if (wr_en && !txe && !wrq_empty) nextState = SET_WRITE;
+                else nextState = READ3;
+            end
+            READ3: nextState = WAIT;
         endcase
 
     always_ff @(posedge clock, posedge reset) begin
         if (reset) currState <= WAIT;
-		  else if (clear) currState <= WAIT;
+        else if (clear) currState <= WAIT;
         else currState <= nextState;
     end
 endmodule: FTDI_Interface

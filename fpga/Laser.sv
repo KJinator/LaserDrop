@@ -52,7 +52,7 @@ module LaserDrop (
     //----------------------------LASER TRANSMITTER---------------------------//
     // Need to use clock at double the speed because using posedge (1/2)
 
-    LaserTransmitter transmit (
+    LaserTransmitter_DEPRICATED transmit (
         .data1_transmit(data1_tx),
         .data2_transmit(data2_tx),
         .en,
@@ -68,7 +68,7 @@ module LaserDrop (
     //------------------------------------------------------------------------//
     //------------------------------LASER RECEIVER----------------------------//
     // Simultaneous mode lasers
-    LaserReceiver receive (
+    LaserReceiver_DEPRICATED receive (
         .laser1_in(laser1_rx),
         .laser2_in(laser2_rx),
         .clock,
@@ -82,7 +82,7 @@ module LaserDrop (
     // Non-simultaneous (test mode lasers)
     assign data_valid_test = data1_valid_test | data2_valid_test;
 
-    LaserReceiver receive1 (
+    LaserReceiver_DEPRICATED receive1 (
         .laser1_in(laser1_rx),
         .laser2_in(1'b0),
         .clock,
@@ -92,7 +92,7 @@ module LaserDrop (
         .data1_in(data1_in_test),
         .data2_in(dummy_data2)
     );
-    LaserReceiver receive2 (
+    LaserReceiver_DEPRICATED receive2 (
         .laser1_in(1'b0),
         .laser2_in(laser2_rx),
         .clock,
@@ -516,6 +516,88 @@ endmodule: LaserDrop
 // transmission finished.
 // NOTE: Currently, configured so it only transmits if both lasers are ready.
 module LaserTransmitter(
+    input logic [7:0] data_transmit,
+    input logic en, clock, clock_base, reset, data_ready,
+    output logic [1:0] laser_out,
+    output logic done
+);
+    logic [7:0] data;
+    logic [10:0] data_compiled;
+    logic [3:0] count;
+    logic load, count_en, count_reset, mux_out;
+
+    enum logic [1:0] { WAIT, SEND, DONE } currState, nextState;
+
+    Register laser_data (
+        .D(data_transmit),
+        .en(load),
+        .clear(1'b0),
+        .reset,
+        .clock(clock_base),
+        .Q(data)
+    );
+
+    // 1'b1 is start bit, and it wraps around to 0 at the end -> sent LSB first
+    assign data_compiled = { data_transmit, 1'b1, 1'b0};
+
+    assign mux_out = data_compiled[count];
+
+    Counter #(4) bit_count (
+        .D(4'b0),
+        .en(count_en),
+        .clear(1'b0),
+        .load(1'b0),
+        .clock(clock),
+        .up(1'b1),
+        .reset(reset || count_reset),
+        .Q(count)
+    );
+
+    //// Transition States
+    always_comb
+        case (currState)
+            WAIT: nextState = (data_ready && en) ? SEND : WAIT;
+            // TODO: depending on timing, have space to optimize one clock cycle
+            SEND: begin
+                if (~en) nextState = WAIT;
+                else if (count == 4'd10) nextState = DONE;
+                else nextState = SEND;
+            end
+            DONE: nextState = WAIT;
+        endcase
+
+    //// Logic for each state
+    always_comb begin
+        count_en = 1'b0;
+        count_reset = ~en;
+        load = 1'b0;
+        done = 1'b0;
+        laser_out = { mux_out, en };
+
+        case (currState)
+            WAIT: load = data_ready;
+            // TODO: depending on timing, have space to optimize one clock cycle
+            SEND: begin
+                count_en = 1'b1;
+            end
+            DONE: begin
+                done = 1'b1;
+                count_reset = 1'b1;
+            end
+        endcase
+    end
+
+    always_ff @(posedge clock_base, posedge reset) begin
+        if (reset) currState <= WAIT;
+        else currState <= nextState;
+    end
+endmodule: LaserTransmitter
+
+// Laser Transmission module
+// Transmits data_in on data_out if data_ready is asserted. Asserts done when
+// transmission finished.
+// NOTE: Currently, configured so it only transmits if both lasers are ready.
+module LaserTransmitter_DEPRICATED (
     input logic [7:0] data1_transmit, data2_transmit,
     input logic en, clock, clock_base, reset, data1_ready, data2_ready,
     output logic [1:0] laser1_out, laser2_out,
@@ -587,7 +669,7 @@ module LaserTransmitter(
         load = 1'b0;
         done = 1'b0;
         laser1_out = { mux1_out, en };
-        laser2_out = { mux2_out, en };
+        laser2_out = 2'b0; // NOT Using IR laser
 
         case (currState)
             WAIT: load = data_ready;
@@ -606,7 +688,7 @@ module LaserTransmitter(
         if (reset) currState <= WAIT;
         else currState <= nextState;
     end
-endmodule: LaserTransmitter
+endmodule: LaserTransmitter_DEPRICATED
 
 
 // Laser Receiver module
@@ -615,6 +697,132 @@ endmodule: LaserTransmitter
 // NOTE: currently coded so this only works when data received simultaneously on
 //       both lasers.
 module LaserReceiver
+    (input logic clock, reset,
+     input logic laser_in,
+     output logic data_valid,
+     output logic [7:0] data_in);
+
+    enum logic [2:0] {
+        WAIT, RECEIVE
+    } currState, nextState;
+
+    logic clock_en, clock_clear, vote_en, vote_clear;
+    logic sampled_bit, byte_read, uart_valid, data_start;
+    logic [9:0] data_register;
+    logic [7:0] clock_counter, bits_read;
+    logic [1:0] vote;
+
+    // NOTE: May become bottleneck if speed becomes extremely slow
+    // eg. DIVIDER >= 8
+    Counter #(8) counter_divided (
+        .D(8'b1),
+        .en(clock_en),
+        .clear(1'b0),
+        .load(clock_clear),
+        .clock,
+        .up(1'b1),
+        .reset,
+        .Q(clock_counter)
+    );
+
+    assign vote_en = (
+        ((clock_counter == 8'd4) || (clock_counter == 8'd5) ||
+         (clock_counter == 8'd3)) && laser_in
+    );
+    assign sampled_bit = (clock_counter == 8'd8);
+    assign byte_read = (bits_read == 8'd9);
+
+    assign vote_clear = sampled_bit;
+
+    assign clock_clear = sampled_bit;
+
+    assign uart_valid = byte_read;
+
+    Counter #(8) num_bits (
+        .D(8'b0),
+        .en(sampled_bit),
+        .clear(byte_read),
+        .load(1'b0),
+        .clock,
+        .up(1'b1),
+        .reset,
+        .Q(bits_read)
+    );
+
+    Counter #(2) majority_vote1 (
+        .D(2'b0),
+        .en(vote_en),
+        .clear(vote_clear),
+        .load(1'b0),
+        .clock,
+        .up(1'b1),
+        .reset,
+        .Q(vote)
+    );
+
+    ShiftRegister #(10) data_shift1 (
+        .D(vote[1]),
+        .en(sampled_bit),
+        .left(1'd0),
+        .clock,
+        .reset,
+        .Q(data_register)
+    );
+
+    Register #(9) data1 (
+        .D(data_register[9:1]),
+        .en(uart_valid),
+        .clear(1'b0),
+        .reset,
+        .clock,
+        .Q({ data_in, data_start })   // Sent LSB first
+    );
+
+    Register #(1) data_valid_reg (
+        .D(1'd1),
+        .en(uart_valid),
+        .clear(~uart_valid),
+        .reset,
+        .clock,
+        .Q(data_valid)
+    );
+
+    logic switch_to_wait;
+
+    assign switch_to_wait = byte_read | (bits_read == 8'b1 & ~data_register[9]);
+
+    always_comb begin
+        case (currState)
+            WAIT: nextState = WAIT;
+            RECEIVE: nextState = switch_to_wait ? WAIT : RECEIVE;
+        endcase
+    end
+
+    always_comb begin
+        clock_en = 1'b0;
+        case (currState)
+            RECEIVE: clock_en = 1'b1;
+        endcase
+    end
+
+    always_ff @(
+        posedge laser_in, posedge byte_read, posedge reset, posedge clock
+    ) begin
+        if (reset) currState <= WAIT;
+        else if (byte_read) currState <= WAIT;
+        else if (laser_in) currState <= RECEIVE;
+		  else currState <= nextState;
+    end
+
+endmodule: LaserReceiver
+
+
+// Laser Receiver module
+// Listens in on laser1_in and laser2_in, asserting data_valid for a single
+// clock cycle if a whole byte with valid start and stop bits read on both.
+// NOTE: currently coded so this only works when data received simultaneously on
+//       both lasers.
+module LaserReceiver_DEPRICATED
     (input logic clock, reset,
      input logic laser1_in, laser2_in, simultaneous_mode,
      output logic data_valid,
@@ -769,4 +977,4 @@ module LaserReceiver
         else if (laser2_in) currState <= RECEIVE;
     end
 
-endmodule: LaserReceiver
+endmodule: LaserReceiver_DEPRICATED

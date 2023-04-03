@@ -1,16 +1,16 @@
-Fitter Status : Successful - Sun Apr  2 14:26:19 2023
+Fitter Status : Successful - Sun Apr  2 23:28:08 2023
 Quartus Prime Version : 22.1std.0 Build 915 10/25/2022 SC Lite Edition
 Revision Name : ChipInterface
 Top-level Entity Name : ChipInterface
 Family : Cyclone V
 Device : 5CEBA4F23C7
 Timing Models : Final
-Logic utilization (in ALMs) : 396 / 18,480 ( 2 % )
-Total registers : 635
+Logic utilization (in ALMs) : 77 / 18,480 ( < 1 % )
+Total registers : 116
 Total pins : 147 / 224 ( 66 % )
 Total virtual pins : 0
-Total block memory bits : 0 / 3,153,920 ( 0 % )
-Total RAM Blocks : 0 / 308 ( 0 % )
+Total block memory bits : 16,384 / 3,153,920 ( < 1 % )
+Total RAM Blocks : 2 / 308 ( < 1 % )
 Total DSP Blocks : 0 / 66 ( 0 % )
 Total HSSI RX PCSs : 0
 Total HSSI PMA RX Deserializers : 0
