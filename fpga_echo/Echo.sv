@@ -16,7 +16,7 @@ module Echo (
     //------------------------LASER TRANSMISSION/RECEIVER---------------------//
     LaserTransmitter transmit (
         .data_transmit,
-        .en(~echo_mode | ~en),
+        .en(~echo_mode & en),
         .clock(CLOCK_6_25),
         .clock_base(clock),
         .reset,

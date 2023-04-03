@@ -1,5 +1,5 @@
 Analysis & Synthesis report for ChipInterface
-Mon Apr  3 01:00:40 2023
+Mon Apr  3 11:11:58 2023
 Quartus Prime Version 22.1std.0 Build 915 10/25/2022 SC Lite Edition
 
 
@@ -36,24 +36,26 @@ Quartus Prime Version 22.1std.0 Build 915 10/25/2022 SC Lite Edition
  28. Parameter Settings for User Entity Instance: Echo:main|FTDI_Interface:ftdi_if|fifo_1k:write_queue|scfifo:scfifo_component
  29. Parameter Settings for User Entity Instance: Echo:main|Register:recently_received_reg
  30. Parameter Settings for User Entity Instance: Echo:main|ClockDivider:clock_12_5|Counter:count
- 31. scfifo Parameter Settings by Entity Instance
- 32. Port Connectivity Checks: "Echo:main|ClockDivider:clock_12_5|Counter:count"
- 33. Port Connectivity Checks: "Echo:main|ClockDivider:clock_12_5"
- 34. Port Connectivity Checks: "Echo:main|Register:recently_received_reg"
- 35. Port Connectivity Checks: "Echo:main|FTDI_Interface:ftdi_if|fifo_1k:write_queue"
- 36. Port Connectivity Checks: "Echo:main|FTDI_Interface:ftdi_if"
- 37. Port Connectivity Checks: "Echo:main|LaserReceiver:receive|Register:data_valid_reg"
- 38. Port Connectivity Checks: "Echo:main|LaserReceiver:receive|Register:data1"
- 39. Port Connectivity Checks: "Echo:main|LaserReceiver:receive|ShiftRegister:data_shift1"
- 40. Port Connectivity Checks: "Echo:main|LaserReceiver:receive|Counter:majority_vote1"
- 41. Port Connectivity Checks: "Echo:main|LaserReceiver:receive|Counter:num_bits"
- 42. Port Connectivity Checks: "Echo:main|LaserReceiver:receive|Counter:counter_divided"
- 43. Port Connectivity Checks: "Echo:main|LaserTransmitter:transmit|Counter:bit_count"
- 44. Port Connectivity Checks: "Echo:main|LaserTransmitter:transmit|Register:laser_data"
- 45. Post-Synthesis Netlist Statistics for Top Partition
- 46. Elapsed Time Per Partition
- 47. Analysis & Synthesis Messages
- 48. Analysis & Synthesis Suppressed Messages
+ 31. Parameter Settings for User Entity Instance: Echo:main|ClockDivider:clock_6_25|Counter:count
+ 32. scfifo Parameter Settings by Entity Instance
+ 33. Port Connectivity Checks: "Echo:main|ClockDivider:clock_6_25"
+ 34. Port Connectivity Checks: "Echo:main|ClockDivider:clock_12_5|Counter:count"
+ 35. Port Connectivity Checks: "Echo:main|ClockDivider:clock_12_5"
+ 36. Port Connectivity Checks: "Echo:main|Register:recently_received_reg"
+ 37. Port Connectivity Checks: "Echo:main|FTDI_Interface:ftdi_if|fifo_1k:write_queue"
+ 38. Port Connectivity Checks: "Echo:main|FTDI_Interface:ftdi_if"
+ 39. Port Connectivity Checks: "Echo:main|LaserReceiver:receive|Register:data_valid_reg"
+ 40. Port Connectivity Checks: "Echo:main|LaserReceiver:receive|Register:data1"
+ 41. Port Connectivity Checks: "Echo:main|LaserReceiver:receive|ShiftRegister:data_shift1"
+ 42. Port Connectivity Checks: "Echo:main|LaserReceiver:receive|Counter:majority_vote1"
+ 43. Port Connectivity Checks: "Echo:main|LaserReceiver:receive|Counter:num_bits"
+ 44. Port Connectivity Checks: "Echo:main|LaserReceiver:receive|Counter:counter_divided"
+ 45. Port Connectivity Checks: "Echo:main|LaserTransmitter:transmit|Counter:bit_count"
+ 46. Port Connectivity Checks: "Echo:main|LaserTransmitter:transmit|Register:laser_data"
+ 47. Post-Synthesis Netlist Statistics for Top Partition
+ 48. Elapsed Time Per Partition
+ 49. Analysis & Synthesis Messages
+ 50. Analysis & Synthesis Suppressed Messages
 
 
 
@@ -80,13 +82,13 @@ https://fpgasoftware.intel.com/eula.
 +----------------------------------------------------------------------------------+
 ; Analysis & Synthesis Summary                                                     ;
 +---------------------------------+------------------------------------------------+
-; Analysis & Synthesis Status     ; Successful - Mon Apr  3 01:00:40 2023          ;
+; Analysis & Synthesis Status     ; Successful - Mon Apr  3 11:11:58 2023          ;
 ; Quartus Prime Version           ; 22.1std.0 Build 915 10/25/2022 SC Lite Edition ;
 ; Revision Name                   ; ChipInterface                                  ;
 ; Top-level Entity Name           ; ChipInterface                                  ;
 ; Family                          ; Cyclone V                                      ;
 ; Logic utilization (in ALMs)     ; N/A                                            ;
-; Total registers                 ; 132                                            ;
+; Total registers                 ; 142                                            ;
 ; Total pins                      ; 147                                            ;
 ; Total virtual pins              ; 0                                              ;
 ; Total block memory bits         ; 16,384                                         ;
@@ -237,16 +239,16 @@ https://fpgasoftware.intel.com/eula.
 +---------------------------------------------+----------------+
 ; Resource                                    ; Usage          ;
 +---------------------------------------------+----------------+
-; Estimate of Logic utilization (ALMs needed) ; 96             ;
+; Estimate of Logic utilization (ALMs needed) ; 97             ;
 ;                                             ;                ;
 ; Combinational ALUT usage for logic          ; 172            ;
 ;     -- 7 input functions                    ; 0              ;
 ;     -- 6 input functions                    ; 15             ;
-;     -- 5 input functions                    ; 14             ;
-;     -- 4 input functions                    ; 37             ;
-;     -- <=3 input functions                  ; 106            ;
+;     -- 5 input functions                    ; 26             ;
+;     -- 4 input functions                    ; 29             ;
+;     -- <=3 input functions                  ; 102            ;
 ;                                             ;                ;
-; Dedicated logic registers                   ; 132            ;
+; Dedicated logic registers                   ; 142            ;
 ;                                             ;                ;
 ; I/O pins                                    ; 147            ;
 ; Total MLAB memory bits                      ; 0              ;
@@ -255,9 +257,9 @@ https://fpgasoftware.intel.com/eula.
 ; Total DSP Blocks                            ; 0              ;
 ;                                             ;                ;
 ; Maximum fan-out node                        ; CLOCK_50~input ;
-; Maximum fan-out                             ; 144            ;
-; Total fan-out                               ; 1713           ;
-; Average fan-out                             ; 2.50           ;
+; Maximum fan-out                             ; 154            ;
+; Total fan-out                               ; 1774           ;
+; Average fan-out                             ; 2.55           ;
 +---------------------------------------------+----------------+
 
 
@@ -266,18 +268,18 @@ https://fpgasoftware.intel.com/eula.
 +------------------------------------------------+---------------------+---------------------------+-------------------+------------+------+--------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-------------------+--------------+
 ; Compilation Hierarchy Node                     ; Combinational ALUTs ; Dedicated Logic Registers ; Block Memory Bits ; DSP Blocks ; Pins ; Virtual Pins ; Full Hierarchy Name                                                                                                                                                                      ; Entity Name       ; Library Name ;
 +------------------------------------------------+---------------------+---------------------------+-------------------+------------+------+--------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-------------------+--------------+
-; |ChipInterface                                 ; 172 (1)             ; 132 (0)                   ; 16384             ; 0          ; 147  ; 0            ; |ChipInterface                                                                                                                                                                           ; ChipInterface     ; work         ;
+; |ChipInterface                                 ; 172 (1)             ; 142 (0)                   ; 16384             ; 0          ; 147  ; 0            ; |ChipInterface                                                                                                                                                                           ; ChipInterface     ; work         ;
 ;    |BCDtoSevenSegment:laser2_0|                ; 7 (7)               ; 0 (0)                     ; 0                 ; 0          ; 0    ; 0            ; |ChipInterface|BCDtoSevenSegment:laser2_0                                                                                                                                                ; BCDtoSevenSegment ; work         ;
 ;    |BCDtoSevenSegment:laser2_1|                ; 7 (7)               ; 0 (0)                     ; 0                 ; 0          ; 0    ; 0            ; |ChipInterface|BCDtoSevenSegment:laser2_1                                                                                                                                                ; BCDtoSevenSegment ; work         ;
-;    |Echo:main|                                 ; 157 (13)            ; 132 (1)                   ; 16384             ; 0          ; 0    ; 0            ; |ChipInterface|Echo:main                                                                                                                                                                 ; Echo              ; work         ;
-;       |ClockDivider:clock_12_5|                ; 11 (3)              ; 9 (1)                     ; 0                 ; 0          ; 0    ; 0            ; |ChipInterface|Echo:main|ClockDivider:clock_12_5                                                                                                                                         ; ClockDivider      ; work         ;
-;          |Counter:count|                       ; 8 (8)               ; 8 (8)                     ; 0                 ; 0          ; 0    ; 0            ; |ChipInterface|Echo:main|ClockDivider:clock_12_5|Counter:count                                                                                                                           ; Counter           ; work         ;
-;       |FTDI_Interface:ftdi_if|                 ; 88 (10)             ; 71 (7)                    ; 16384             ; 0          ; 0    ; 0            ; |ChipInterface|Echo:main|FTDI_Interface:ftdi_if                                                                                                                                          ; FTDI_Interface    ; work         ;
-;          |fifo_1k:read_queue|                  ; 40 (0)              ; 32 (0)                    ; 8192              ; 0          ; 0    ; 0            ; |ChipInterface|Echo:main|FTDI_Interface:ftdi_if|fifo_1k:read_queue                                                                                                                       ; fifo_1k           ; work         ;
-;             |scfifo:scfifo_component|          ; 40 (0)              ; 32 (0)                    ; 8192              ; 0          ; 0    ; 0            ; |ChipInterface|Echo:main|FTDI_Interface:ftdi_if|fifo_1k:read_queue|scfifo:scfifo_component                                                                                               ; scfifo            ; work         ;
-;                |scfifo_qbf1:auto_generated|    ; 40 (0)              ; 32 (0)                    ; 8192              ; 0          ; 0    ; 0            ; |ChipInterface|Echo:main|FTDI_Interface:ftdi_if|fifo_1k:read_queue|scfifo:scfifo_component|scfifo_qbf1:auto_generated                                                                    ; scfifo_qbf1       ; work         ;
-;                   |a_dpfifo_86d1:dpfifo|       ; 40 (2)              ; 32 (0)                    ; 8192              ; 0          ; 0    ; 0            ; |ChipInterface|Echo:main|FTDI_Interface:ftdi_if|fifo_1k:read_queue|scfifo:scfifo_component|scfifo_qbf1:auto_generated|a_dpfifo_86d1:dpfifo                                               ; a_dpfifo_86d1     ; work         ;
-;                      |a_fefifo_jaf:fifo_state| ; 18 (8)              ; 12 (2)                    ; 0                 ; 0          ; 0    ; 0            ; |ChipInterface|Echo:main|FTDI_Interface:ftdi_if|fifo_1k:read_queue|scfifo:scfifo_component|scfifo_qbf1:auto_generated|a_dpfifo_86d1:dpfifo|a_fefifo_jaf:fifo_state                       ; a_fefifo_jaf      ; work         ;
+;    |Echo:main|                                 ; 157 (11)            ; 142 (3)                   ; 16384             ; 0          ; 0    ; 0            ; |ChipInterface|Echo:main                                                                                                                                                                 ; Echo              ; work         ;
+;       |ClockDivider:clock_6_25|                ; 11 (3)              ; 9 (1)                     ; 0                 ; 0          ; 0    ; 0            ; |ChipInterface|Echo:main|ClockDivider:clock_6_25                                                                                                                                         ; ClockDivider      ; work         ;
+;          |Counter:count|                       ; 8 (8)               ; 8 (8)                     ; 0                 ; 0          ; 0    ; 0            ; |ChipInterface|Echo:main|ClockDivider:clock_6_25|Counter:count                                                                                                                           ; Counter           ; work         ;
+;       |FTDI_Interface:ftdi_if|                 ; 87 (10)             ; 71 (7)                    ; 16384             ; 0          ; 0    ; 0            ; |ChipInterface|Echo:main|FTDI_Interface:ftdi_if                                                                                                                                          ; FTDI_Interface    ; work         ;
+;          |fifo_1k:read_queue|                  ; 39 (0)              ; 32 (0)                    ; 8192              ; 0          ; 0    ; 0            ; |ChipInterface|Echo:main|FTDI_Interface:ftdi_if|fifo_1k:read_queue                                                                                                                       ; fifo_1k           ; work         ;
+;             |scfifo:scfifo_component|          ; 39 (0)              ; 32 (0)                    ; 8192              ; 0          ; 0    ; 0            ; |ChipInterface|Echo:main|FTDI_Interface:ftdi_if|fifo_1k:read_queue|scfifo:scfifo_component                                                                                               ; scfifo            ; work         ;
+;                |scfifo_qbf1:auto_generated|    ; 39 (0)              ; 32 (0)                    ; 8192              ; 0          ; 0    ; 0            ; |ChipInterface|Echo:main|FTDI_Interface:ftdi_if|fifo_1k:read_queue|scfifo:scfifo_component|scfifo_qbf1:auto_generated                                                                    ; scfifo_qbf1       ; work         ;
+;                   |a_dpfifo_86d1:dpfifo|       ; 39 (2)              ; 32 (0)                    ; 8192              ; 0          ; 0    ; 0            ; |ChipInterface|Echo:main|FTDI_Interface:ftdi_if|fifo_1k:read_queue|scfifo:scfifo_component|scfifo_qbf1:auto_generated|a_dpfifo_86d1:dpfifo                                               ; a_dpfifo_86d1     ; work         ;
+;                      |a_fefifo_jaf:fifo_state| ; 17 (7)              ; 12 (2)                    ; 0                 ; 0          ; 0    ; 0            ; |ChipInterface|Echo:main|FTDI_Interface:ftdi_if|fifo_1k:read_queue|scfifo:scfifo_component|scfifo_qbf1:auto_generated|a_dpfifo_86d1:dpfifo|a_fefifo_jaf:fifo_state                       ; a_fefifo_jaf      ; work         ;
 ;                         |cntr_ai7:count_usedw| ; 10 (10)             ; 10 (10)                   ; 0                 ; 0          ; 0    ; 0            ; |ChipInterface|Echo:main|FTDI_Interface:ftdi_if|fifo_1k:read_queue|scfifo:scfifo_component|scfifo_qbf1:auto_generated|a_dpfifo_86d1:dpfifo|a_fefifo_jaf:fifo_state|cntr_ai7:count_usedw  ; cntr_ai7          ; work         ;
 ;                      |altsyncram_ntu1:FIFOram| ; 0 (0)               ; 0 (0)                     ; 8192              ; 0          ; 0    ; 0            ; |ChipInterface|Echo:main|FTDI_Interface:ftdi_if|fifo_1k:read_queue|scfifo:scfifo_component|scfifo_qbf1:auto_generated|a_dpfifo_86d1:dpfifo|altsyncram_ntu1:FIFOram                       ; altsyncram_ntu1   ; work         ;
 ;                      |cntr_uhb:rd_ptr_count|   ; 10 (10)             ; 10 (10)                   ; 0                 ; 0          ; 0    ; 0            ; |ChipInterface|Echo:main|FTDI_Interface:ftdi_if|fifo_1k:read_queue|scfifo:scfifo_component|scfifo_qbf1:auto_generated|a_dpfifo_86d1:dpfifo|cntr_uhb:rd_ptr_count                         ; cntr_uhb          ; work         ;
@@ -298,8 +300,9 @@ https://fpgasoftware.intel.com/eula.
 ;          |Register:data1|                      ; 0 (0)               ; 8 (8)                     ; 0                 ; 0          ; 0    ; 0            ; |ChipInterface|Echo:main|LaserReceiver:receive|Register:data1                                                                                                                            ; Register          ; work         ;
 ;          |Register:data_valid_reg|             ; 0 (0)               ; 1 (1)                     ; 0                 ; 0          ; 0    ; 0            ; |ChipInterface|Echo:main|LaserReceiver:receive|Register:data_valid_reg                                                                                                                   ; Register          ; work         ;
 ;          |ShiftRegister:data_shift1|           ; 0 (0)               ; 8 (8)                     ; 0                 ; 0          ; 0    ; 0            ; |ChipInterface|Echo:main|LaserReceiver:receive|ShiftRegister:data_shift1                                                                                                                 ; ShiftRegister     ; work         ;
-;       |LaserTransmitter:transmit|              ; 14 (10)             ; 7 (3)                     ; 0                 ; 0          ; 0    ; 0            ; |ChipInterface|Echo:main|LaserTransmitter:transmit                                                                                                                                       ; LaserTransmitter  ; work         ;
+;       |LaserTransmitter:transmit|              ; 17 (12)             ; 15 (3)                    ; 0                 ; 0          ; 0    ; 0            ; |ChipInterface|Echo:main|LaserTransmitter:transmit                                                                                                                                       ; LaserTransmitter  ; work         ;
 ;          |Counter:bit_count|                   ; 4 (4)               ; 4 (4)                     ; 0                 ; 0          ; 0    ; 0            ; |ChipInterface|Echo:main|LaserTransmitter:transmit|Counter:bit_count                                                                                                                     ; Counter           ; work         ;
+;          |Register:laser_data|                 ; 1 (1)               ; 8 (8)                     ; 0                 ; 0          ; 0    ; 0            ; |ChipInterface|Echo:main|LaserTransmitter:transmit|Register:laser_data                                                                                                                   ; Register          ; work         ;
 ;       |Register:recently_received_reg|         ; 0 (0)               ; 8 (8)                     ; 0                 ; 0          ; 0    ; 0            ; |ChipInterface|Echo:main|Register:recently_received_reg                                                                                                                                  ; Register          ; work         ;
 +------------------------------------------------+---------------------+---------------------------+-------------------+------------+------+--------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-------------------+--------------+
 Note: For table entries with two numbers listed, the numbers in parentheses indicate the number of resources of the given type used by the specific entity alone. The numbers listed outside of parentheses indicate the total resources of the given type used by the specific entity and all of its sub-entities in the hierarchy.
@@ -326,14 +329,15 @@ Note: For table entries with two numbers listed, the numbers in parentheses indi
 
 
 Encoding Type:  One-Hot
-+----------------------------------------------------+
-; State Machine - |ChipInterface|Echo:main|currState ;
-+----------------------+-----------------------------+
-; Name                 ; currState.VALID_DATA        ;
-+----------------------+-----------------------------+
-; currState.WAIT       ; 0                           ;
-; currState.VALID_DATA ; 1                           ;
-+----------------------+-----------------------------+
++---------------------------------------------------------------------------------------------------+
+; State Machine - |ChipInterface|Echo:main|currState                                                ;
++-----------------------------+----------------+-----------------------------+----------------------+
+; Name                        ; currState.WAIT ; currState.WAIT_TRANSMISSION ; currState.VALID_DATA ;
++-----------------------------+----------------+-----------------------------+----------------------+
+; currState.WAIT              ; 0              ; 0                           ; 0                    ;
+; currState.VALID_DATA        ; 1              ; 0                           ; 1                    ;
+; currState.WAIT_TRANSMISSION ; 1              ; 1                           ; 0                    ;
++-----------------------------+----------------+-----------------------------+----------------------+
 
 
 Encoding Type:  One-Hot
@@ -370,13 +374,12 @@ Encoding Type:  One-Hot
 ; Register name                                                    ; Reason for Removal                                            ;
 +------------------------------------------------------------------+---------------------------------------------------------------+
 ; Echo:main|LaserReceiver:receive|ShiftRegister:data_shift1|Q[0,1] ; Lost fanout                                                   ;
-; Echo:main|currState~5                                            ; Lost fanout                                                   ;
 ; Echo:main|currState~6                                            ; Lost fanout                                                   ;
 ; Echo:main|FTDI_Interface:ftdi_if|currState~4                     ; Lost fanout                                                   ;
 ; Echo:main|FTDI_Interface:ftdi_if|currState~5                     ; Lost fanout                                                   ;
 ; Echo:main|FTDI_Interface:ftdi_if|currState~6                     ; Lost fanout                                                   ;
 ; Echo:main|LaserReceiver:receive|currState.WAIT                   ; Merged with Echo:main|LaserReceiver:receive|currState.RECEIVE ;
-; Total Number of Removed Registers = 8                            ;                                                               ;
+; Total Number of Removed Registers = 7                            ;                                                               ;
 +------------------------------------------------------------------+---------------------------------------------------------------+
 
 
@@ -394,25 +397,25 @@ Encoding Type:  One-Hot
 +----------------------------------------------+-------+
 ; Statistic                                    ; Value ;
 +----------------------------------------------+-------+
-; Total registers                              ; 132   ;
-; Number of registers using Synchronous Clear  ; 8     ;
+; Total registers                              ; 142   ;
+; Number of registers using Synchronous Clear  ; 16    ;
 ; Number of registers using Synchronous Load   ; 18    ;
-; Number of registers using Asynchronous Clear ; 132   ;
+; Number of registers using Asynchronous Clear ; 142   ;
 ; Number of registers using Asynchronous Load  ; 0     ;
-; Number of registers using Clock Enable       ; 94    ;
+; Number of registers using Clock Enable       ; 102   ;
 ; Number of registers using Preset             ; 0     ;
 +----------------------------------------------+-------+
 
 
-+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-; Multiplexer Restructuring Statistics (Restructuring Performed)                                                                                                                           ;
-+--------------------+-----------+---------------+----------------------+------------------------+------------+----------------------------------------------------------------------------+
-; Multiplexer Inputs ; Bus Width ; Baseline Area ; Area if Restructured ; Saving if Restructured ; Registered ; Example Multiplexer Output                                                 ;
-+--------------------+-----------+---------------+----------------------+------------------------+------------+----------------------------------------------------------------------------+
-; 3:1                ; 8 bits    ; 16 LEs        ; 0 LEs                ; 16 LEs                 ; Yes        ; |ChipInterface|Echo:main|LaserReceiver:receive|Counter:num_bits|Q[3]       ;
-; 3:1                ; 2 bits    ; 4 LEs         ; 2 LEs                ; 2 LEs                  ; Yes        ; |ChipInterface|Echo:main|LaserReceiver:receive|Counter:majority_vote1|Q[0] ;
-; 3:1                ; 8 bits    ; 16 LEs        ; 16 LEs               ; 0 LEs                  ; No         ; |ChipInterface|Echo:main|data_wr[6]                                        ;
-+--------------------+-----------+---------------+----------------------+------------------------+------------+----------------------------------------------------------------------------+
++-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+; Multiplexer Restructuring Statistics (Restructuring Performed)                                                                                                                            ;
++--------------------+-----------+---------------+----------------------+------------------------+------------+-----------------------------------------------------------------------------+
+; Multiplexer Inputs ; Bus Width ; Baseline Area ; Area if Restructured ; Saving if Restructured ; Registered ; Example Multiplexer Output                                                  ;
++--------------------+-----------+---------------+----------------------+------------------------+------------+-----------------------------------------------------------------------------+
+; 3:1                ; 8 bits    ; 16 LEs        ; 0 LEs                ; 16 LEs                 ; Yes        ; |ChipInterface|Echo:main|LaserTransmitter:transmit|Register:laser_data|Q[3] ;
+; 3:1                ; 8 bits    ; 16 LEs        ; 0 LEs                ; 16 LEs                 ; Yes        ; |ChipInterface|Echo:main|LaserReceiver:receive|Counter:num_bits|Q[6]        ;
+; 3:1                ; 2 bits    ; 4 LEs         ; 2 LEs                ; 2 LEs                  ; Yes        ; |ChipInterface|Echo:main|LaserReceiver:receive|Counter:majority_vote1|Q[1]  ;
++--------------------+-----------+---------------+----------------------+------------------------+------------+-----------------------------------------------------------------------------+
 
 
 +----------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
@@ -591,6 +594,16 @@ Note: In order to hide this table in the UI and the text report file, please set
 Note: In order to hide this table in the UI and the text report file, please set the "Show Parameter Settings in Synthesis Report" option in "Analysis and Synthesis Settings -> More Settings" to "Off".
 
 
++----------------------------------------------------------------------------------------------+
+; Parameter Settings for User Entity Instance: Echo:main|ClockDivider:clock_6_25|Counter:count ;
++----------------+-------+---------------------------------------------------------------------+
+; Parameter Name ; Value ; Type                                                                ;
++----------------+-------+---------------------------------------------------------------------+
+; WIDTH          ; 8     ; Signed Integer                                                      ;
++----------------+-------+---------------------------------------------------------------------+
+Note: In order to hide this table in the UI and the text report file, please set the "Show Parameter Settings in Synthesis Report" option in "Analysis and Synthesis Settings -> More Settings" to "Off".
+
+
 +-----------------------------------------------------------------------------------------------------------+
 ; scfifo Parameter Settings by Entity Instance                                                              ;
 +----------------------------+------------------------------------------------------------------------------+
@@ -612,6 +625,18 @@ Note: In order to hide this table in the UI and the text report file, please set
 +----------------------------+------------------------------------------------------------------------------+
 
 
++---------------------------------------------------------------+
+; Port Connectivity Checks: "Echo:main|ClockDivider:clock_6_25" ;
++---------------+-------+----------+----------------------------+
+; Port          ; Type  ; Severity ; Details                    ;
++---------------+-------+----------+----------------------------+
+; en            ; Input ; Info     ; Stuck at VCC               ;
+; divider[7..4] ; Input ; Info     ; Stuck at GND               ;
+; divider[2..0] ; Input ; Info     ; Stuck at GND               ;
+; divider[3]    ; Input ; Info     ; Stuck at VCC               ;
++---------------+-------+----------+----------------------------+
+
+
 +-----------------------------------------------------------------------------+
 ; Port Connectivity Checks: "Echo:main|ClockDivider:clock_12_5|Counter:count" ;
 +---------+-------+----------+------------------------------------------------+
@@ -624,16 +649,17 @@ Note: In order to hide this table in the UI and the text report file, please set
 +---------+-------+----------+------------------------------------------------+
 
 
-+---------------------------------------------------------------+
-; Port Connectivity Checks: "Echo:main|ClockDivider:clock_12_5" ;
-+---------------+-------+----------+----------------------------+
-; Port          ; Type  ; Severity ; Details                    ;
-+---------------+-------+----------+----------------------------+
-; en            ; Input ; Info     ; Stuck at VCC               ;
-; divider[7..3] ; Input ; Info     ; Stuck at GND               ;
-; divider[1..0] ; Input ; Info     ; Stuck at GND               ;
-; divider[2]    ; Input ; Info     ; Stuck at VCC               ;
-+---------------+-------+----------+----------------------------+
++-------------------------------------------------------------------------------------------------------------------------+
+; Port Connectivity Checks: "Echo:main|ClockDivider:clock_12_5"                                                           ;
++---------------+--------+----------+-------------------------------------------------------------------------------------+
+; Port          ; Type   ; Severity ; Details                                                                             ;
++---------------+--------+----------+-------------------------------------------------------------------------------------+
+; en            ; Input  ; Info     ; Stuck at VCC                                                                        ;
+; divider[7..3] ; Input  ; Info     ; Stuck at GND                                                                        ;
+; divider[1..0] ; Input  ; Info     ; Stuck at GND                                                                        ;
+; divider[2]    ; Input  ; Info     ; Stuck at VCC                                                                        ;
+; clk_divided   ; Output ; Info     ; Connected to dangling logic. Logic that only feeds a dangling port will be removed. ;
++---------------+--------+----------+-------------------------------------------------------------------------------------+
 
 
 +----------------------------------------------------------------------+
@@ -742,14 +768,13 @@ Note: In order to hide this table in the UI and the text report file, please set
 +-------+-------+----------+--------------------------------------------------------+
 
 
-+-----------------------------------------------------------------------------------------------------------------+
-; Port Connectivity Checks: "Echo:main|LaserTransmitter:transmit|Register:laser_data"                             ;
-+-------+--------+----------+-------------------------------------------------------------------------------------+
-; Port  ; Type   ; Severity ; Details                                                                             ;
-+-------+--------+----------+-------------------------------------------------------------------------------------+
-; clear ; Input  ; Info     ; Stuck at GND                                                                        ;
-; Q     ; Output ; Info     ; Connected to dangling logic. Logic that only feeds a dangling port will be removed. ;
-+-------+--------+----------+-------------------------------------------------------------------------------------+
++-------------------------------------------------------------------------------------+
+; Port Connectivity Checks: "Echo:main|LaserTransmitter:transmit|Register:laser_data" ;
++-------+-------+----------+----------------------------------------------------------+
+; Port  ; Type  ; Severity ; Details                                                  ;
++-------+-------+----------+----------------------------------------------------------+
+; clear ; Input ; Info     ; Stuck at GND                                             ;
++-------+-------+----------+----------------------------------------------------------+
 
 
 +-----------------------------------------------------+
@@ -757,30 +782,30 @@ Note: In order to hide this table in the UI and the text report file, please set
 +-----------------------+-----------------------------+
 ; Type                  ; Count                       ;
 +-----------------------+-----------------------------+
-; arriav_ff             ; 132                         ;
-;     CLR               ; 22                          ;
+; arriav_ff             ; 142                         ;
+;     CLR               ; 24                          ;
 ;     CLR SLD           ; 16                          ;
 ;     ENA CLR           ; 84                          ;
-;     ENA CLR SCLR      ; 8                           ;
+;     ENA CLR SCLR      ; 16                          ;
 ;     ENA CLR SLD       ; 2                           ;
 ; arriav_io_obuf        ; 72                          ;
-; arriav_lcell_comb     ; 176                         ;
+; arriav_lcell_comb     ; 175                         ;
 ;     arith             ; 84                          ;
 ;         1 data inputs ; 65                          ;
 ;         2 data inputs ; 19                          ;
-;     normal            ; 92                          ;
+;     normal            ; 91                          ;
 ;         0 data inputs ; 2                           ;
-;         1 data inputs ; 4                           ;
-;         2 data inputs ; 11                          ;
-;         3 data inputs ; 9                           ;
-;         4 data inputs ; 37                          ;
-;         5 data inputs ; 14                          ;
+;         1 data inputs ; 3                           ;
+;         2 data inputs ; 12                          ;
+;         3 data inputs ; 4                           ;
+;         4 data inputs ; 29                          ;
+;         5 data inputs ; 26                          ;
 ;         6 data inputs ; 15                          ;
 ; boundary_port         ; 147                         ;
 ; stratixv_ram_block    ; 16                          ;
 ;                       ;                             ;
 ; Max LUT depth         ; 4.70                        ;
-; Average LUT depth     ; 1.61                        ;
+; Average LUT depth     ; 1.56                        ;
 +-----------------------+-----------------------------+
 
 
@@ -799,7 +824,7 @@ Note: In order to hide this table in the UI and the text report file, please set
 Info: *******************************************************************
 Info: Running Quartus Prime Analysis & Synthesis
     Info: Version 22.1std.0 Build 915 10/25/2022 SC Lite Edition
-    Info: Processing started: Mon Apr  3 01:00:30 2023
+    Info: Processing started: Mon Apr  3 11:11:48 2023
 Info: Command: quartus_map --read_settings_files=on --write_settings_files=off ChipInterface -c ChipInterface
 Warning (18236): Number of processors has not been specified which may cause overloading on shared machines.  Set the global assignment NUM_PARALLEL_PROCESSORS in your QSF to an appropriate value for best performance.
 Info (20030): Parallel compilation is enabled and will use 4 of the 4 processors detected
@@ -954,7 +979,7 @@ Warning (13024): Output pins are stuck at VCC or GND
 Info (286030): Timing-Driven Synthesis is running
 Warning (14632): Output pin "LEDR[8]" driven by bidirectional pin "GPIO_0[26]" cannot be tri-stated File: C:/Users/anjua/Documents/18-500 ECE Capstone/LaserDrop/fpga_echo/ChipInterface.sv Line: 10
 Warning (14632): Output pin "LEDR[9]" driven by bidirectional pin "GPIO_0[32]" cannot be tri-stated File: C:/Users/anjua/Documents/18-500 ECE Capstone/LaserDrop/fpga_echo/ChipInterface.sv Line: 10
-Info (17049): 7 registers lost all their fanouts during netlist optimizations.
+Info (17049): 6 registers lost all their fanouts during netlist optimizations.
 Warning (20013): Ignored 24 assignments for entity "DE0_CV_Default" -- entity does not exist in design
     Warning (20014): Assignment for entity set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -entity DE0_CV_Default -section_id Top was ignored
     Warning (20014): Assignment for entity set_global_assignment -name PARTITION_NETLIST_TYPE SOURCE -entity DE0_CV_Default -section_id Top was ignored
@@ -994,17 +1019,17 @@ Warning (21074): Design contains 10 input pin(s) that do not drive logic
     Warning (15610): No output dependent on input pin "KEY[1]" File: C:/Users/anjua/Documents/18-500 ECE Capstone/LaserDrop/fpga_echo/ChipInterface.sv Line: 9
     Warning (15610): No output dependent on input pin "KEY[2]" File: C:/Users/anjua/Documents/18-500 ECE Capstone/LaserDrop/fpga_echo/ChipInterface.sv Line: 9
     Warning (15610): No output dependent on input pin "KEY[3]" File: C:/Users/anjua/Documents/18-500 ECE Capstone/LaserDrop/fpga_echo/ChipInterface.sv Line: 9
-Info (21057): Implemented 364 device resources after synthesis - the final resource count might be different
+Info (21057): Implemented 372 device resources after synthesis - the final resource count might be different
     Info (21058): Implemented 15 input pins
     Info (21059): Implemented 60 output pins
     Info (21060): Implemented 72 bidirectional pins
-    Info (21061): Implemented 201 logic cells
+    Info (21061): Implemented 209 logic cells
     Info (21064): Implemented 16 RAM segments
 Info: Quartus Prime Analysis & Synthesis was successful. 0 errors, 106 warnings
     Info: Peak virtual memory: 4844 megabytes
-    Info: Processing ended: Mon Apr  3 01:00:40 2023
-    Info: Elapsed time: 00:00:10
-    Info: Total CPU time (on all processors): 00:00:20
+    Info: Processing ended: Mon Apr  3 11:11:59 2023
+    Info: Elapsed time: 00:00:11
+    Info: Total CPU time (on all processors): 00:00:22
 
 
 +------------------------------------------+
