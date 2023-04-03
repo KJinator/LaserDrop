@@ -85,6 +85,7 @@ module Echo (
         .clk_divided(CLOCK_6_25)
     );
 
+    assign hex1 = 8'h11;
     assign hex2 = recently_received;
 
     always_comb begin
@@ -135,7 +136,11 @@ module Echo (
             end
             WAIT_TRANSMISSION: begin
                 if (echo_mode) nextState = WAIT;
-                else nextState = tx_done ? WAIT : WAIT_TRANSMISSION;
+                else begin
+                    nextState = tx_done ? WAIT : WAIT_TRANSMISSION;
+                    wrreq = data_valid;
+                    data_wr = data_in;
+                end
             end
         endcase
     end
