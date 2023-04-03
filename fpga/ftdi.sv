@@ -48,7 +48,6 @@ module FTDI_Interface (
         ftdi_wr = 1'b1;
         ftdi_rd = 1'b1;
         store_rd = 1'b0;
-        wrq_rdreq = 1'b0;
 
         case (currState)
             // NOTE: FTDI Chip: data setup time 5ns before write
@@ -59,7 +58,6 @@ module FTDI_Interface (
             WRITE2: begin
                 adbus_tri = 1'b1;
                 ftdi_wr = 1'b0;
-                wrq_rdreq = 1'b1;
             end
             READ1: begin
                 ftdi_rd = 1'b0;
@@ -73,11 +71,15 @@ module FTDI_Interface (
     end
 
     //// Next State Logic
-    always_comb
+    always_comb begin
+        wrq_rdreq = 1'b0;
         case (currState)
             WAIT: begin
                 if (!rxf && rd_en && !rdq_full) nextState = READ1;
-                else if (wr_en && !txe && !wrq_empty) nextState = SET_WRITE;
+                else if (wr_en && !txe && !wrq_empty) begin
+                    nextState = SET_WRITE;
+                    wrq_rdreq = 1'b1;
+                end
                 else nextState = WAIT;
             end
             SET_WRITE: nextState = WRITE1;
@@ -90,6 +92,7 @@ module FTDI_Interface (
             end
             READ3: nextState = WAIT;
         endcase
+    end
 
     always_ff @(posedge clock, posedge reset) begin
         if (reset) currState <= WAIT;

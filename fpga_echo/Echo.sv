@@ -8,18 +8,19 @@ module Echo (
     output logic [1:0] laser_tx,
     output logic [7:0] hex1, hex2, adbus_out
 );
+    enum logic [2:0] { WAIT, VALID_DATA } currState, nextState;
     logic CLOCK_12_5;
     logic wrreq, rdreq, data_ready, rdq_full, rdq_empty, wrq_full, wrq_empty;
-    logic [7:0] data_rd, recently_received, data_in, data_wr;
+    logic [7:0] data_rd, recently_received, data_in, data_wr, data_transmit;
 
     //------------------------LASER TRANSMISSION/RECEIVER---------------------//
     LaserTransmitter transmit (
-        .data_transmit(data_rd),
+        .data_transmit,
         .en(~echo_mode),
         .clock(CLOCK_12_5),
         .clock_base(clock),
         .reset,
-        .data_ready(),
+        .data_ready,
         .laser_out(laser_tx),
         .done(tx_done)
     );
@@ -32,20 +33,6 @@ module Echo (
         .data_valid,
         .data_in
     );
-
-    // Mux for Echo mode vs transmission
-    always_comb begin
-        if (echo_mode) begin
-            wrreq = ~rdq_empty & ~wrq_full;
-            rdreq = ~rdq_empty & ~wrq_full;
-            data_wr = data_rd;
-        end
-        else begin
-            wrreq = data_valid;
-            rdreq = tx_done;
-            data_wr = data_in;
-        end
-    end
 
     FTDI_Interface ftdi_if (
         .clock,
@@ -91,5 +78,61 @@ module Echo (
     );
 
     assign hex2 = recently_received;
+
+    always_comb begin
+        wrreq = 1'b0;
+        rdreq = 1'b0;
+        data_wr = 8'b0;
+        data_ready = 1'b0;
+        data_transmit = 8'b0;
+        nextState = WAIT;
+
+        case (currState)
+            WAIT: begin
+                if (echo_mode) begin
+                    if (!rdq_empty && !wrq_full) begin
+                        rdreq = 1'b1;
+                        nextState = VALID_DATA;
+                    end
+                end
+                else begin
+                    wrreq = data_valid;
+                    data_wr = data_in;
+
+                    if (!rdq_empty) begin
+                        rdreq = 1'b1;
+                        nextState = VALID_DATA;
+                    end
+                end
+            end
+            VALID_DATA: begin
+                if (echo_mode) begin
+                    wrreq = 1'b1;
+                    data_wr = data_rd;
+
+                    if (!rdq_empty && !wrq_full) begin
+                        rdreq = 1'b1;
+                        nextState = VALID_DATA;
+                    end
+                end
+                else begin
+                    wrreq = data_valid;
+                    data_wr = data_in;
+
+                    data_transmit = data_rd;
+                    data_ready = 1'b1;
+
+                    if (!rdq_empty) begin
+                        rdreq = 1'b1;
+                        nextState = VALID_DATA;
+                    end
+                end
+            end
+        endcase
+    end
+
+    always_ff @(posedge clock, posedge reset)
+        if (reset) currState <= WAIT;
+        else currState <= nextState;
 
 endmodule: Echo
