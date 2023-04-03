@@ -87,7 +87,10 @@ module FTDI_Interface (
             WRITE2: nextState = WAIT;
             READ1: nextState = READ2;
             READ2: begin
-                if (wr_en && !txe && !wrq_empty) nextState = SET_WRITE;
+                if (wr_en && !txe && !wrq_empty) begin
+                    nextState = SET_WRITE;
+                    wrq_rdreq = 1'b1;
+                end
                 else nextState = READ3;
             end
             READ3: nextState = WAIT;
