@@ -23,8 +23,8 @@ module TB;
     .HEX0(HEX_D[0][0])
   );
 
-  assign GPIO_0[0][26] = GPIO_0[1][20];
-  assign GPIO_0[0][32] = GPIO_0[1][16];
+  assign GPIO_0[0][26] = GPIO_0[0][20];
+  assign GPIO_0[0][32] = GPIO_0[0][16];
 
   assign {
     GPIO_0[0][ 0], GPIO_0[0][ 2], GPIO_0[0][ 4], GPIO_0[0][ 6],
