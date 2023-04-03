@@ -48,7 +48,7 @@ module FTDI_Interface (
         ftdi_wr = 1'b1;
         ftdi_rd = 1'b1;
         store_rd = 1'b0;
-		  wrq_rdreq = 1'b0;
+        wrq_rdreq = 1'b0;
 
         case (currState)
             // NOTE: FTDI Chip: data setup time 5ns before write
