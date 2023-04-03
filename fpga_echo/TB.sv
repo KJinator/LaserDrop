@@ -12,7 +12,7 @@ module TB;
     .CLOCK_50(clock),
     .GPIO_0(GPIO_0[0]),
     .GPIO_1(GPIO_1[0]),
-    .SW({ 8'b0, 2'b11 }),
+    .SW({ 8'b0, 2'b01 }),
     .KEY({ 3'b1, resetN }),
     .LEDR(ledr[0]),
     .HEX5(HEX_D[0][5]),

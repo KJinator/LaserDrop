@@ -8,16 +8,16 @@ module Echo (
     output logic [1:0] laser_tx,
     output logic [7:0] hex1, hex2, adbus_out
 );
-    enum logic [2:0] { WAIT, VALID_DATA } currState, nextState;
-    logic CLOCK_12_5;
+    enum logic [2:0] { WAIT, VALID_DATA, WAIT_TRANSMISSION } currState, nextState;
+    logic CLOCK_6_25, CLOCK_12_5;
     logic wrreq, rdreq, data_ready, rdq_full, rdq_empty, wrq_full, wrq_empty;
     logic [7:0] data_rd, recently_received, data_in, data_wr, data_transmit;
 
     //------------------------LASER TRANSMISSION/RECEIVER---------------------//
     LaserTransmitter transmit (
         .data_transmit,
-        .en(~echo_mode),
-        .clock(CLOCK_12_5),
+        .en(~echo_mode | ~en),
+        .clock(CLOCK_6_25),
         .clock_base(clock),
         .reset,
         .data_ready,
@@ -77,6 +77,14 @@ module Echo (
         .clk_divided(CLOCK_12_5)
     );
 
+    ClockDivider clock_6_25 (
+        .clk_base(clock),
+        .reset,
+        .en(1'b1),
+        .divider(8'd8),
+        .clk_divided(CLOCK_6_25)
+    );
+
     assign hex2 = recently_received;
 
     always_comb begin
@@ -122,11 +130,12 @@ module Echo (
                     data_transmit = data_rd;
                     data_ready = 1'b1;
 
-                    if (!rdq_empty) begin
-                        rdreq = 1'b1;
-                        nextState = VALID_DATA;
-                    end
+                    nextState = WAIT_TRANSMISSION;
                 end
+            end
+            WAIT_TRANSMISSION: begin
+                if (echo_mode) nextState = WAIT;
+                else nextState = tx_done ? WAIT : WAIT_TRANSMISSION;
             end
         endcase
     end

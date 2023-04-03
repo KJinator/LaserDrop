@@ -538,7 +538,7 @@ module LaserTransmitter(
     );
 
     // 1'b1 is start bit, and it wraps around to 0 at the end -> sent LSB first
-    assign data_compiled = { data_transmit, 1'b1, 1'b0};
+    assign data_compiled = { data, 1'b1, 1'b0};
 
     assign mux_out = data_compiled[count];
 
