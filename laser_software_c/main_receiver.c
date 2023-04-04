@@ -3,6 +3,8 @@
 #include "send_library.h"
 #include "ftd2xx.h"
 #include <time.h>
+#include <string.h>
+#include <stdint.h>
 
 int main(int argc, char *argv[]) {
     FT_HANDLE ftHandle;
