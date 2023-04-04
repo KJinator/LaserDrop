@@ -4,7 +4,7 @@ import serial
 s = serial.Serial('COM5', timeout=1)
 atexit.register(s.close)
 print(s.read(100))
-for i in range(256):
+for i in range(215):
     send = bytearray([i])
     s.write(send)
     read = s.read()

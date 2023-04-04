@@ -10,7 +10,7 @@ module FTDI_Interface (
     output logic [7:0] data_rd, adbus_out,
     output logic [9:0] qsize
 );
-    enum logic [2:0] { WAIT, SET_WRITE, WRITE1, WRITE2, WRITE3, READ1, READ2, READ3 }
+    enum logic [3:0] { WAIT, SET_WRITE, WRITE1, WRITE2, WRITE3, READ1, READ2, READ3 }
         currState, nextState;
 
     logic wrq_rdreq, store_rd;
@@ -51,6 +51,9 @@ module FTDI_Interface (
 
         case (currState)
             // NOTE: FTDI Chip: data setup time 5ns before write
+            SET_WRITE: begin
+                adbus_tri = 1'b1;
+            end
             WRITE1: begin
                 adbus_tri = 1'b1;
                 ftdi_wr = 1'b0;
@@ -87,14 +90,7 @@ module FTDI_Interface (
             WRITE2: nextState = WAIT;
             // WRITE3: nextState = WAIT;
             READ1: nextState = READ2;
-            READ2: begin
-                // nextState = READ3;
-                if (wr_en && !txe && !wrq_empty) begin
-                    nextState = SET_WRITE;
-                    wrq_rdreq = 1'b1;
-                end
-                else nextState = READ3;
-            end
+            READ2: nextState = READ3;
             READ3: nextState = WAIT;
         endcase
     end
