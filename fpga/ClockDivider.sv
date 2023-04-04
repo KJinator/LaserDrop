@@ -8,9 +8,11 @@ module ClockDivider (
 );
     logic reset_count, count_en, clear_count;
 
-    logic [7:0] counter;
+    logic [7:0] counter, divider_half;
 
-    assign clear_count = reset || (counter == divider);
+    assign divider_half = divider >> 1'b1;
+
+    assign clear_count = reset || (counter == divider_half);
 
     Counter count (
         .D(8'b1),
@@ -31,7 +33,7 @@ module ClockDivider (
         else if (~en) begin
             clk_divided <= 'b0;
         end
-        else if (counter == divider) begin
+        else if (counter == divider_half) begin
             clk_divided <= ~clk_divided;
         end
 

@@ -12,7 +12,7 @@ module ChipInterface (
     inout  wire  [35:0] GPIO_0, GPIO_1
 );
     logic data_valid, tx_done, adbus_tri;
-    logic [7:0] hex1, hex2;
+    logic [7:0] hex1, hex2, hex3;
 
     //------------------------FPGA Pin Configurations-------------------------//
     logic [7:0] ADBUS, ADBUS_IN;
@@ -93,6 +93,7 @@ module ChipInterface (
         .reset(~KEY[0]),
         .en(SW[0]),
         .echo_mode(SW[1]),
+	    .SW(SW[9:0]),
         .rxf(ACBUS[0]),
         .txe(ACBUS[1]),
         .laser_rx(GREEN_RX),
@@ -105,6 +106,7 @@ module ChipInterface (
         .adbus_tri,
         .hex1,
         .hex2,
+		.hex3,
         .adbus_out(ADBUS)
     );
 
@@ -117,17 +119,24 @@ module ChipInterface (
         .bcd(hex1[3:0]),
         .segment(HEX4)
     );
+	 
+	 BCDtoSevenSegment hex2_1 (
+        .bcd(hex2[7:4]),
+        .segment(HEX3)
+    );
 
-    assign HEX3 = 7'b111_1111;
-    assign HEX2 = 7'b111_1111;
+    BCDtoSevenSegment hex2_0 (
+        .bcd(hex2[3:0]),
+        .segment(HEX2)
+    );
 
     BCDtoSevenSegment laser2_1 (
-        .bcd(hex2[7:4]),
+        .bcd(hex3[7:4]),
         .segment(HEX1)
     );
 
     BCDtoSevenSegment laser2_0 (
-        .bcd(hex2[3:0]),
+        .bcd(hex3[3:0]),
         .segment(HEX0)
     );
 	 
