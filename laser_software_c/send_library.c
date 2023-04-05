@@ -14,7 +14,6 @@
 #include <strings.h>
 #include "send_library.h"
 
-static size_t block_size = 16;
 static uint32_t start_bytes = 0xC1C2C3C4;
 static uint32_t len_final_packet;
 uint32_t num_packets;
@@ -43,7 +42,7 @@ void sixteen_eleven_hamming (char *data, char *buffer) {
 
     size_t index = 0;
 
-    for (size_t i = 0; i < block_size; i++) {
+    for (size_t i = 0; i < BITS_PER_HAM; i++) {
         // Not a parity bit
         if (i & (i - 1)) {
             bit = get_ith_bit(&data[index > 7], index % 8);
@@ -107,6 +106,7 @@ void encode_file (char *file) {
     file_len = ftell(fptr);             // Get the current byte offset in the file
     rewind(fptr);                      // Jump back to the beginning of the file
 
+
     RAW = malloc(file_len * sizeof(char)); // Enough memory for the file
     fread(RAW, file_len, 1, fptr); // Read in the entire file
     fclose(fptr); // Close the file
@@ -123,7 +123,7 @@ void encode_file (char *file) {
         buffer_32[1] = tagID;
         if ((i == num_packets - 1) && len_final_packet != 0) {
             char *raw = calloc(BYTES_PER_PACKET, sizeof(char));
-            memcpy(raw, RAW, len_final_packet);
+            memcpy(raw, &RAW[i * BYTES_PER_PACKET], len_final_packet);
             full_packet_encoding(raw, &buffer[8]);
             free(raw);
         } else {
@@ -134,7 +134,7 @@ void encode_file (char *file) {
     free(RAW);
 }
 
-char *get_packet(uint32_t tagID) {
+char *get_packet_sender(uint32_t tagID) {
     return packet_array[tagID];
 }
 
@@ -146,7 +146,7 @@ uint32_t get_len_final_packet () {
     return len_final_packet;
 }
 
-void free_resources () {
+void free_resources_sender () {
     for (size_t i = 0; i < num_packets; i++) {
         free(packet_array[i]);
     }
