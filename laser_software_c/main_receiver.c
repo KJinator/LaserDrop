@@ -45,19 +45,25 @@ int main(int argc, char *argv[]) {
 
     ftStatus = FT_Read(ftHandle, RxBuffer, sizeof(RxBuffer), &BytesRecieved);
 
-    if (ftStatus != FT_OK) {
-        printf("Read Error\n\n");
-        ftStatus = FT_Close(ftHandle);
+    // for (size_t i = 0; i < 100; i++) {
+        while (true) {
+        // ftStatus = FT_Read(ftHandle, RxBuffer, sizeof(RxBuffer), &BytesRecieved);
+        ftStatus = FT_Read(ftHandle, RxBuffer, 1, &BytesRecieved);
+
         if (ftStatus != FT_OK) {
-            printf("Close Error \n\n");
+            printf("Read Error\n\n");
+            ftStatus = FT_Close(ftHandle);
+            if (ftStatus != FT_OK) {
+                printf("Close Error \n\n");
+            }
         }
-    return 0;
-        
+            
 
         // printf("Bytes Read = %d, Bytes Written = %d\n\n", RxBuffer[0], TxBuffer[0]);
-        printf("Bytes Read: %d%d%d%d, Bytes Written: %d%d%d%d\n\n", RxBuffer[0], RxBuffer[1], RxBuffer[2], RxBuffer[3], TxBuffer[0], TxBuffer[1], TxBuffer[2], TxBuffer[3]);
+        printf("Bytes Read: %hhu\n\n", RxBuffer[0]);
         // printf("Time = %lf\n\n", ((double)(time_end - time_start))/CLOCKS_PER_SEC);
         // printf("Time Write = %lf, Time Read = %lf\n\n", ((double)(time_write - time_start))/CLOCKS_PER_SEC, ((double)(time_end - time_write))/CLOCKS_PER_SEC);
+
     }
 
     ftStatus = FT_Close(ftHandle);
