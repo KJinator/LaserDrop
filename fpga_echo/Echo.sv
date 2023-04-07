@@ -33,10 +33,9 @@ module Echo (
     assign laser_tx[1] = laser_out[1] | SW[7];
 
     // Simultaneous mode lasers
-    LaserReceiver receive (
+    LaserReceiver #(8) receive (
         .clock,
         .reset,
-        .sample_clock(clock),
         .laser_in(laser_rx),
         .data_valid,
         .data_in
