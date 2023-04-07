@@ -1,5 +1,5 @@
 Analysis & Synthesis report for ChipInterface
-Wed Apr  5 11:25:21 2023
+Fri Apr  7 11:39:49 2023
 Quartus Prime Version 22.1std.0 Build 915 10/25/2022 SC Lite Edition
 
 
@@ -29,7 +29,7 @@ Quartus Prime Version 22.1std.0 Build 915 10/25/2022 SC Lite Edition
  21. Parameter Settings for User Entity Instance: Echo:main|LaserReceiver:receive|Counter:counter_divided
  22. Parameter Settings for User Entity Instance: Echo:main|LaserReceiver:receive|Counter:num_bits
  23. Parameter Settings for User Entity Instance: Echo:main|LaserReceiver:receive|Counter:majority_vote
- 24. Parameter Settings for User Entity Instance: Echo:main|LaserReceiver:receive|ShiftRegister:data_shifT
+ 24. Parameter Settings for User Entity Instance: Echo:main|LaserReceiver:receive|ShiftRegister:data_shift
  25. Parameter Settings for User Entity Instance: Echo:main|LaserReceiver:receive|Register:data
  26. Parameter Settings for User Entity Instance: Echo:main|FTDI_Interface:ftdi_if|fifo_1k:read_queue|scfifo:scfifo_component
  27. Parameter Settings for User Entity Instance: Echo:main|FTDI_Interface:ftdi_if|fifo_1k:write_queue|scfifo:scfifo_component
@@ -50,7 +50,7 @@ Quartus Prime Version 22.1std.0 Build 915 10/25/2022 SC Lite Edition
  42. Port Connectivity Checks: "Echo:main|FTDI_Interface:ftdi_if|fifo_1k:write_queue"
  43. Port Connectivity Checks: "Echo:main|FTDI_Interface:ftdi_if"
  44. Port Connectivity Checks: "Echo:main|LaserReceiver:receive|Register:data"
- 45. Port Connectivity Checks: "Echo:main|LaserReceiver:receive|ShiftRegister:data_shifT"
+ 45. Port Connectivity Checks: "Echo:main|LaserReceiver:receive|ShiftRegister:data_shift"
  46. Port Connectivity Checks: "Echo:main|LaserReceiver:receive|Counter:majority_vote"
  47. Port Connectivity Checks: "Echo:main|LaserReceiver:receive|Counter:num_bits"
  48. Port Connectivity Checks: "Echo:main|LaserReceiver:receive|Counter:counter_divided"
@@ -86,13 +86,13 @@ https://fpgasoftware.intel.com/eula.
 +----------------------------------------------------------------------------------+
 ; Analysis & Synthesis Summary                                                     ;
 +---------------------------------+------------------------------------------------+
-; Analysis & Synthesis Status     ; Successful - Wed Apr  5 11:25:21 2023          ;
+; Analysis & Synthesis Status     ; Successful - Fri Apr  7 11:39:49 2023          ;
 ; Quartus Prime Version           ; 22.1std.0 Build 915 10/25/2022 SC Lite Edition ;
 ; Revision Name                   ; ChipInterface                                  ;
 ; Top-level Entity Name           ; ChipInterface                                  ;
 ; Family                          ; Cyclone V                                      ;
 ; Logic utilization (in ALMs)     ; N/A                                            ;
-; Total registers                 ; 155                                            ;
+; Total registers                 ; 156                                            ;
 ; Total pins                      ; 147                                            ;
 ; Total virtual pins              ; 0                                              ;
 ; Total block memory bits         ; 16,384                                         ;
@@ -247,12 +247,12 @@ https://fpgasoftware.intel.com/eula.
 ;                                             ;                ;
 ; Combinational ALUT usage for logic          ; 200            ;
 ;     -- 7 input functions                    ; 0              ;
-;     -- 6 input functions                    ; 22             ;
-;     -- 5 input functions                    ; 23             ;
+;     -- 6 input functions                    ; 21             ;
+;     -- 5 input functions                    ; 24             ;
 ;     -- 4 input functions                    ; 53             ;
 ;     -- <=3 input functions                  ; 102            ;
 ;                                             ;                ;
-; Dedicated logic registers                   ; 155            ;
+; Dedicated logic registers                   ; 156            ;
 ;                                             ;                ;
 ; I/O pins                                    ; 147            ;
 ; Total MLAB memory bits                      ; 0              ;
@@ -261,9 +261,9 @@ https://fpgasoftware.intel.com/eula.
 ; Total DSP Blocks                            ; 0              ;
 ;                                             ;                ;
 ; Maximum fan-out node                        ; CLOCK_50~input ;
-; Maximum fan-out                             ; 167            ;
-; Total fan-out                               ; 1939           ;
-; Average fan-out                             ; 2.63           ;
+; Maximum fan-out                             ; 168            ;
+; Total fan-out                               ; 1933           ;
+; Average fan-out                             ; 2.62           ;
 +---------------------------------------------+----------------+
 
 
@@ -272,12 +272,12 @@ https://fpgasoftware.intel.com/eula.
 +------------------------------------------------+---------------------+---------------------------+-------------------+------------+------+--------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-------------------+--------------+
 ; Compilation Hierarchy Node                     ; Combinational ALUTs ; Dedicated Logic Registers ; Block Memory Bits ; DSP Blocks ; Pins ; Virtual Pins ; Full Hierarchy Name                                                                                                                                                                      ; Entity Name       ; Library Name ;
 +------------------------------------------------+---------------------+---------------------------+-------------------+------------+------+--------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-------------------+--------------+
-; |ChipInterface                                 ; 200 (1)             ; 155 (0)                   ; 16384             ; 0          ; 147  ; 0            ; |ChipInterface                                                                                                                                                                           ; ChipInterface     ; work         ;
+; |ChipInterface                                 ; 200 (1)             ; 156 (0)                   ; 16384             ; 0          ; 147  ; 0            ; |ChipInterface                                                                                                                                                                           ; ChipInterface     ; work         ;
 ;    |BCDtoSevenSegment:hex2_0|                  ; 7 (7)               ; 0 (0)                     ; 0                 ; 0          ; 0    ; 0            ; |ChipInterface|BCDtoSevenSegment:hex2_0                                                                                                                                                  ; BCDtoSevenSegment ; work         ;
 ;    |BCDtoSevenSegment:hex2_1|                  ; 7 (7)               ; 0 (0)                     ; 0                 ; 0          ; 0    ; 0            ; |ChipInterface|BCDtoSevenSegment:hex2_1                                                                                                                                                  ; BCDtoSevenSegment ; work         ;
 ;    |BCDtoSevenSegment:laser2_0|                ; 7 (7)               ; 0 (0)                     ; 0                 ; 0          ; 0    ; 0            ; |ChipInterface|BCDtoSevenSegment:laser2_0                                                                                                                                                ; BCDtoSevenSegment ; work         ;
 ;    |BCDtoSevenSegment:laser2_1|                ; 7 (7)               ; 0 (0)                     ; 0                 ; 0          ; 0    ; 0            ; |ChipInterface|BCDtoSevenSegment:laser2_1                                                                                                                                                ; BCDtoSevenSegment ; work         ;
-;    |Echo:main|                                 ; 171 (22)            ; 155 (3)                   ; 16384             ; 0          ; 0    ; 0            ; |ChipInterface|Echo:main                                                                                                                                                                 ; Echo              ; work         ;
+;    |Echo:main|                                 ; 171 (22)            ; 156 (3)                   ; 16384             ; 0          ; 0    ; 0            ; |ChipInterface|Echo:main                                                                                                                                                                 ; Echo              ; work         ;
 ;       |ClockDivider:clock_6_25|                ; 11 (3)              ; 9 (1)                     ; 0                 ; 0          ; 0    ; 0            ; |ChipInterface|Echo:main|ClockDivider:clock_6_25                                                                                                                                         ; ClockDivider      ; work         ;
 ;          |Counter:count|                       ; 8 (8)               ; 8 (8)                     ; 0                 ; 0          ; 0    ; 0            ; |ChipInterface|Echo:main|ClockDivider:clock_6_25|Counter:count                                                                                                                           ; Counter           ; work         ;
 ;       |FTDI_Interface:ftdi_if|                 ; 88 (9)              ; 71 (7)                    ; 16384             ; 0          ; 0    ; 0            ; |ChipInterface|Echo:main|FTDI_Interface:ftdi_if                                                                                                                                          ; FTDI_Interface    ; work         ;
@@ -299,12 +299,12 @@ https://fpgasoftware.intel.com/eula.
 ;                      |altsyncram_ntu1:FIFOram| ; 0 (0)               ; 0 (0)                     ; 8192              ; 0          ; 0    ; 0            ; |ChipInterface|Echo:main|FTDI_Interface:ftdi_if|fifo_1k:write_queue|scfifo:scfifo_component|scfifo_qbf1:auto_generated|a_dpfifo_86d1:dpfifo|altsyncram_ntu1:FIFOram                      ; altsyncram_ntu1   ; work         ;
 ;                      |cntr_uhb:rd_ptr_count|   ; 10 (10)             ; 10 (10)                   ; 0                 ; 0          ; 0    ; 0            ; |ChipInterface|Echo:main|FTDI_Interface:ftdi_if|fifo_1k:write_queue|scfifo:scfifo_component|scfifo_qbf1:auto_generated|a_dpfifo_86d1:dpfifo|cntr_uhb:rd_ptr_count                        ; cntr_uhb          ; work         ;
 ;                      |cntr_uhb:wr_ptr|         ; 10 (10)             ; 10 (10)                   ; 0                 ; 0          ; 0    ; 0            ; |ChipInterface|Echo:main|FTDI_Interface:ftdi_if|fifo_1k:write_queue|scfifo:scfifo_component|scfifo_qbf1:auto_generated|a_dpfifo_86d1:dpfifo|cntr_uhb:wr_ptr                              ; cntr_uhb          ; work         ;
-;       |LaserReceiver:receive|                  ; 34 (10)             ; 41 (7)                    ; 0                 ; 0          ; 0    ; 0            ; |ChipInterface|Echo:main|LaserReceiver:receive                                                                                                                                           ; LaserReceiver     ; work         ;
+;       |LaserReceiver:receive|                  ; 34 (12)             ; 42 (8)                    ; 0                 ; 0          ; 0    ; 0            ; |ChipInterface|Echo:main|LaserReceiver:receive                                                                                                                                           ; LaserReceiver     ; work         ;
 ;          |Counter:counter_divided|             ; 11 (11)             ; 8 (8)                     ; 0                 ; 0          ; 0    ; 0            ; |ChipInterface|Echo:main|LaserReceiver:receive|Counter:counter_divided                                                                                                                   ; Counter           ; work         ;
-;          |Counter:majority_vote|               ; 4 (4)               ; 2 (2)                     ; 0                 ; 0          ; 0    ; 0            ; |ChipInterface|Echo:main|LaserReceiver:receive|Counter:majority_vote                                                                                                                     ; Counter           ; work         ;
-;          |Counter:num_bits|                    ; 9 (9)               ; 8 (8)                     ; 0                 ; 0          ; 0    ; 0            ; |ChipInterface|Echo:main|LaserReceiver:receive|Counter:num_bits                                                                                                                          ; Counter           ; work         ;
+;          |Counter:majority_vote|               ; 3 (3)               ; 2 (2)                     ; 0                 ; 0          ; 0    ; 0            ; |ChipInterface|Echo:main|LaserReceiver:receive|Counter:majority_vote                                                                                                                     ; Counter           ; work         ;
+;          |Counter:num_bits|                    ; 8 (8)               ; 8 (8)                     ; 0                 ; 0          ; 0    ; 0            ; |ChipInterface|Echo:main|LaserReceiver:receive|Counter:num_bits                                                                                                                          ; Counter           ; work         ;
 ;          |Register:data|                       ; 0 (0)               ; 8 (8)                     ; 0                 ; 0          ; 0    ; 0            ; |ChipInterface|Echo:main|LaserReceiver:receive|Register:data                                                                                                                             ; Register          ; work         ;
-;          |ShiftRegister:data_shifT|            ; 0 (0)               ; 8 (8)                     ; 0                 ; 0          ; 0    ; 0            ; |ChipInterface|Echo:main|LaserReceiver:receive|ShiftRegister:data_shifT                                                                                                                  ; ShiftRegister     ; work         ;
+;          |ShiftRegister:data_shift|            ; 0 (0)               ; 8 (8)                     ; 0                 ; 0          ; 0    ; 0            ; |ChipInterface|Echo:main|LaserReceiver:receive|ShiftRegister:data_shift                                                                                                                  ; ShiftRegister     ; work         ;
 ;       |LaserTransmitter:transmit|              ; 16 (12)             ; 15 (3)                    ; 0                 ; 0          ; 0    ; 0            ; |ChipInterface|Echo:main|LaserTransmitter:transmit                                                                                                                                       ; LaserTransmitter  ; work         ;
 ;          |Counter:bit_count|                   ; 4 (4)               ; 4 (4)                     ; 0                 ; 0          ; 0    ; 0            ; |ChipInterface|Echo:main|LaserTransmitter:transmit|Counter:bit_count                                                                                                                     ; Counter           ; work         ;
 ;          |Register:laser_data|                 ; 0 (0)               ; 8 (8)                     ; 0                 ; 0          ; 0    ; 0            ; |ChipInterface|Echo:main|LaserTransmitter:transmit|Register:laser_data                                                                                                                   ; Register          ; work         ;
@@ -363,17 +363,18 @@ Encoding Type:  One-Hot
 
 
 Encoding Type:  One-Hot
-+------------------------------------------------------------------------------------------------------------+
-; State Machine - |ChipInterface|Echo:main|LaserReceiver:receive|currState                                   ;
-+-------------------+----------------+-------------------+-----------------+----------------+----------------+
-; Name              ; currState.STOP ; currState.RECEIVE ; currState.START ; currState.WAIT ; currState.IDLE ;
-+-------------------+----------------+-------------------+-----------------+----------------+----------------+
-; currState.WAIT    ; 0              ; 0                 ; 0               ; 0              ; 0              ;
-; currState.START   ; 0              ; 0                 ; 1               ; 1              ; 0              ;
-; currState.RECEIVE ; 0              ; 1                 ; 0               ; 1              ; 0              ;
-; currState.STOP    ; 1              ; 0                 ; 0               ; 1              ; 0              ;
-; currState.IDLE    ; 0              ; 0                 ; 0               ; 1              ; 1              ;
-+-------------------+----------------+-------------------+-----------------+----------------+----------------+
++-----------------------------------------------------------------------------------------------------------------------------------------------+
+; State Machine - |ChipInterface|Echo:main|LaserReceiver:receive|currState                                                                      ;
++------------------------+----------------+------------------------+---------------------+-------------------+-----------------+----------------+
+; Name                   ; currState.IDLE ; currState.DISPLAY_DATA ; currState.LOAD_DATA ; currState.RECEIVE ; currState.START ; currState.WAIT ;
++------------------------+----------------+------------------------+---------------------+-------------------+-----------------+----------------+
+; currState.WAIT         ; 0              ; 0                      ; 0                   ; 0                 ; 0               ; 0              ;
+; currState.START        ; 0              ; 0                      ; 0                   ; 0                 ; 1               ; 1              ;
+; currState.RECEIVE      ; 0              ; 0                      ; 0                   ; 1                 ; 0               ; 1              ;
+; currState.LOAD_DATA    ; 0              ; 0                      ; 1                   ; 0                 ; 0               ; 1              ;
+; currState.DISPLAY_DATA ; 0              ; 1                      ; 0                   ; 0                 ; 0               ; 1              ;
+; currState.IDLE         ; 1              ; 0                      ; 0                   ; 0                 ; 0               ; 1              ;
++------------------------+----------------+------------------------+---------------------+-------------------+-----------------+----------------+
 
 
 Encoding Type:  One-Hot
@@ -393,7 +394,7 @@ Encoding Type:  One-Hot
 +---------------------------------------------------------------+--------------------+
 ; Register name                                                 ; Reason for Removal ;
 +---------------------------------------------------------------+--------------------+
-; Echo:main|LaserReceiver:receive|ShiftRegister:data_shifT|Q[0] ; Lost fanout        ;
+; Echo:main|LaserReceiver:receive|ShiftRegister:data_shift|Q[0] ; Lost fanout        ;
 ; Echo:main|currState~6                                         ; Lost fanout        ;
 ; Echo:main|FTDI_Interface:ftdi_if|currState~4                  ; Lost fanout        ;
 ; Echo:main|FTDI_Interface:ftdi_if|currState~5                  ; Lost fanout        ;
@@ -401,7 +402,8 @@ Encoding Type:  One-Hot
 ; Echo:main|FTDI_Interface:ftdi_if|currState~7                  ; Lost fanout        ;
 ; Echo:main|LaserReceiver:receive|currState~4                   ; Lost fanout        ;
 ; Echo:main|LaserReceiver:receive|currState~5                   ; Lost fanout        ;
-; Total Number of Removed Registers = 8                         ;                    ;
+; Echo:main|LaserReceiver:receive|currState~6                   ; Lost fanout        ;
+; Total Number of Removed Registers = 9                         ;                    ;
 +---------------------------------------------------------------+--------------------+
 
 
@@ -410,10 +412,10 @@ Encoding Type:  One-Hot
 +----------------------------------------------+-------+
 ; Statistic                                    ; Value ;
 +----------------------------------------------+-------+
-; Total registers                              ; 155   ;
-; Number of registers using Synchronous Clear  ; 8     ;
+; Total registers                              ; 156   ;
+; Number of registers using Synchronous Clear  ; 0     ;
 ; Number of registers using Synchronous Load   ; 8     ;
-; Number of registers using Asynchronous Clear ; 153   ;
+; Number of registers using Asynchronous Clear ; 154   ;
 ; Number of registers using Asynchronous Load  ; 0     ;
 ; Number of registers using Clock Enable       ; 116   ;
 ; Number of registers using Preset             ; 0     ;
@@ -425,11 +427,10 @@ Encoding Type:  One-Hot
 +--------------------+-----------+---------------+----------------------+------------------------+------------+-----------------------------------------------------------------------------+
 ; Multiplexer Inputs ; Bus Width ; Baseline Area ; Area if Restructured ; Saving if Restructured ; Registered ; Example Multiplexer Output                                                  ;
 +--------------------+-----------+---------------+----------------------+------------------------+------------+-----------------------------------------------------------------------------+
-; 3:1                ; 8 bits    ; 16 LEs        ; 0 LEs                ; 16 LEs                 ; Yes        ; |ChipInterface|Echo:main|LaserReceiver:receive|Counter:num_bits|Q[1]        ;
-; 3:1                ; 7 bits    ; 14 LEs        ; 7 LEs                ; 7 LEs                  ; Yes        ; |ChipInterface|Echo:main|LaserReceiver:receive|Counter:counter_divided|Q[3] ;
-; 3:1                ; 2 bits    ; 4 LEs         ; 2 LEs                ; 2 LEs                  ; Yes        ; |ChipInterface|Echo:main|LaserReceiver:receive|Counter:majority_vote|Q[1]   ;
-; 4:1                ; 2 bits    ; 4 LEs         ; 4 LEs                ; 0 LEs                  ; Yes        ; |ChipInterface|Echo:main|LaserTransmitter:transmit|Register:laser_data|Q[1] ;
-; 4:1                ; 6 bits    ; 12 LEs        ; 12 LEs               ; 0 LEs                  ; Yes        ; |ChipInterface|Echo:main|LaserTransmitter:transmit|Register:laser_data|Q[2] ;
+; 3:1                ; 7 bits    ; 14 LEs        ; 7 LEs                ; 7 LEs                  ; Yes        ; |ChipInterface|Echo:main|LaserReceiver:receive|Counter:counter_divided|Q[1] ;
+; 3:1                ; 2 bits    ; 4 LEs         ; 2 LEs                ; 2 LEs                  ; Yes        ; |ChipInterface|Echo:main|LaserReceiver:receive|Counter:majority_vote|Q[0]   ;
+; 4:1                ; 2 bits    ; 4 LEs         ; 4 LEs                ; 0 LEs                  ; Yes        ; |ChipInterface|Echo:main|LaserTransmitter:transmit|Register:laser_data|Q[3] ;
+; 4:1                ; 6 bits    ; 12 LEs        ; 12 LEs               ; 0 LEs                  ; Yes        ; |ChipInterface|Echo:main|LaserTransmitter:transmit|Register:laser_data|Q[4] ;
 ; 4:1                ; 8 bits    ; 16 LEs        ; 16 LEs               ; 0 LEs                  ; No         ; |ChipInterface|Echo:main|Selector8                                          ;
 +--------------------+-----------+---------------+----------------------+------------------------+------------+-----------------------------------------------------------------------------+
 
@@ -503,7 +504,7 @@ Note: In order to hide this table in the UI and the text report file, please set
 
 
 +-------------------------------------------------------------------------------------------------------+
-; Parameter Settings for User Entity Instance: Echo:main|LaserReceiver:receive|ShiftRegister:data_shifT ;
+; Parameter Settings for User Entity Instance: Echo:main|LaserReceiver:receive|ShiftRegister:data_shift ;
 +----------------+-------+------------------------------------------------------------------------------+
 ; Parameter Name ; Value ; Type                                                                         ;
 +----------------+-------+------------------------------------------------------------------------------+
@@ -774,7 +775,7 @@ Note: In order to hide this table in the UI and the text report file, please set
 
 
 +--------------------------------------------------------------------------------------+
-; Port Connectivity Checks: "Echo:main|LaserReceiver:receive|ShiftRegister:data_shifT" ;
+; Port Connectivity Checks: "Echo:main|LaserReceiver:receive|ShiftRegister:data_shift" ;
 +------+-------+----------+------------------------------------------------------------+
 ; Port ; Type  ; Severity ; Details                                                    ;
 +------+-------+----------+------------------------------------------------------------+
@@ -796,13 +797,14 @@ Note: In order to hide this table in the UI and the text report file, please set
 
 +------------------------------------------------------------------------------+
 ; Port Connectivity Checks: "Echo:main|LaserReceiver:receive|Counter:num_bits" ;
-+------+-------+----------+----------------------------------------------------+
-; Port ; Type  ; Severity ; Details                                            ;
-+------+-------+----------+----------------------------------------------------+
-; D    ; Input ; Info     ; Stuck at GND                                       ;
-; load ; Input ; Info     ; Stuck at GND                                       ;
-; up   ; Input ; Info     ; Stuck at VCC                                       ;
-+------+-------+----------+----------------------------------------------------+
++-------+-------+----------+---------------------------------------------------+
+; Port  ; Type  ; Severity ; Details                                           ;
++-------+-------+----------+---------------------------------------------------+
+; D     ; Input ; Info     ; Stuck at GND                                      ;
+; clear ; Input ; Info     ; Stuck at GND                                      ;
+; load  ; Input ; Info     ; Stuck at GND                                      ;
+; up    ; Input ; Info     ; Stuck at VCC                                      ;
++-------+-------+----------+---------------------------------------------------+
 
 
 +-------------------------------------------------------------------------------------+
@@ -843,30 +845,29 @@ Note: In order to hide this table in the UI and the text report file, please set
 +-----------------------+-----------------------------+
 ; Type                  ; Count                       ;
 +-----------------------+-----------------------------+
-; arriav_ff             ; 155                         ;
-;     CLR               ; 29                          ;
+; arriav_ff             ; 156                         ;
+;     CLR               ; 30                          ;
 ;     CLR SLD           ; 8                           ;
-;     ENA CLR           ; 108                         ;
-;     ENA CLR SCLR      ; 8                           ;
+;     ENA CLR           ; 116                         ;
 ;     plain             ; 2                           ;
 ; arriav_io_obuf        ; 72                          ;
 ; arriav_lcell_comb     ; 205                         ;
-;     arith             ; 84                          ;
-;         1 data inputs ; 66                          ;
-;         2 data inputs ; 18                          ;
-;     normal            ; 121                         ;
+;     arith             ; 83                          ;
+;         1 data inputs ; 64                          ;
+;         2 data inputs ; 19                          ;
+;     normal            ; 122                         ;
 ;         0 data inputs ; 2                           ;
-;         1 data inputs ; 4                           ;
+;         1 data inputs ; 5                           ;
 ;         2 data inputs ; 9                           ;
 ;         3 data inputs ; 8                           ;
 ;         4 data inputs ; 53                          ;
-;         5 data inputs ; 23                          ;
-;         6 data inputs ; 22                          ;
+;         5 data inputs ; 24                          ;
+;         6 data inputs ; 21                          ;
 ; boundary_port         ; 147                         ;
 ; stratixv_ram_block    ; 16                          ;
 ;                       ;                             ;
 ; Max LUT depth         ; 3.00                        ;
-; Average LUT depth     ; 1.44                        ;
+; Average LUT depth     ; 1.46                        ;
 +-----------------------+-----------------------------+
 
 
@@ -875,7 +876,7 @@ Note: In order to hide this table in the UI and the text report file, please set
 +----------------+--------------+
 ; Partition Name ; Elapsed Time ;
 +----------------+--------------+
-; Top            ; 00:00:02     ;
+; Top            ; 00:00:00     ;
 +----------------+--------------+
 
 
@@ -885,7 +886,7 @@ Note: In order to hide this table in the UI and the text report file, please set
 Info: *******************************************************************
 Info: Running Quartus Prime Analysis & Synthesis
     Info: Version 22.1std.0 Build 915 10/25/2022 SC Lite Edition
-    Info: Processing started: Wed Apr  5 11:25:06 2023
+    Info: Processing started: Fri Apr  7 11:39:42 2023
 Info: Command: quartus_map --read_settings_files=on --write_settings_files=off ChipInterface -c ChipInterface
 Warning (18236): Number of processors has not been specified which may cause overloading on shared machines.  Set the global assignment NUM_PARALLEL_PROCESSORS in your QSF to an appropriate value for best performance.
 Info (20030): Parallel compilation is enabled and will use 4 of the 4 processors detected
@@ -896,7 +897,7 @@ Info (12021): Found 5 design units, including 5 entities, in source file /users/
     Info (12023): Found entity 2: LaserTransmitter File: C:/Users/anjua/Documents/18-500 ECE Capstone/LaserDrop/fpga/Laser.sv Line: 518
     Info (12023): Found entity 3: LaserTransmitter_DEPRICATED File: C:/Users/anjua/Documents/18-500 ECE Capstone/LaserDrop/fpga/Laser.sv Line: 600
     Info (12023): Found entity 4: LaserReceiver File: C:/Users/anjua/Documents/18-500 ECE Capstone/LaserDrop/fpga/Laser.sv Line: 699
-    Info (12023): Found entity 5: LaserReceiver_DEPRICATED File: C:/Users/anjua/Documents/18-500 ECE Capstone/LaserDrop/fpga/Laser.sv Line: 823
+    Info (12023): Found entity 5: LaserReceiver_DEPRICATED File: C:/Users/anjua/Documents/18-500 ECE Capstone/LaserDrop/fpga/Laser.sv Line: 834
 Info (12021): Found 2 design units, including 2 entities, in source file chipinterface.sv
     Info (12023): Found entity 1: ChipInterface File: C:/Users/anjua/Documents/18-500 ECE Capstone/LaserDrop/fpga_echo/ChipInterface.sv Line: 6
     Info (12023): Found entity 2: BCDtoSevenSegment File: C:/Users/anjua/Documents/18-500 ECE Capstone/LaserDrop/fpga_echo/ChipInterface.sv Line: 146
@@ -928,11 +929,11 @@ Info (12128): Elaborating entity "LaserTransmitter" for hierarchy "Echo:main|Las
 Info (12128): Elaborating entity "Register" for hierarchy "Echo:main|LaserTransmitter:transmit|Register:laser_data" File: C:/Users/anjua/Documents/18-500 ECE Capstone/LaserDrop/fpga/Laser.sv Line: 538
 Info (12128): Elaborating entity "Counter" for hierarchy "Echo:main|LaserTransmitter:transmit|Counter:bit_count" File: C:/Users/anjua/Documents/18-500 ECE Capstone/LaserDrop/fpga/Laser.sv Line: 554
 Info (12128): Elaborating entity "LaserReceiver" for hierarchy "Echo:main|LaserReceiver:receive" File: C:/Users/anjua/Documents/18-500 ECE Capstone/LaserDrop/fpga_echo/Echo.sv Line: 43
-Warning (10270): Verilog HDL Case Statement warning at Laser.sv(798): incomplete case statement has no default case item File: C:/Users/anjua/Documents/18-500 ECE Capstone/LaserDrop/fpga/Laser.sv Line: 798
-Info (10264): Verilog HDL Case Statement information at Laser.sv(798): all case item expressions in this case statement are onehot File: C:/Users/anjua/Documents/18-500 ECE Capstone/LaserDrop/fpga/Laser.sv Line: 798
+Warning (10270): Verilog HDL Case Statement warning at Laser.sv(808): incomplete case statement has no default case item File: C:/Users/anjua/Documents/18-500 ECE Capstone/LaserDrop/fpga/Laser.sv Line: 808
+Info (10264): Verilog HDL Case Statement information at Laser.sv(808): all case item expressions in this case statement are onehot File: C:/Users/anjua/Documents/18-500 ECE Capstone/LaserDrop/fpga/Laser.sv Line: 808
 Info (12128): Elaborating entity "Counter" for hierarchy "Echo:main|LaserReceiver:receive|Counter:counter_divided" File: C:/Users/anjua/Documents/18-500 ECE Capstone/LaserDrop/fpga/Laser.sv Line: 726
 Info (12128): Elaborating entity "Counter" for hierarchy "Echo:main|LaserReceiver:receive|Counter:majority_vote" File: C:/Users/anjua/Documents/18-500 ECE Capstone/LaserDrop/fpga/Laser.sv Line: 757
-Info (12128): Elaborating entity "ShiftRegister" for hierarchy "Echo:main|LaserReceiver:receive|ShiftRegister:data_shifT" File: C:/Users/anjua/Documents/18-500 ECE Capstone/LaserDrop/fpga/Laser.sv Line: 766
+Info (12128): Elaborating entity "ShiftRegister" for hierarchy "Echo:main|LaserReceiver:receive|ShiftRegister:data_shift" File: C:/Users/anjua/Documents/18-500 ECE Capstone/LaserDrop/fpga/Laser.sv Line: 766
 Info (12128): Elaborating entity "Register" for hierarchy "Echo:main|LaserReceiver:receive|Register:data" File: C:/Users/anjua/Documents/18-500 ECE Capstone/LaserDrop/fpga/Laser.sv Line: 775
 Info (12128): Elaborating entity "FTDI_Interface" for hierarchy "Echo:main|FTDI_Interface:ftdi_if" File: C:/Users/anjua/Documents/18-500 ECE Capstone/LaserDrop/fpga_echo/Echo.sv Line: 69
 Warning (10270): Verilog HDL Case Statement warning at ftdi.sv(52): incomplete case statement has no default case item File: C:/Users/anjua/Documents/18-500 ECE Capstone/LaserDrop/fpga/ftdi.sv Line: 52
@@ -1022,7 +1023,7 @@ Warning (13024): Output pins are stuck at VCC or GND
 Info (286030): Timing-Driven Synthesis is running
 Warning (14632): Output pin "LEDR[8]" driven by bidirectional pin "GPIO_0[26]" cannot be tri-stated File: C:/Users/anjua/Documents/18-500 ECE Capstone/LaserDrop/fpga_echo/ChipInterface.sv Line: 10
 Warning (14632): Output pin "LEDR[9]" driven by bidirectional pin "GPIO_0[32]" cannot be tri-stated File: C:/Users/anjua/Documents/18-500 ECE Capstone/LaserDrop/fpga_echo/ChipInterface.sv Line: 10
-Info (17049): 8 registers lost all their fanouts during netlist optimizations.
+Info (17049): 9 registers lost all their fanouts during netlist optimizations.
 Warning (20013): Ignored 24 assignments for entity "DE0_CV_Default" -- entity does not exist in design
     Warning (20014): Assignment for entity set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -entity DE0_CV_Default -section_id Top was ignored
     Warning (20014): Assignment for entity set_global_assignment -name PARTITION_NETLIST_TYPE SOURCE -entity DE0_CV_Default -section_id Top was ignored
@@ -1059,17 +1060,17 @@ Warning (21074): Design contains 7 input pin(s) that do not drive logic
     Warning (15610): No output dependent on input pin "KEY[1]" File: C:/Users/anjua/Documents/18-500 ECE Capstone/LaserDrop/fpga_echo/ChipInterface.sv Line: 9
     Warning (15610): No output dependent on input pin "KEY[2]" File: C:/Users/anjua/Documents/18-500 ECE Capstone/LaserDrop/fpga_echo/ChipInterface.sv Line: 9
     Warning (15610): No output dependent on input pin "KEY[3]" File: C:/Users/anjua/Documents/18-500 ECE Capstone/LaserDrop/fpga_echo/ChipInterface.sv Line: 9
-Info (21057): Implemented 403 device resources after synthesis - the final resource count might be different
+Info (21057): Implemented 404 device resources after synthesis - the final resource count might be different
     Info (21058): Implemented 15 input pins
     Info (21059): Implemented 60 output pins
     Info (21060): Implemented 72 bidirectional pins
-    Info (21061): Implemented 240 logic cells
+    Info (21061): Implemented 241 logic cells
     Info (21064): Implemented 16 RAM segments
 Info: Quartus Prime Analysis & Synthesis was successful. 0 errors, 86 warnings
     Info: Peak virtual memory: 4844 megabytes
-    Info: Processing ended: Wed Apr  5 11:25:21 2023
-    Info: Elapsed time: 00:00:15
-    Info: Total CPU time (on all processors): 00:00:26
+    Info: Processing ended: Fri Apr  7 11:39:49 2023
+    Info: Elapsed time: 00:00:07
+    Info: Total CPU time (on all processors): 00:00:15
 
 
 +------------------------------------------+

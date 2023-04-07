@@ -1,5 +1,5 @@
 Flow report for ChipInterface
-Wed Apr  5 11:27:02 2023
+Fri Apr  7 11:40:14 2023
 Quartus Prime Version 22.1std.0 Build 915 10/25/2022 SC Lite Edition
 
 
@@ -41,7 +41,7 @@ https://fpgasoftware.intel.com/eula.
 +----------------------------------------------------------------------------------+
 ; Flow Summary                                                                     ;
 +---------------------------------+------------------------------------------------+
-; Flow Status                     ; Successful - Wed Apr  5 11:26:41 2023          ;
+; Flow Status                     ; Successful - Fri Apr  7 11:40:09 2023          ;
 ; Quartus Prime Version           ; 22.1std.0 Build 915 10/25/2022 SC Lite Edition ;
 ; Revision Name                   ; ChipInterface                                  ;
 ; Top-level Entity Name           ; ChipInterface                                  ;
@@ -68,7 +68,7 @@ https://fpgasoftware.intel.com/eula.
 +-------------------+---------------------+
 ; Option            ; Setting             ;
 +-------------------+---------------------+
-; Start date & time ; 04/05/2023 11:25:06 ;
+; Start date & time ; 04/07/2023 11:39:42 ;
 ; Main task         ; Compilation         ;
 ; Revision Name     ; ChipInterface       ;
 +-------------------+---------------------+
@@ -79,7 +79,7 @@ https://fpgasoftware.intel.com/eula.
 +-------------------------------------+----------------------------------------+---------------+----------------+------------+
 ; Assignment Name                     ; Value                                  ; Default Value ; Entity Name    ; Section Id ;
 +-------------------------------------+----------------------------------------+---------------+----------------+------------+
-; COMPILER_SIGNATURE_ID               ; 206747303624640.168070830613084        ; --            ; --             ; --         ;
+; COMPILER_SIGNATURE_ID               ; 206747303624640.168088198213264        ; --            ; --             ; --         ;
 ; ENABLE_LOGIC_ANALYZER_INTERFACE     ; Off                                    ; --            ; --             ; --         ;
 ; MAX_CORE_JUNCTION_TEMP              ; 85                                     ; --            ; --             ; --         ;
 ; MIN_CORE_JUNCTION_TEMP              ; 0                                      ; --            ; --             ; --         ;
@@ -100,11 +100,11 @@ https://fpgasoftware.intel.com/eula.
 +----------------------+--------------+-------------------------+---------------------+------------------------------------+
 ; Module Name          ; Elapsed Time ; Average Processors Used ; Peak Virtual Memory ; Total CPU Time (on all processors) ;
 +----------------------+--------------+-------------------------+---------------------+------------------------------------+
-; Analysis & Synthesis ; 00:00:14     ; 1.0                     ; 4844 MB             ; 00:00:25                           ;
-; Fitter               ; 00:01:11     ; 1.0                     ; 6292 MB             ; 00:01:50                           ;
-; Assembler            ; 00:00:04     ; 1.0                     ; 4847 MB             ; 00:00:05                           ;
-; Timing Analyzer      ; 00:00:19     ; 1.1                     ; 5115 MB             ; 00:00:21                           ;
-; Total                ; 00:01:48     ; --                      ; --                  ; 00:02:41                           ;
+; Analysis & Synthesis ; 00:00:06     ; 1.0                     ; 4844 MB             ; 00:00:15                           ;
+; Fitter               ; 00:00:16     ; 1.0                     ; 6296 MB             ; 00:00:26                           ;
+; Assembler            ; 00:00:03     ; 1.0                     ; 4850 MB             ; 00:00:02                           ;
+; Timing Analyzer      ; 00:00:05     ; 1.1                     ; 5110 MB             ; 00:00:05                           ;
+; Total                ; 00:00:30     ; --                      ; --                  ; 00:00:48                           ;
 +----------------------+--------------+-------------------------+---------------------+------------------------------------+
 
 
