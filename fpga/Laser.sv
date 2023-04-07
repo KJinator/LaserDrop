@@ -703,11 +703,11 @@ module LaserReceiver
      output logic [7:0] data_in);
 
     enum logic [2:0] {
-        WAIT, START, RECEIVE, LOAD_DATA, DISPLAY_DATA, IDLE
+        WAIT, START, RECEIVE, STOP, IDLE
     } currState, nextState;
 
-    logic clock_en, clock_clear, vote_en, vote_clear, load_received, reset_mod;
-    logic sampled_bit, byte_read, data_start, laser_in1, laser_in2, load_data;
+    logic clock_en, clock_clear, vote_en, vote_clear, load_received;
+    logic sampled_bit, byte_read, data_start, laser_in1, laser_in2;
     logic [8:0] data_register;
     logic [7:0] clock_counter, bits_read;
     logic [1:0] vote;
@@ -721,13 +721,13 @@ module LaserReceiver
         .load(clock_clear),
         .clock(sample_clock),
         .up(1'b1),
-        .reset(reset || reset_mod),
+        .reset,
         .Q(clock_counter)
     );
 
     assign vote_en = (
         ((clock_counter == 8'd4) || (clock_counter == 8'd5) ||
-         (clock_counter == 8'd6)) && laser_in2
+         (clock_counter == 8'd3)) && laser_in2
     );
     assign sampled_bit = (clock_counter == 8'd8);
     assign byte_read = (bits_read == 8'd9);
@@ -737,11 +737,11 @@ module LaserReceiver
     Counter #(8) num_bits (
         .D(8'b0),
         .en(sampled_bit),
-        .clear(1'b0),
+        .clear(byte_read),
         .load(1'b0),
-        .clock(sample_clock),
+        .clock,
         .up(1'b1),
-        .reset(reset || reset_mod),
+        .reset,
         .Q(bits_read)
     );
 
@@ -750,24 +750,24 @@ module LaserReceiver
         .en(vote_en),
         .clear(vote_clear),
         .load(1'b0),
-        .clock(sample_clock),
+        .clock,
         .up(1'b1),
-        .reset(reset || reset_mod),
+        .reset,
         .Q(vote)
     );
 
-    ShiftRegister #(9) data_shift (
+    ShiftRegister #(9) data_shifT (
         .D(vote[1]),
         .en(sampled_bit),
         .left(1'd0),
-        .clock(sample_clock),
-        .reset(reset || reset_mod),
+        .clock,
+        .reset,
         .Q(data_register)
     );
 
     Register #(9) data (
         .D(data_register),
-        .en(load_data),
+        .en(byte_read),
         .clear(1'b0),
         .reset,
         .clock,
@@ -775,41 +775,30 @@ module LaserReceiver
     );
 
     always_comb begin
-        reset_mod = 1'b0;
-
         case (currState)
             WAIT: begin
                 if (laser_in2 == 1'b1) nextState = START;
                 else nextState = WAIT;
             end
             START: begin
-                if (sampled_bit && !data_register[8]) begin
-                    reset_mod = 1'b1;
-                    nextState = WAIT;
-                end
+                if (sampled_bit && !data_register[8]) nextState = WAIT;
                 else if (sampled_bit) nextState = RECEIVE;
                 else nextState = START;
             end
-            RECEIVE: nextState = byte_read ? LOAD_DATA : RECEIVE;
-            LOAD_DATA: nextState = DISPLAY_DATA;
-            DISPLAY_DATA: begin
-                nextState = IDLE;
-                reset_mod = 1'b1;
-            end
+            RECEIVE: nextState = byte_read ? STOP : RECEIVE;
+            STOP: nextState = IDLE;
             IDLE: nextState = (laser_in2 == 1'b0) ? WAIT : IDLE;
         endcase
     end
 
     always_comb begin
         clock_en = 1'b0;
-        load_data = 1'b0;
         data_valid = 1'b0;
 
         case (currState)
             START: clock_en = 1'b1;
             RECEIVE: clock_en = 1'b1;
-            LOAD_DATA: load_data = 1'b1;
-            DISPLAY_DATA: data_valid = 1'b1;
+            STOP: data_valid = 1'b1;
         endcase
     end
 
