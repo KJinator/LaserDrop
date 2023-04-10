@@ -2,7 +2,7 @@
 
 // Divider should be >= 1 (else, why use a divider)
 module ClockDivider (
-    input  logic        clk_base, reset, en,
+    input  logic        clk_base, en, reset,
     input  logic [7:0]  divider,
     output logic        clk_divided
 );
@@ -26,7 +26,6 @@ module ClockDivider (
     );
 
     always_ff @(posedge clk_base, posedge reset) begin
-        count_en <= en;
         if (reset) begin
             clk_divided <= 'b0;
         end

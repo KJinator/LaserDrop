@@ -13,7 +13,7 @@ module FTDI_Interface (
     enum logic [3:0] { WAIT, SET_WRITE, WRITE1, WRITE2, READ1, READ2, READ3 }
         currState, nextState;
 
-    logic wrq_rdreq, store_rd;
+    logic wrq_rdreq, store_rd, txe1, txe2, rxf1, rxf2;
 
     //// Datapath
     fifo_1k read_queue (
@@ -105,4 +105,14 @@ module FTDI_Interface (
         else if (clear) currState <= WAIT;
         else currState <= nextState;
     end
+
+    // // Metastability prevention
+    // always_ff @(posedge clock) begin
+    //     txe1 <= txe;
+    //     rxf1 <= rxf;
+    // end
+    // always_ff @(posedge clock) begin
+    //     txe2 <= txe1;
+    //     rxf2 <= rxf1;
+    // end
 endmodule: FTDI_Interface

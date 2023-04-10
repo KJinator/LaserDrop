@@ -1,5 +1,5 @@
 Assembler report for ChipInterface
-Fri Apr  7 14:44:34 2023
+Mon Apr 10 12:07:57 2023
 Quartus Prime Version 22.1std.0 Build 915 10/25/2022 SC Lite Edition
 
 
@@ -38,7 +38,7 @@ https://fpgasoftware.intel.com/eula.
 +---------------------------------------------------------------+
 ; Assembler Summary                                             ;
 +-----------------------+---------------------------------------+
-; Assembler Status      ; Successful - Fri Apr  7 14:44:34 2023 ;
+; Assembler Status      ; Successful - Mon Apr 10 12:07:57 2023 ;
 ; Revision Name         ; ChipInterface                         ;
 ; Top-level Entity Name ; ChipInterface                         ;
 ; Family                ; Cyclone V                             ;
@@ -67,8 +67,8 @@ https://fpgasoftware.intel.com/eula.
 +----------------+---------------------------------------------------------------------------------------------+
 ; Option         ; Setting                                                                                     ;
 +----------------+---------------------------------------------------------------------------------------------+
-; JTAG usercode  ; 0x005D2599                                                                                  ;
-; Checksum       ; 0x005D2599                                                                                  ;
+; JTAG usercode  ; 0x005C5BD9                                                                                  ;
+; Checksum       ; 0x005C5BD9                                                                                  ;
 +----------------+---------------------------------------------------------------------------------------------+
 
 
@@ -78,14 +78,14 @@ https://fpgasoftware.intel.com/eula.
 Info: *******************************************************************
 Info: Running Quartus Prime Assembler
     Info: Version 22.1std.0 Build 915 10/25/2022 SC Lite Edition
-    Info: Processing started: Fri Apr  7 14:44:31 2023
+    Info: Processing started: Mon Apr 10 12:07:54 2023
 Info: Command: quartus_asm --read_settings_files=off --write_settings_files=off ChipInterface -c ChipInterface
 Warning (18236): Number of processors has not been specified which may cause overloading on shared machines.  Set the global assignment NUM_PARALLEL_PROCESSORS in your QSF to an appropriate value for best performance.
 Info (115030): Assembler is generating device programming files
 Info: Quartus Prime Assembler was successful. 0 errors, 1 warning
     Info: Peak virtual memory: 4848 megabytes
-    Info: Processing ended: Fri Apr  7 14:44:34 2023
+    Info: Processing ended: Mon Apr 10 12:07:57 2023
     Info: Elapsed time: 00:00:03
-    Info: Total CPU time (on all processors): 00:00:02
+    Info: Total CPU time (on all processors): 00:00:03
 
 

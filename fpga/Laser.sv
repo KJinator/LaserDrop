@@ -706,7 +706,8 @@ module LaserReceiver #(CLKS_PER_BIT=8)
         WAIT, START, RECEIVE, STOP, FINISH
     } currState, nextState;
 
-    logic laser_in1, laser_in2;
+    logic laser_in1, laser_in2, clk_ctr_en, clk_ctr_clear, bits_read_en,
+        bits_read_clear;
     logic [8:0] data_register;
     logic [7:0] clock_counter, bits_read;
 
@@ -715,71 +716,107 @@ module LaserReceiver #(CLKS_PER_BIT=8)
         laser_in2 <= laser_in1;
     end
 
+    Counter #(8) clock_ctr (
+        .D(8'b0),
+        .en(clk_ctr_en),
+        .clear(clk_ctr_clear),
+        .load(1'b0),
+        .clock,
+        .up(1'b1),
+        .reset,
+        .Q(clock_counter)
+    );
+
+    Counter #(8) bits_read_ctr (
+        .D(8'b0),
+        .en(bits_read_en),
+        .clear(bits_read_clear),
+        .load(1'b0),
+        .clock,
+        .up(1'b1),
+        .reset,
+        .Q(bits_read)
+    );
+
     // Referenced https://nandland.com/uart-serial-port-module/
-    always_ff @(posedge clock, posedge reset) begin
-        if (reset) currState <= WAIT;
+    always_comb begin
+        clk_ctr_clear = 1'b0;
+        clk_ctr_en = 1'b0;
+        bits_read_en = 1'b0;
+        bits_read_clear = 1'b0;
+        data_valid = 1'b0;
+    
         case (currState)
             WAIT: begin
-                data_valid <= 1'b0;
-                clock_counter <= 1'b0;
-                bits_read <= 1'b0;
+                clk_ctr_clear = 1'b1;
+                bits_read_clear = 1'b0;
 
-                if (laser_in2 == 1'b1) currState <= START;
-                else currState <= WAIT;
+                if (laser_in == 1'b1) nextState = START;
+                else nextState = WAIT;
             end
             START: begin
                 if (clock_counter == ((CLKS_PER_BIT-1) >> 1'b1)) begin
-                    if (laser_in2 == 1'b1) begin
-                        clock_counter <= 8'd0;
-                        currState <= RECEIVE;
+                    if (laser_in == 1'b1) begin
+                        clk_ctr_clear = 1'b1;
+                        nextState = RECEIVE;
                     end
-                    else currState <= WAIT;
+                    else nextState = WAIT;
                 end
                 else begin
-                    clock_counter <= clock_counter + 8'b1;
-                    currState <= START;
+                    clk_ctr_en = 1'b1;
+                    nextState = START;
                 end
             end
             RECEIVE: begin
-                if (clock_counter < CLKS_PER_BIT-1) begin
-                    clock_counter <= clock_counter + 8'b1;
-                    currState <= RECEIVE;
+                if (clock_counter < CLKS_PER_BIT - 1) begin
+                    clk_ctr_en = 1'b1;
+                    nextState = RECEIVE;
                 end
                 else begin
-                    clock_counter <= 8'b0;
-                    data_in[bits_read] <= laser_in2;
+                    clk_ctr_clear = 1'b1;
 
                     if (bits_read < 8'd7) begin
-                        bits_read <= bits_read + 8'b1;
-                        currState <= RECEIVE;
+                        bits_read_en = 1'b1;
+                        nextState = RECEIVE;
                     end
                     else begin
-                        bits_read <= 8'b0;
-                        currState <= STOP;
+                        bits_read_clear = 1'b1;
+                        nextState = STOP;
                     end
                 end
             end
             STOP: begin
                 if (clock_counter < CLKS_PER_BIT - 8'b1) begin
-                    clock_counter <= clock_counter + 8'b1;
-                    currState <= STOP;
+                    clk_ctr_en = 1'b1;
+                    nextState = STOP;
                 end
                 else begin
-                    if (laser_in2 == 1'b0) begin
-                        data_valid <= 1'b1;
-                        clock_counter <= 8'b0;
-                        currState <= FINISH;
+                    clk_ctr_clear = 1'b1;
+                    if (laser_in == 1'b0) begin
+                        nextState = FINISH;
                     end
-                    else currState <= WAIT;
+						  else nextState = WAIT;
                 end
             end
             FINISH: begin
-                currState <= WAIT;
-                data_valid <= 1'b0;
+                data_valid = 1'b1;
+                nextState = WAIT;
             end
-
-            default: currState <= WAIT;
         endcase
+    end
+
+    always_ff @(posedge clock) begin
+        if (currState == RECEIVE && clock_counter == CLKS_PER_BIT - 1) begin
+            data_in[bits_read] <= laser_in;
+        end
+        else if (currState == WAIT) begin
+            data_in <= 8'b0;
+        end
+    end
+
+    always_ff @(posedge clock, posedge reset) begin
+        if (reset) currState <= WAIT;
+        else currState <= nextState;
     end
 
 endmodule: LaserReceiver
