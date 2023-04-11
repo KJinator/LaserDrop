@@ -1,5 +1,5 @@
 Analysis & Synthesis report for ChipInterface
-Mon Apr 10 12:06:54 2023
+Tue Apr 11 16:33:21 2023
 Quartus Prime Version 22.1std.0 Build 915 10/25/2022 SC Lite Edition
 
 
@@ -81,13 +81,13 @@ https://fpgasoftware.intel.com/eula.
 +----------------------------------------------------------------------------------+
 ; Analysis & Synthesis Summary                                                     ;
 +---------------------------------+------------------------------------------------+
-; Analysis & Synthesis Status     ; Successful - Mon Apr 10 12:06:54 2023          ;
+; Analysis & Synthesis Status     ; Successful - Tue Apr 11 16:33:21 2023          ;
 ; Quartus Prime Version           ; 22.1std.0 Build 915 10/25/2022 SC Lite Edition ;
 ; Revision Name                   ; ChipInterface                                  ;
 ; Top-level Entity Name           ; ChipInterface                                  ;
 ; Family                          ; Cyclone V                                      ;
 ; Logic utilization (in ALMs)     ; N/A                                            ;
-; Total registers                 ; 147                                            ;
+; Total registers                 ; 143                                            ;
 ; Total pins                      ; 147                                            ;
 ; Total virtual pins              ; 0                                              ;
 ; Total block memory bits         ; 16,384                                         ;
@@ -240,14 +240,14 @@ https://fpgasoftware.intel.com/eula.
 +---------------------------------------------+----------------+
 ; Estimate of Logic utilization (ALMs needed) ; 123            ;
 ;                                             ;                ;
-; Combinational ALUT usage for logic          ; 215            ;
-;     -- 7 input functions                    ; 3              ;
-;     -- 6 input functions                    ; 25             ;
-;     -- 5 input functions                    ; 27             ;
-;     -- 4 input functions                    ; 55             ;
-;     -- <=3 input functions                  ; 105            ;
+; Combinational ALUT usage for logic          ; 213            ;
+;     -- 7 input functions                    ; 0              ;
+;     -- 6 input functions                    ; 30             ;
+;     -- 5 input functions                    ; 25             ;
+;     -- 4 input functions                    ; 52             ;
+;     -- <=3 input functions                  ; 106            ;
 ;                                             ;                ;
-; Dedicated logic registers                   ; 147            ;
+; Dedicated logic registers                   ; 143            ;
 ;                                             ;                ;
 ; I/O pins                                    ; 147            ;
 ; Total MLAB memory bits                      ; 0              ;
@@ -256,8 +256,8 @@ https://fpgasoftware.intel.com/eula.
 ; Total DSP Blocks                            ; 0              ;
 ;                                             ;                ;
 ; Maximum fan-out node                        ; CLOCK_50~input ;
-; Maximum fan-out                             ; 159            ;
-; Total fan-out                               ; 1972           ;
+; Maximum fan-out                             ; 155            ;
+; Total fan-out                               ; 1953           ;
 ; Average fan-out                             ; 2.65           ;
 +---------------------------------------------+----------------+
 
@@ -267,15 +267,15 @@ https://fpgasoftware.intel.com/eula.
 +------------------------------------------------+---------------------+---------------------------+-------------------+------------+------+--------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-------------------+--------------+
 ; Compilation Hierarchy Node                     ; Combinational ALUTs ; Dedicated Logic Registers ; Block Memory Bits ; DSP Blocks ; Pins ; Virtual Pins ; Full Hierarchy Name                                                                                                                                                                      ; Entity Name       ; Library Name ;
 +------------------------------------------------+---------------------+---------------------------+-------------------+------------+------+--------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-------------------+--------------+
-; |ChipInterface                                 ; 215 (1)             ; 147 (0)                   ; 16384             ; 0          ; 147  ; 0            ; |ChipInterface                                                                                                                                                                           ; ChipInterface     ; work         ;
+; |ChipInterface                                 ; 213 (1)             ; 143 (0)                   ; 16384             ; 0          ; 147  ; 0            ; |ChipInterface                                                                                                                                                                           ; ChipInterface     ; work         ;
 ;    |BCDtoSevenSegment:hex2_0|                  ; 7 (7)               ; 0 (0)                     ; 0                 ; 0          ; 0    ; 0            ; |ChipInterface|BCDtoSevenSegment:hex2_0                                                                                                                                                  ; BCDtoSevenSegment ; work         ;
 ;    |BCDtoSevenSegment:hex2_1|                  ; 7 (7)               ; 0 (0)                     ; 0                 ; 0          ; 0    ; 0            ; |ChipInterface|BCDtoSevenSegment:hex2_1                                                                                                                                                  ; BCDtoSevenSegment ; work         ;
 ;    |BCDtoSevenSegment:laser2_0|                ; 7 (7)               ; 0 (0)                     ; 0                 ; 0          ; 0    ; 0            ; |ChipInterface|BCDtoSevenSegment:laser2_0                                                                                                                                                ; BCDtoSevenSegment ; work         ;
 ;    |BCDtoSevenSegment:laser2_1|                ; 7 (7)               ; 0 (0)                     ; 0                 ; 0          ; 0    ; 0            ; |ChipInterface|BCDtoSevenSegment:laser2_1                                                                                                                                                ; BCDtoSevenSegment ; work         ;
-;    |Echo:main|                                 ; 186 (22)            ; 147 (3)                   ; 16384             ; 0          ; 0    ; 0            ; |ChipInterface|Echo:main                                                                                                                                                                 ; Echo              ; work         ;
-;       |ClockDivider:clock_6_25|                ; 11 (3)              ; 9 (1)                     ; 0                 ; 0          ; 0    ; 0            ; |ChipInterface|Echo:main|ClockDivider:clock_6_25                                                                                                                                         ; ClockDivider      ; work         ;
-;          |Counter:count|                       ; 8 (8)               ; 8 (8)                     ; 0                 ; 0          ; 0    ; 0            ; |ChipInterface|Echo:main|ClockDivider:clock_6_25|Counter:count                                                                                                                           ; Counter           ; work         ;
-;       |FTDI_Interface:ftdi_if|                 ; 88 (9)              ; 75 (11)                   ; 16384             ; 0          ; 0    ; 0            ; |ChipInterface|Echo:main|FTDI_Interface:ftdi_if                                                                                                                                          ; FTDI_Interface    ; work         ;
+;    |Echo:main|                                 ; 184 (22)            ; 143 (3)                   ; 16384             ; 0          ; 0    ; 0            ; |ChipInterface|Echo:main                                                                                                                                                                 ; Echo              ; work         ;
+;       |ClockDivider:clock_3_125|               ; 11 (3)              ; 9 (1)                     ; 0                 ; 0          ; 0    ; 0            ; |ChipInterface|Echo:main|ClockDivider:clock_3_125                                                                                                                                        ; ClockDivider      ; work         ;
+;          |Counter:count|                       ; 8 (8)               ; 8 (8)                     ; 0                 ; 0          ; 0    ; 0            ; |ChipInterface|Echo:main|ClockDivider:clock_3_125|Counter:count                                                                                                                          ; Counter           ; work         ;
+;       |FTDI_Interface:ftdi_if|                 ; 84 (7)              ; 71 (7)                    ; 16384             ; 0          ; 0    ; 0            ; |ChipInterface|Echo:main|FTDI_Interface:ftdi_if                                                                                                                                          ; FTDI_Interface    ; work         ;
 ;          |fifo_1k:read_queue|                  ; 39 (0)              ; 32 (0)                    ; 8192              ; 0          ; 0    ; 0            ; |ChipInterface|Echo:main|FTDI_Interface:ftdi_if|fifo_1k:read_queue                                                                                                                       ; fifo_1k           ; work         ;
 ;             |scfifo:scfifo_component|          ; 39 (0)              ; 32 (0)                    ; 8192              ; 0          ; 0    ; 0            ; |ChipInterface|Echo:main|FTDI_Interface:ftdi_if|fifo_1k:read_queue|scfifo:scfifo_component                                                                                               ; scfifo            ; work         ;
 ;                |scfifo_qbf1:auto_generated|    ; 39 (0)              ; 32 (0)                    ; 8192              ; 0          ; 0    ; 0            ; |ChipInterface|Echo:main|FTDI_Interface:ftdi_if|fifo_1k:read_queue|scfifo:scfifo_component|scfifo_qbf1:auto_generated                                                                    ; scfifo_qbf1       ; work         ;
@@ -285,16 +285,16 @@ https://fpgasoftware.intel.com/eula.
 ;                      |altsyncram_ntu1:FIFOram| ; 0 (0)               ; 0 (0)                     ; 8192              ; 0          ; 0    ; 0            ; |ChipInterface|Echo:main|FTDI_Interface:ftdi_if|fifo_1k:read_queue|scfifo:scfifo_component|scfifo_qbf1:auto_generated|a_dpfifo_86d1:dpfifo|altsyncram_ntu1:FIFOram                       ; altsyncram_ntu1   ; work         ;
 ;                      |cntr_uhb:rd_ptr_count|   ; 10 (10)             ; 10 (10)                   ; 0                 ; 0          ; 0    ; 0            ; |ChipInterface|Echo:main|FTDI_Interface:ftdi_if|fifo_1k:read_queue|scfifo:scfifo_component|scfifo_qbf1:auto_generated|a_dpfifo_86d1:dpfifo|cntr_uhb:rd_ptr_count                         ; cntr_uhb          ; work         ;
 ;                      |cntr_uhb:wr_ptr|         ; 10 (10)             ; 10 (10)                   ; 0                 ; 0          ; 0    ; 0            ; |ChipInterface|Echo:main|FTDI_Interface:ftdi_if|fifo_1k:read_queue|scfifo:scfifo_component|scfifo_qbf1:auto_generated|a_dpfifo_86d1:dpfifo|cntr_uhb:wr_ptr                               ; cntr_uhb          ; work         ;
-;          |fifo_1k:write_queue|                 ; 40 (0)              ; 32 (0)                    ; 8192              ; 0          ; 0    ; 0            ; |ChipInterface|Echo:main|FTDI_Interface:ftdi_if|fifo_1k:write_queue                                                                                                                      ; fifo_1k           ; work         ;
-;             |scfifo:scfifo_component|          ; 40 (0)              ; 32 (0)                    ; 8192              ; 0          ; 0    ; 0            ; |ChipInterface|Echo:main|FTDI_Interface:ftdi_if|fifo_1k:write_queue|scfifo:scfifo_component                                                                                              ; scfifo            ; work         ;
-;                |scfifo_qbf1:auto_generated|    ; 40 (0)              ; 32 (0)                    ; 8192              ; 0          ; 0    ; 0            ; |ChipInterface|Echo:main|FTDI_Interface:ftdi_if|fifo_1k:write_queue|scfifo:scfifo_component|scfifo_qbf1:auto_generated                                                                   ; scfifo_qbf1       ; work         ;
-;                   |a_dpfifo_86d1:dpfifo|       ; 40 (2)              ; 32 (0)                    ; 8192              ; 0          ; 0    ; 0            ; |ChipInterface|Echo:main|FTDI_Interface:ftdi_if|fifo_1k:write_queue|scfifo:scfifo_component|scfifo_qbf1:auto_generated|a_dpfifo_86d1:dpfifo                                              ; a_dpfifo_86d1     ; work         ;
-;                      |a_fefifo_jaf:fifo_state| ; 18 (8)              ; 12 (2)                    ; 0                 ; 0          ; 0    ; 0            ; |ChipInterface|Echo:main|FTDI_Interface:ftdi_if|fifo_1k:write_queue|scfifo:scfifo_component|scfifo_qbf1:auto_generated|a_dpfifo_86d1:dpfifo|a_fefifo_jaf:fifo_state                      ; a_fefifo_jaf      ; work         ;
+;          |fifo_1k:write_queue|                 ; 38 (0)              ; 32 (0)                    ; 8192              ; 0          ; 0    ; 0            ; |ChipInterface|Echo:main|FTDI_Interface:ftdi_if|fifo_1k:write_queue                                                                                                                      ; fifo_1k           ; work         ;
+;             |scfifo:scfifo_component|          ; 38 (0)              ; 32 (0)                    ; 8192              ; 0          ; 0    ; 0            ; |ChipInterface|Echo:main|FTDI_Interface:ftdi_if|fifo_1k:write_queue|scfifo:scfifo_component                                                                                              ; scfifo            ; work         ;
+;                |scfifo_qbf1:auto_generated|    ; 38 (0)              ; 32 (0)                    ; 8192              ; 0          ; 0    ; 0            ; |ChipInterface|Echo:main|FTDI_Interface:ftdi_if|fifo_1k:write_queue|scfifo:scfifo_component|scfifo_qbf1:auto_generated                                                                   ; scfifo_qbf1       ; work         ;
+;                   |a_dpfifo_86d1:dpfifo|       ; 38 (1)              ; 32 (0)                    ; 8192              ; 0          ; 0    ; 0            ; |ChipInterface|Echo:main|FTDI_Interface:ftdi_if|fifo_1k:write_queue|scfifo:scfifo_component|scfifo_qbf1:auto_generated|a_dpfifo_86d1:dpfifo                                              ; a_dpfifo_86d1     ; work         ;
+;                      |a_fefifo_jaf:fifo_state| ; 17 (7)              ; 12 (2)                    ; 0                 ; 0          ; 0    ; 0            ; |ChipInterface|Echo:main|FTDI_Interface:ftdi_if|fifo_1k:write_queue|scfifo:scfifo_component|scfifo_qbf1:auto_generated|a_dpfifo_86d1:dpfifo|a_fefifo_jaf:fifo_state                      ; a_fefifo_jaf      ; work         ;
 ;                         |cntr_ai7:count_usedw| ; 10 (10)             ; 10 (10)                   ; 0                 ; 0          ; 0    ; 0            ; |ChipInterface|Echo:main|FTDI_Interface:ftdi_if|fifo_1k:write_queue|scfifo:scfifo_component|scfifo_qbf1:auto_generated|a_dpfifo_86d1:dpfifo|a_fefifo_jaf:fifo_state|cntr_ai7:count_usedw ; cntr_ai7          ; work         ;
 ;                      |altsyncram_ntu1:FIFOram| ; 0 (0)               ; 0 (0)                     ; 8192              ; 0          ; 0    ; 0            ; |ChipInterface|Echo:main|FTDI_Interface:ftdi_if|fifo_1k:write_queue|scfifo:scfifo_component|scfifo_qbf1:auto_generated|a_dpfifo_86d1:dpfifo|altsyncram_ntu1:FIFOram                      ; altsyncram_ntu1   ; work         ;
 ;                      |cntr_uhb:rd_ptr_count|   ; 10 (10)             ; 10 (10)                   ; 0                 ; 0          ; 0    ; 0            ; |ChipInterface|Echo:main|FTDI_Interface:ftdi_if|fifo_1k:write_queue|scfifo:scfifo_component|scfifo_qbf1:auto_generated|a_dpfifo_86d1:dpfifo|cntr_uhb:rd_ptr_count                        ; cntr_uhb          ; work         ;
 ;                      |cntr_uhb:wr_ptr|         ; 10 (10)             ; 10 (10)                   ; 0                 ; 0          ; 0    ; 0            ; |ChipInterface|Echo:main|FTDI_Interface:ftdi_if|fifo_1k:write_queue|scfifo:scfifo_component|scfifo_qbf1:auto_generated|a_dpfifo_86d1:dpfifo|cntr_uhb:wr_ptr                              ; cntr_uhb          ; work         ;
-;       |LaserReceiver:receive|                  ; 49 (31)             ; 29 (13)                   ; 0                 ; 0          ; 0    ; 0            ; |ChipInterface|Echo:main|LaserReceiver:receive                                                                                                                                           ; LaserReceiver     ; work         ;
+;       |LaserReceiver:receive|                  ; 51 (33)             ; 29 (13)                   ; 0                 ; 0          ; 0    ; 0            ; |ChipInterface|Echo:main|LaserReceiver:receive                                                                                                                                           ; LaserReceiver     ; work         ;
 ;          |Counter:bits_read_ctr|               ; 8 (8)               ; 8 (8)                     ; 0                 ; 0          ; 0    ; 0            ; |ChipInterface|Echo:main|LaserReceiver:receive|Counter:bits_read_ctr                                                                                                                     ; Counter           ; work         ;
 ;          |Counter:clock_ctr|                   ; 10 (10)             ; 8 (8)                     ; 0                 ; 0          ; 0    ; 0            ; |ChipInterface|Echo:main|LaserReceiver:receive|Counter:clock_ctr                                                                                                                         ; Counter           ; work         ;
 ;       |LaserTransmitter:transmit|              ; 16 (12)             ; 15 (3)                    ; 0                 ; 0          ; 0    ; 0            ; |ChipInterface|Echo:main|LaserTransmitter:transmit                                                                                                                                       ; LaserTransmitter  ; work         ;
@@ -401,7 +401,7 @@ Encoding Type:  One-Hot
 +----------------------------------------------+-------+
 ; Statistic                                    ; Value ;
 +----------------------------------------------+-------+
-; Total registers                              ; 147   ;
+; Total registers                              ; 143   ;
 ; Number of registers using Synchronous Clear  ; 16    ;
 ; Number of registers using Synchronous Load   ; 8     ;
 ; Number of registers using Asynchronous Clear ; 135   ;
@@ -416,10 +416,10 @@ Encoding Type:  One-Hot
 +--------------------+-----------+---------------+----------------------+------------------------+------------+-----------------------------------------------------------------------------+
 ; Multiplexer Inputs ; Bus Width ; Baseline Area ; Area if Restructured ; Saving if Restructured ; Registered ; Example Multiplexer Output                                                  ;
 +--------------------+-----------+---------------+----------------------+------------------------+------------+-----------------------------------------------------------------------------+
-; 3:1                ; 8 bits    ; 16 LEs        ; 0 LEs                ; 16 LEs                 ; Yes        ; |ChipInterface|Echo:main|LaserReceiver:receive|Counter:clock_ctr|Q[1]       ;
-; 3:1                ; 8 bits    ; 16 LEs        ; 0 LEs                ; 16 LEs                 ; Yes        ; |ChipInterface|Echo:main|LaserReceiver:receive|Counter:bits_read_ctr|Q[7]   ;
-; 4:1                ; 2 bits    ; 4 LEs         ; 4 LEs                ; 0 LEs                  ; Yes        ; |ChipInterface|Echo:main|LaserTransmitter:transmit|Register:laser_data|Q[3] ;
-; 4:1                ; 6 bits    ; 12 LEs        ; 12 LEs               ; 0 LEs                  ; Yes        ; |ChipInterface|Echo:main|LaserTransmitter:transmit|Register:laser_data|Q[7] ;
+; 3:1                ; 8 bits    ; 16 LEs        ; 0 LEs                ; 16 LEs                 ; Yes        ; |ChipInterface|Echo:main|LaserReceiver:receive|Counter:clock_ctr|Q[6]       ;
+; 3:1                ; 8 bits    ; 16 LEs        ; 0 LEs                ; 16 LEs                 ; Yes        ; |ChipInterface|Echo:main|LaserReceiver:receive|Counter:bits_read_ctr|Q[0]   ;
+; 4:1                ; 2 bits    ; 4 LEs         ; 4 LEs                ; 0 LEs                  ; Yes        ; |ChipInterface|Echo:main|LaserTransmitter:transmit|Register:laser_data|Q[1] ;
+; 4:1                ; 6 bits    ; 12 LEs        ; 12 LEs               ; 0 LEs                  ; Yes        ; |ChipInterface|Echo:main|LaserTransmitter:transmit|Register:laser_data|Q[0] ;
 ; 4:1                ; 8 bits    ; 16 LEs        ; 16 LEs               ; 0 LEs                  ; No         ; |ChipInterface|Echo:main|Selector8                                          ;
 +--------------------+-----------+---------------+----------------------+------------------------+------------+-----------------------------------------------------------------------------+
 
@@ -467,7 +467,7 @@ Note: In order to hide this table in the UI and the text report file, please set
 +----------------+-------+-----------------------------------------------------+
 ; Parameter Name ; Value ; Type                                                ;
 +----------------+-------+-----------------------------------------------------+
-; CLKS_PER_BIT   ; 8     ; Signed Integer                                      ;
+; CLKS_PER_BIT   ; 16    ; Signed Integer                                      ;
 +----------------+-------+-----------------------------------------------------+
 Note: In order to hide this table in the UI and the text report file, please set the "Show Parameter Settings in Synthesis Report" option in "Analysis and Synthesis Settings -> More Settings" to "Off".
 
@@ -640,29 +640,29 @@ Note: In order to hide this table in the UI and the text report file, please set
 +-------+-------+----------+------------------------------------------+
 
 
++----------------------------------------------------------------+
+; Port Connectivity Checks: "Echo:main|ClockDivider:clock_3_125" ;
++---------------+-------+----------+-----------------------------+
+; Port          ; Type  ; Severity ; Details                     ;
++---------------+-------+----------+-----------------------------+
+; en            ; Input ; Info     ; Stuck at VCC                ;
+; divider[7..5] ; Input ; Info     ; Stuck at GND                ;
+; divider[3..0] ; Input ; Info     ; Stuck at GND                ;
+; divider[4]    ; Input ; Info     ; Stuck at VCC                ;
++---------------+-------+----------+-----------------------------+
+
+
 +-------------------------------------------------------------------------------------------------------------------------+
-; Port Connectivity Checks: "Echo:main|ClockDivider:clock_3_125"                                                          ;
+; Port Connectivity Checks: "Echo:main|ClockDivider:clock_6_25"                                                           ;
 +---------------+--------+----------+-------------------------------------------------------------------------------------+
 ; Port          ; Type   ; Severity ; Details                                                                             ;
 +---------------+--------+----------+-------------------------------------------------------------------------------------+
 ; en            ; Input  ; Info     ; Stuck at VCC                                                                        ;
-; divider[7..5] ; Input  ; Info     ; Stuck at GND                                                                        ;
-; divider[3..0] ; Input  ; Info     ; Stuck at GND                                                                        ;
-; divider[4]    ; Input  ; Info     ; Stuck at VCC                                                                        ;
+; divider[7..4] ; Input  ; Info     ; Stuck at GND                                                                        ;
+; divider[2..0] ; Input  ; Info     ; Stuck at GND                                                                        ;
+; divider[3]    ; Input  ; Info     ; Stuck at VCC                                                                        ;
 ; clk_divided   ; Output ; Info     ; Connected to dangling logic. Logic that only feeds a dangling port will be removed. ;
 +---------------+--------+----------+-------------------------------------------------------------------------------------+
-
-
-+---------------------------------------------------------------+
-; Port Connectivity Checks: "Echo:main|ClockDivider:clock_6_25" ;
-+---------------+-------+----------+----------------------------+
-; Port          ; Type  ; Severity ; Details                    ;
-+---------------+-------+----------+----------------------------+
-; en            ; Input ; Info     ; Stuck at VCC               ;
-; divider[7..4] ; Input ; Info     ; Stuck at GND               ;
-; divider[2..0] ; Input ; Info     ; Stuck at GND               ;
-; divider[3]    ; Input ; Info     ; Stuck at VCC               ;
-+---------------+-------+----------+----------------------------+
 
 
 +-------------------------------------------------------------------------------------------------------------------------+
@@ -781,32 +781,30 @@ Note: In order to hide this table in the UI and the text report file, please set
 +-----------------------+-----------------------------+
 ; Type                  ; Count                       ;
 +-----------------------+-----------------------------+
-; arriav_ff             ; 147                         ;
+; arriav_ff             ; 143                         ;
 ;     CLR               ; 27                          ;
 ;     CLR SLD           ; 8                           ;
 ;     ENA CLR           ; 84                          ;
 ;     ENA CLR SCLR      ; 16                          ;
-;     plain             ; 12                          ;
+;     plain             ; 8                           ;
 ; arriav_io_obuf        ; 72                          ;
-; arriav_lcell_comb     ; 220                         ;
+; arriav_lcell_comb     ; 218                         ;
 ;     arith             ; 84                          ;
 ;         1 data inputs ; 66                          ;
 ;         2 data inputs ; 18                          ;
-;     extend            ; 3                           ;
-;         7 data inputs ; 3                           ;
-;     normal            ; 133                         ;
+;     normal            ; 134                         ;
 ;         0 data inputs ; 2                           ;
-;         1 data inputs ; 5                           ;
-;         2 data inputs ; 8                           ;
-;         3 data inputs ; 11                          ;
-;         4 data inputs ; 55                          ;
-;         5 data inputs ; 27                          ;
-;         6 data inputs ; 25                          ;
+;         1 data inputs ; 4                           ;
+;         2 data inputs ; 11                          ;
+;         3 data inputs ; 10                          ;
+;         4 data inputs ; 52                          ;
+;         5 data inputs ; 25                          ;
+;         6 data inputs ; 30                          ;
 ; boundary_port         ; 147                         ;
 ; stratixv_ram_block    ; 16                          ;
 ;                       ;                             ;
-; Max LUT depth         ; 4.00                        ;
-; Average LUT depth     ; 1.56                        ;
+; Max LUT depth         ; 3.00                        ;
+; Average LUT depth     ; 1.54                        ;
 +-----------------------+-----------------------------+
 
 
@@ -815,7 +813,7 @@ Note: In order to hide this table in the UI and the text report file, please set
 +----------------+--------------+
 ; Partition Name ; Elapsed Time ;
 +----------------+--------------+
-; Top            ; 00:00:02     ;
+; Top            ; 00:00:01     ;
 +----------------+--------------+
 
 
@@ -825,7 +823,7 @@ Note: In order to hide this table in the UI and the text report file, please set
 Info: *******************************************************************
 Info: Running Quartus Prime Analysis & Synthesis
     Info: Version 22.1std.0 Build 915 10/25/2022 SC Lite Edition
-    Info: Processing started: Mon Apr 10 12:06:37 2023
+    Info: Processing started: Tue Apr 11 16:32:48 2023
 Info: Command: quartus_map --read_settings_files=on --write_settings_files=off ChipInterface -c ChipInterface
 Warning (18236): Number of processors has not been specified which may cause overloading on shared machines.  Set the global assignment NUM_PARALLEL_PROCESSORS in your QSF to an appropriate value for best performance.
 Info (20030): Parallel compilation is enabled and will use 4 of the 4 processors detected
@@ -993,17 +991,17 @@ Warning (21074): Design contains 7 input pin(s) that do not drive logic
     Warning (15610): No output dependent on input pin "KEY[1]" File: C:/Users/anjua/Documents/18-500 ECE Capstone/LaserDrop/fpga_echo/ChipInterface.sv Line: 9
     Warning (15610): No output dependent on input pin "KEY[2]" File: C:/Users/anjua/Documents/18-500 ECE Capstone/LaserDrop/fpga_echo/ChipInterface.sv Line: 9
     Warning (15610): No output dependent on input pin "KEY[3]" File: C:/Users/anjua/Documents/18-500 ECE Capstone/LaserDrop/fpga_echo/ChipInterface.sv Line: 9
-Info (21057): Implemented 403 device resources after synthesis - the final resource count might be different
+Info (21057): Implemented 398 device resources after synthesis - the final resource count might be different
     Info (21058): Implemented 15 input pins
     Info (21059): Implemented 60 output pins
     Info (21060): Implemented 72 bidirectional pins
-    Info (21061): Implemented 240 logic cells
+    Info (21061): Implemented 235 logic cells
     Info (21064): Implemented 16 RAM segments
 Info: Quartus Prime Analysis & Synthesis was successful. 0 errors, 84 warnings
-    Info: Peak virtual memory: 4841 megabytes
-    Info: Processing ended: Mon Apr 10 12:06:54 2023
-    Info: Elapsed time: 00:00:17
-    Info: Total CPU time (on all processors): 00:00:28
+    Info: Peak virtual memory: 4855 megabytes
+    Info: Processing ended: Tue Apr 11 16:33:21 2023
+    Info: Elapsed time: 00:00:33
+    Info: Total CPU time (on all processors): 00:00:25
 
 
 +------------------------------------------+

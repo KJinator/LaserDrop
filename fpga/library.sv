@@ -76,7 +76,7 @@ module Register
 
   always_ff @(posedge clock, posedge reset)
     if (reset) Q <= 0;
-	 else if (clear) Q <= 0;
+    else if (clear) Q <= 0;
     else if (en) Q <= D;
 
 endmodule : Register

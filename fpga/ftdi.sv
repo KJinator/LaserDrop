@@ -42,6 +42,17 @@ module FTDI_Interface (
         .usedw()
     );
 
+    // Description:
+    // WAIT: Give up Tri, set all lines inactive. State after READ/WRITE
+    // == WRITE ==
+    //      SET_WRITE: Assert ADBUS tri and set data (min 5ns)
+    //      WRITE1: Pull write down     (min 30ns)
+    //      WRITE2: Keep write down
+    // == READ ==
+    //      READ1: Pull read down
+    //      READ2: Keep read down, store it in
+    //      READ3: Pull read back up    (RD remain low for 1-14ns)
+
     //// FSM Outputs
     always_comb begin
         adbus_tri = 1'b0;
@@ -90,13 +101,7 @@ module FTDI_Interface (
             WRITE2: nextState = WAIT;
             READ1: nextState = READ2;
             READ2: nextState = READ3;
-            READ3: begin
-                if (wr_en && !txe && !wrq_empty) begin
-                    wrq_rdreq = 1'b1;
-                    nextState = SET_WRITE;
-                end
-                else nextState = WAIT;
-            end
+            READ3: nextState = WAIT;
         endcase
     end
 

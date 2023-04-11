@@ -21,7 +21,7 @@ module Echo (
     LaserTransmitter transmit (
         .data_transmit,
         .en(~echo_mode & en),
-        .clock(CLOCK_6_25),
+        .clock(CLOCK_3_125),
         .clock_base(clock),
         .reset,
         .data_ready,
@@ -33,7 +33,7 @@ module Echo (
     assign laser_tx[1] = laser_out[1] | SW[7];
 
     // Simultaneous mode lasers
-    LaserReceiver #(8) receive (
+    LaserReceiver #(16) receive (
         .clock,
         .reset,
         .laser_in(laser_rx),
