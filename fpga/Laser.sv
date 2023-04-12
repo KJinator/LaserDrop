@@ -286,75 +286,7 @@ module LaserDrop (
                 data1_tx = `HS_TX_LASER1;
                 data2_tx = `HS_TX_LASER2;
             end
-            LOAD_TX_READ: begin
-                nextState = WAIT_TX_READ;
-
-                adbus_tri = 1'b0;
-                ftdi_rd = 1'b0;
-                store_rd = 1'b1;
-                rd_ct_en = 1'b1;
-                read_D = (
-                    (read & ~(512'hff << ({3'd0, rd_ct} << 3))) +
-                    ({504'd0, adbus_in} << ({3'd0, rd_ct} << 3))
-                );
-            end
-            WAIT_TX_READ: begin
-                if ((read[7:0] == `START_SEQ && rd_ct == `START_PKT_LEN && tx_ct >= `START_PKT_LEN) ||
-                    (read[7:0] == `STOP_SEQ && rd_ct == `STOP_PKT_LEN && tx_ct >= `STOP_PKT_LEN)) begin
-                    nextState = RECEIVE;
-                    rx_ct_clear = 1'b1;
-                end
-                // Transmission less. Wait until all packets sent over lasers
-                else if (rxf ||
-                         (read[7:0] == `START_SEQ && rd_ct == `START_PKT_LEN) ||
-                         (read[7:0] == `STOP_SEQ && rd_ct == `STOP_PKT_LEN))
-                    nextState = WAIT_TX_READ;
-                else nextState = LOAD_TX_READ;
-
-                adbus_tri = 1'b0;
-                ftdi_rd = 1'b1;
-            end
-            RECEIVE: begin
-                if (data_valid && rx_q == `ACK_SEQ) begin
-                    nextState = LOAD_TX_READ;
-                    tx_ct_clear = 1'b1;
-                    rd_ct_clear = 1'b1;
-                    queue_clear = 1'b1;
-                end
-                else if (data_valid && rx_q == `DONE_SEQ) begin
-                    nextState = HS_TX_FIN;
-                    queue_clear = 1'b1;
-                end
-                else if (timeout || data_valid) begin
-                    nextState = WAIT_RESEND;
-                    tx_ct_clear = 1'b1;
-                    queue_clear = 1'b1;
-                end
-                else nextState = RECEIVE;
-
-                store_rx = data_valid;
-                rx_ct_en = data_valid;
-            end
-            WAIT_TX_WRITE: begin
-                if (~txe & ~rx_empty) begin
-                    nextState = SET_TX_WRITE;
-                end
-                else nextState = WAIT_TX_WRITE;
-            end
-            WAIT_RESEND: begin
-                if ((read[7:0] == `START_SEQ && tx_ct == `START_PKT_LEN) ||
-                    (read[7:0] == `STOP_SEQ && tx_ct == `STOP_PKT_LEN))
-                    nextState = RECEIVE;
-                else nextState = WAIT_RESEND;
-
-                data1_ready = 1'b1;
-                data2_ready = 1'b1;
-                data1_tx = `HS_TX_LASER1;
-                data2_tx = `HS_TX_LASER2;
-                if (data_valid && data1_in == `HS_RX_LASER1 && data2_in == `HS_RX_LASER2)
-                    saw_consecutive_en = 1'b1;
-                else if (data_valid) saw_consecutive_clear = 1'b1;
-            end
+            
             HS_TX_FIN: begin
                 nextState = finished_hs ? HS_TX_FIN2 : HS_TX_FIN;
                 tx_ct_clear = finished_hs;
@@ -404,78 +336,7 @@ module LaserDrop (
                 data1_tx = `HS_RX_LASER1;
                 data2_tx = `HS_RX_LASER2;
             end
-            WAIT_RX_WRITE: begin
-                if (~rxf) begin
-                    nextState = LOAD_RX_READ;
-                    ftdi_rd = 1'b0;
-                    rd_ct_en = 1'b1;
-                end
-                else if (~txe & ~rx_empty) begin
-                    nextState = SET_RX_WRITE;
-                end
-                else nextState = WAIT_RX_WRITE;
-
-                store_rx = data_valid;
-            end
-            SET_RX_WRITE: begin
-                nextState = RX_WRITE1;
-
-                adbus_out = rx_q;
-                store_rx = data_valid;
-            end
-            RX_WRITE1: begin
-                nextState = RX_WRITE2;
-
-                adbus_tri = 1'b1;
-                ftdi_wr = 1'b0;
-                adbus_out = rx_q;
-                store_rx = data_valid;
-            end
-            RX_WRITE2: begin
-                nextState = WAIT_RX_WRITE;
-
-                rx_read = 1'b1;
-                adbus_tri = 1'b1;
-                ftdi_wr = 1'b0;
-                adbus_out = rx_q;
-                store_rx = data_valid;
-            end
-            LOAD_RX_READ: begin
-                if (rd_ct < 10'd2) nextState = WAIT_RX_READ;
-                else if (rd_ct >= 10'd2 && data1_in == `DONE_SEQ)
-                    nextState = HS_RX_FIN;
-                else begin
-                    nextState = WAIT_RX_TRANSMIT;
-                    timeout_ct_clear = 1'b1;
-                end
-
-                adbus_tri = 1'b0;
-                ftdi_rd = 1'b0;
-                store_rd = 1'b1;
-                rd_ct_en = 1'b1;
-                read_D = (
-                    (read & ~(512'hff << ({3'd0, rd_ct} << 3))) +
-                    ({504'd0, adbus_in} << ({3'd0, rd_ct} << 3))
-                );
-
-                store_rx = data_valid;
-            end
-            WAIT_RX_TRANSMIT: begin
-                if (tx_ct >= rd_ct) begin
-                    nextState = WAIT_RX_READ;
-                    tx_ct_clear = 1'b1;
-                    rd_ct_clear = 1'b1;
-                end
-                else nextState = WAIT_RX_READ;
-
-                store_rx = data_valid;
-            end
-            WAIT_RX_READ: begin
-                nextState = rxf ? WAIT_RX_READ : LOAD_RX_READ;
-
-                rd_ct_en = ~rxf;
-                store_rx = data_valid;
-            end
+            
             HS_RX_FIN: begin
                 nextState = finished_hs ? HS_RX_FIN2 : HS_RX_FIN;
                 tx_ct_clear = finished_hs;
@@ -708,11 +569,13 @@ module LaserReceiver #(CLKS_PER_BIT=8)
 
     logic laser_in1, laser_in2, clk_ctr_en, clk_ctr_clear, bits_read_en,
         bits_read_clear;
-    logic [8:0] data_register;
     logic [7:0] clock_counter, bits_read;
 
     always_ff @(posedge clock) begin
         laser_in1 <= laser_in;
+    end
+
+    always_ff @(posedge clock) begin
         laser_in2 <= laser_in1;
     end
 
@@ -738,7 +601,6 @@ module LaserReceiver #(CLKS_PER_BIT=8)
         .Q(bits_read)
     );
 
-    // Referenced https://nandland.com/uart-serial-port-module/
     always_comb begin
         clk_ctr_clear = 1'b0;
         clk_ctr_en = 1'b0;
@@ -749,14 +611,14 @@ module LaserReceiver #(CLKS_PER_BIT=8)
         case (currState)
             WAIT: begin
                 clk_ctr_clear = 1'b1;
-                bits_read_clear = 1'b0;
+                bits_read_clear = 1'b1;
 
-                if (laser_in == 1'b1) nextState = START;
+                if (laser_in2 == 1'b1) nextState = START;
                 else nextState = WAIT;
             end
             START: begin
                 if (clock_counter == ((CLKS_PER_BIT-1) >> 1'b1)) begin
-                    if (laser_in == 1'b1) begin
+                    if (laser_in2 == 1'b1) begin
                         clk_ctr_clear = 1'b1;
                         nextState = RECEIVE;
                     end
@@ -786,16 +648,17 @@ module LaserReceiver #(CLKS_PER_BIT=8)
                 end
             end
             STOP: begin
-                if (clock_counter < CLKS_PER_BIT - 8'b1) begin
+                if (clock_counter < CLKS_PER_BIT - 1) begin
                     clk_ctr_en = 1'b1;
                     nextState = STOP;
                 end
                 else begin
                     clk_ctr_clear = 1'b1;
-                    if (laser_in == 1'b0) begin
+                    // nextState = FINISH;
+                    if (laser_in2 == 1'b0) begin
                         nextState = FINISH;
                     end
-						  else nextState = WAIT;
+                    else nextState = WAIT;
                 end
             end
             FINISH: begin
@@ -807,7 +670,7 @@ module LaserReceiver #(CLKS_PER_BIT=8)
 
     always_ff @(posedge clock) begin
         if (currState == RECEIVE && clock_counter == CLKS_PER_BIT - 1) begin
-            data_in[bits_read] <= laser_in;
+            data_in[bits_read] <= laser_in2;
         end
         else if (currState == WAIT) begin
             data_in <= 8'b0;

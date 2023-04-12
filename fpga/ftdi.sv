@@ -46,11 +46,11 @@ module FTDI_Interface (
     // WAIT: Give up Tri, set all lines inactive. State after READ/WRITE
     // == WRITE ==
     //      SET_WRITE: Assert ADBUS tri and set data (min 5ns)
-    //      WRITE1: Pull write down     (min 30ns)
+    //      WRITE1: Pull write down     (min 30ns, 6-19ns keep DATA valid)
     //      WRITE2: Keep write down
     // == READ ==
-    //      READ1: Pull read down
-    //      READ2: Keep read down, store it in
+    //      READ1: Pull read down       (1-14ns for data to arrive)
+    //      READ2: Keep read down, store it in  (miin 30ns read low)
     //      READ3: Pull read back up    (RD remain low for 1-14ns)
 
     //// FSM Outputs

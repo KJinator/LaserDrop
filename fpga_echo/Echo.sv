@@ -21,6 +21,7 @@ module Echo (
     LaserTransmitter transmit (
         .data_transmit,
         .en(~echo_mode & en),
+        // .clock(CLOCK_6_25),
         .clock(CLOCK_3_125),
         .clock_base(clock),
         .reset,
