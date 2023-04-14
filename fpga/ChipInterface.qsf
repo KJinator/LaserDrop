@@ -213,11 +213,6 @@ set_location_assignment PIN_N16 -to GPIO_0_D0
 set_location_assignment PIN_B16 -to GPIO_0_D1
 set_global_assignment -name POWER_PRESET_COOLING_SOLUTION "23 MM HEAT SINK WITH 200 LFPM AIRFLOW"
 set_global_assignment -name POWER_BOARD_THERMAL_MODEL "NONE (CONSERVATIVE)"
-set_global_assignment -name SYSTEMVERILOG_FILE Laser.sv
-set_global_assignment -name SYSTEMVERILOG_FILE ChipInterface.sv
-set_global_assignment -name SYSTEMVERILOG_FILE library.sv
-set_global_assignment -name SYSTEMVERILOG_FILE ClockDivider.sv
-set_global_assignment -name SYSTEMVERILOG_FILE chipinterface.sv
 set_location_assignment PIN_H15 -to GPIO_1_D2
 set_location_assignment PIN_B12 -to GPIO_1_D3
 set_location_assignment PIN_H10 -to GPIO_1_D14
@@ -297,4 +292,12 @@ set_location_assignment PIN_F13 -to GPIO_1[28]
 set_location_assignment PIN_F12 -to GPIO_1[29]
 set_location_assignment PIN_G16 -to GPIO_1[30]
 set_location_assignment PIN_G15 -to GPIO_1[31]
+set_global_assignment -name VERILOG_FILE fifo_1k.v
+set_global_assignment -name QIP_FILE fifo_1k.qip
+set_global_assignment -name SYSTEMVERILOG_FILE ftdi.sv
+set_global_assignment -name SYSTEMVERILOG_FILE LaserDrop.sv
+set_global_assignment -name SYSTEMVERILOG_FILE Laser.sv
+set_global_assignment -name SYSTEMVERILOG_FILE ChipInterface.sv
+set_global_assignment -name SYSTEMVERILOG_FILE library.sv
+set_global_assignment -name SYSTEMVERILOG_FILE ClockDivider.sv
 set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top
