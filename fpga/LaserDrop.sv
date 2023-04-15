@@ -46,10 +46,13 @@ module LaserDrop (
                     data_wr, data_transmit, saw_seq;
     logic [31:0]    seq_savedD, seq_saved;
     logic [ 7:0][31:0]  seq;
-    logic           constant_transmit_mode;
+    logic           toggle_both_lasers, constant_transmit_mode,
+                    both_lasers_on, constant_receive_mode;
 
+    assign constant_receive_mode = SW[2];
+    assign toggle_both_lasers = SW[6];
+    assign both_lasers_on = SW[7];
     assign constant_transmit_mode = SW[8];
-
 
     //----------------------------LASER TRANSMITTER---------------------------//
     // Need to use clock at double the speed because using posedge (1/2)
@@ -66,8 +69,8 @@ module LaserDrop (
         .done(tx_done)
     );
 
-    assign laser_tx[0] = SW[6] ? (laser_out[1] | SW[7]) : laser_out[0];
-    assign laser_tx[1] = laser_out[1] | SW[7];
+    assign laser_tx[0] = toggle_both_lasers ? (laser_out[1] | both_lasers_on) : laser_out[0];
+    assign laser_tx[1] = laser_out[1] | both_lasers_on;
     //------------------------------------------------------------------------//
     //------------------------------LASER RECEIVER----------------------------//
     // Simultaneous mode lasers
@@ -214,7 +217,7 @@ module LaserDrop (
     //------------------------------------------------------------------------//
     //-------------------------STATE TRANSITION LOGIC-------------------------//
     enum logic [5:0] {
-        WAIT, HS_TX_INIT, TX_SEND_DATA, TX_WAIT_TRANSMISSION, HS_RX_INIT,
+        WAIT, HS_TX_INIT, HS_TX_WAIT, TX_SEND_DATA, TX_WAIT_TRANSMISSION, HS_RX_INIT,
         RX_RECEIVE, RX_LOAD_SEQ1, RX_LOAD_SEQ2, RX_LOAD_SEQ3, RX_LOAD_SEQ4
     } currState, nextState;
 
@@ -240,6 +243,7 @@ module LaserDrop (
             WAIT: begin
                 if (!rdq_empty) begin
                     nextState = HS_TX_INIT;
+                    rdreq = 1'b1;
                 end
                 else if (saw_hs_signal) begin
                     nextState = HS_RX_INIT;
@@ -250,23 +254,28 @@ module LaserDrop (
                 end
             end
             HS_TX_INIT: begin
-                nextState = saw_hs_signal ? TX_SEND_DATA : HS_TX_INIT;
+                if (saw_hs_signal && tx_done) nextState = TX_SEND_DATA;
+                else if (saw_hs_signal) nextState = HS_TX_WAIT;
+                else nextState = HS_TX_INIT;
 
                 data_ready = 1'b1;
                 data_transmit = `HS_SIGNAL;
-                rdreq = saw_hs_signal;
 
-                if (!wrq_full) begin
+                if (constant_receive_mode && !wrq_full) begin
                     wrreq = data_valid;
                     data_wr = data_in;
                 end
+            end
+            HS_TX_WAIT: begin
+                if (tx_done) nextState = TX_SEND_DATA;
+                else nextState = HS_TX_WAIT;
             end
             TX_SEND_DATA: begin
                 nextState = TX_WAIT_TRANSMISSION;
                 data_transmit = data_rd;
                 data_ready = 1'b1;
 
-                if (!wrq_full) begin
+                if (constant_receive_mode && !wrq_full) begin
                     wrreq = data_valid;
                     data_wr = data_in;
                 end
@@ -276,12 +285,10 @@ module LaserDrop (
                     nextState = TX_SEND_DATA;
                     rdreq = 1'b1;
                 end
-                else if (tx_done) begin
-                    nextState = WAIT;
-                end
+                else if (tx_done) nextState = WAIT;
                 else nextState = TX_WAIT_TRANSMISSION;
 
-                if (!wrq_full) begin
+                if (constant_receive_mode && !wrq_full) begin
                     wrreq = data_valid;
                     data_wr = data_in;
                 end
@@ -306,14 +313,22 @@ module LaserDrop (
 
                 data_ready = saw_hs_signal;
                 data_transmit = `HS_SIGNAL;
+                timeout_ct_en = 1'b1;
+                timeout_ct_clear = data_valid;
 
                 if (saw_start || saw_data || saw_stop) begin
                     nextState = RX_LOAD_SEQ1;
                     seq_saved_en = 1'b1;
                     rd_ct_clear = 1'b1;
+                    timeout_ct_clear = 1'b1;
+                end
+                else if (timeout_ct == 12'd1024) begin  // ~20ms
+                    nextState = WAIT;
+
+                    timeout_ct_clear = 1'b1;
                 end
 
-                if (!wrq_full) begin
+                if (constant_receive_mode && !wrq_full) begin
                     wrreq = data_valid;
                     data_wr = data_in;
                 end

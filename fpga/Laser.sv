@@ -4,7 +4,7 @@
 // Transmits data_in on data_out if data_ready is asserted. Asserts done when
 // transmission finished.
 // NOTE: Currently, configured so it only transmits if both lasers are ready.
-module LaserTransmitter(
+module LaserTransmitter (
     input logic [7:0] data_transmit,
     input logic en, clock, clock_base, reset, data_ready,
     output logic [1:0] laser_out,
