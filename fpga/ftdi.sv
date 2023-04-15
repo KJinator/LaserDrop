@@ -29,7 +29,7 @@ module FTDI_Interface (
         .usedw(qsize)
     );
 
-    fifo_128k write_queue (
+    fifo_1k write_queue (
         .aclr(reset),
         .clock,
         .data(data_wr),

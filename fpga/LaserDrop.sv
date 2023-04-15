@@ -16,7 +16,8 @@
 // NOTE: may need to increase depending on how fast CPU interface is
 `define TIMEOUT_RX_LEN  10'd64
 
-`define HS_SIGNAL    8'b0101_0101
+`define HS_SIGNAL    8'b1010_1010
+`define HS_RX_SIGNAL 8'b0001_0000
 
 // SYNTAX NOTES
 // rx/tx: In reference to laser transmission and receiver
@@ -35,13 +36,13 @@ module LaserDrop (
     logic           CLOCK_25, CLOCK_12_5, CLOCK_6_25, CLOCK_3_125;
     logic [11:0]    rd_ct, timeout_ct;
     logic [ 3:0]    saw_consecutive, saw_dummy;
-    logic [ 2:0]    seq_index;
+    logic [ 2:0]    seqI;
     logic [ 1:0]    laser_out;
     logic           timeout, rd_ct_en, timeout_ct_en, timeout_ct_clear,
                     rd_ct_clear, queue_clear, data_valid, tx_done;
     logic           wrreq, rdreq, data_ready, rdq_full, rdq_empty, wrq_full,
-                    wrq_empty, saw_hs_signal, saw_ack, saw_stop, saw_start,
-                    saw_data, seq_saved_en;
+                    wrq_empty, saw_hs_signal, saw_hs_rx_signal, saw_ack,
+                    saw_stop, saw_start, saw_data, seq_saved_en;
     logic [ 7:0]    data_rd, recently_received, adbus_out_recent, data_in,
                     data_wr, data_transmit, saw_seq;
     logic [31:0]    seq_savedD, seq_saved;
@@ -161,7 +162,7 @@ module LaserDrop (
     );
 
     assign seq = { 32'b0, 32'b0, 32'b0, 32'b0, `ACK_SEQ, `DATA_SEQ, `STOP_SEQ, `START_SEQ };
-    assign seq_savedD = seq[seq_index];
+    assign seq_savedD = seq[seqI];
 
     Register #(32) seq_saved_reg (
         .D(seq_savedD),
@@ -179,14 +180,9 @@ module LaserDrop (
         .data_valid,
         .data_in,
         .seq,
+        .seqI,
         .saw_seq({ saw_dummy, saw_ack, saw_data, saw_stop, saw_start })  // NOTE: Change this line with below D!!
     ); 
-
-    Encoder seq_encoder (
-        .D({ 4'b0, saw_ack, saw_data, saw_stop, saw_start }),
-        .en(1'b1),
-        .Y(seq_index)
-    );
     //------------------------------------------------------------------------//
     //-------------------------------CLOCK DIVIDERS---------------------------//
     ClockDivider clock_25 (
@@ -228,6 +224,7 @@ module LaserDrop (
     } currState, nextState;
 
     assign saw_hs_signal = data_valid && (data_in == `HS_SIGNAL);
+    assign saw_hs_rx_signal = data_valid && (data_in == `HS_RX_SIGNAL);
 
     always_comb begin
         data_ready = 1'b0;
@@ -260,8 +257,7 @@ module LaserDrop (
                 end
             end
             HS_TX_INIT: begin
-                if (saw_hs_signal && tx_done) nextState = TX_SEND_DATA;
-                else if (saw_hs_signal) nextState = HS_TX_WAIT;
+                if (saw_hs_rx_signal) nextState = HS_TX_WAIT;
                 else nextState = HS_TX_INIT;
 
                 data_ready = 1'b1;
@@ -318,7 +314,7 @@ module LaserDrop (
                 nextState = HS_RX_INIT;
 
                 data_ready = saw_hs_signal;
-                data_transmit = `HS_SIGNAL;
+                data_transmit = `HS_RX_SIGNAL;
                 timeout_ct_en = 1'b1;
                 timeout_ct_clear = data_valid;
 
@@ -392,7 +388,7 @@ module LaserDrop (
 
                     wrreq = data_valid;
                     data_wr = data_in;
-                    rd_ct_en = 1'b1;
+                    rd_ct_en = data_valid;
                 end
 
                 if (rd_ct == 12'd1024 || timeout_ct == 12'd1024) begin  // ~20ms
@@ -443,11 +439,11 @@ module SequenceDetector (
     input   logic clock, reset, en, data_valid,
     input   logic [7:0] data_in,
     input   logic [7:0][31:0] seq,
+    output  logic [2:0] seqI,
     output  logic [7:0] saw_seq
 );
     enum logic [2:0] { WAIT, SAW1, SAW2, SAW3 } currState, nextState;
     logic [7:0] seeD, see;
-    logic [2:0] seqI;
     logic see_en, see_clear;
 
     genvar seeI;
