@@ -11,7 +11,7 @@ module ChipInterface (
     output logic [6:0] HEX5, HEX4, HEX3, HEX2, HEX1, HEX0,
     inout  wire  [35:0] GPIO_0, GPIO_1
 );
-    logic data_valid, tx_done, adbus_tri;
+    logic adbus_tri;
     logic [7:0] hex1, hex2, hex3;
 
     //------------------------FPGA Pin Configurations-------------------------//
@@ -81,11 +81,6 @@ module ChipInterface (
     assign GPIO_1 = { 36'bz };
     //------------------------------------------------------------------------//
     //------------------------------DUT DECLARATION---------------------------//
-    assign LEDR[1:0] = GREEN_TX;
-    assign LEDR[3:2] = IR_TX;
-    assign LEDR[8] = GREEN_RX;
-    assign LEDR[9] = IR_RX;
-    assign LEDR[4] = tx_done;
     assign IR_TX = 2'b0;
 
     LaserDrop main (
@@ -93,15 +88,14 @@ module ChipInterface (
         .reset(~KEY[0]),
         .en(SW[0]),
         .SW(SW[9:0]),
+        .LEDR(LEDR[9:0]),
         .rxf(ACBUS[0]),
         .txe(ACBUS[1]),
         .laser_rx(GREEN_RX),
         .adbus_in(ADBUS_IN),
         .laser_tx(GREEN_TX),
-        .data_valid(LEDR[5]),
         .ftdi_rd(ACBUS[2]),
         .ftdi_wr(ACBUS[3]),
-        .tx_done,
         .adbus_tri,
         .hex1,
         .hex2,

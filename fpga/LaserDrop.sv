@@ -27,18 +27,18 @@ module LaserDrop (
     input logic rxf, txe, laser_rx,
     input logic [7:0] adbus_in,
     input logic [9:0] SW,
-    output logic ftdi_rd, ftdi_wr, tx_done, adbus_tri, data_valid,
+    output logic ftdi_rd, ftdi_wr, adbus_tri,
     output logic [1:0] laser_tx,
-    output logic [7:0] hex1, hex2, hex3, adbus_out
+    output logic [7:0] hex1, hex2, hex3, adbus_out,
+    output logic [9:0] LEDR
 );
+    logic           CLOCK_25, CLOCK_12_5, CLOCK_6_25, CLOCK_3_125;
     logic [11:0]    rd_ct, timeout_ct;
     logic [ 3:0]    saw_consecutive, saw_dummy;
     logic [ 2:0]    seq_index;
-    logic           CLOCK_25, CLOCK_12_5, CLOCK_6_25, CLOCK_3_125;
     logic [ 1:0]    laser_out;
-    logic           timeout, data_valid_sim, data_valid_test,
-                    rd_ct_en, timeout_ct_en, timeout_ct_clear,
-                    rd_ct_clear, queue_clear;
+    logic           timeout, rd_ct_en, timeout_ct_en, timeout_ct_clear,
+                    rd_ct_clear, queue_clear, data_valid, tx_done;
     logic           wrreq, rdreq, data_ready, rdq_full, rdq_empty, wrq_full,
                     wrq_empty, saw_hs_signal, saw_ack, saw_stop, saw_start,
                     saw_data, seq_saved_en;
@@ -53,6 +53,12 @@ module LaserDrop (
     assign toggle_both_lasers = SW[6];
     assign both_lasers_on = SW[7];
     assign constant_transmit_mode = SW[8];
+
+    assign LEDR[1:0] = laser_tx;
+    assign LEDR[4] = tx_done;
+    assign LEDR[5] = data_valid;
+    assign LEDR[6] = currState == WAIT;
+    assign LEDR[8] = laser_rx;
 
     //----------------------------LASER TRANSMITTER---------------------------//
     // Need to use clock at double the speed because using posedge (1/2)
@@ -474,7 +480,7 @@ module SequenceDetector (
         case (currState)
             WAIT: begin
                 if (seeD > 8'b0 && data_valid) begin
-                    see_en = 1'b0;
+                    see_en = 1'b1;
                     nextState = SAW1;
                 end
                 else nextState = WAIT;
@@ -494,7 +500,7 @@ module SequenceDetector (
                     nextState = WAIT;
                     if (seq[seqI][7:0] == data_in) saw_seq = see;
                 end
-                else nextState = SAW1;
+                else nextState = SAW3;
             end
         endcase
     end
