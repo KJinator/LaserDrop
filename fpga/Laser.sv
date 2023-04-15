@@ -708,7 +708,7 @@ module LaserReceiver #(CLKS_PER_BIT=8)
 
     logic laser_in1, laser_in2, clk_ctr_en, clk_ctr_clear, bits_read_en,
         bits_read_clear;
-    logic [8:0] data_register;
+    logic laser_in1, laser_in2;
     logic [7:0] clock_counter, bits_read;
 
     always_ff @(posedge clock) begin
@@ -745,7 +745,7 @@ module LaserReceiver #(CLKS_PER_BIT=8)
         bits_read_en = 1'b0;
         bits_read_clear = 1'b0;
         data_valid = 1'b0;
-    
+
         case (currState)
             WAIT: begin
                 clk_ctr_clear = 1'b1;
@@ -795,7 +795,7 @@ module LaserReceiver #(CLKS_PER_BIT=8)
                     if (laser_in == 1'b0) begin
                         nextState = FINISH;
                     end
-						  else nextState = WAIT;
+		    else nextState = WAIT;
                 end
             end
             FINISH: begin
