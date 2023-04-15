@@ -300,4 +300,5 @@ set_global_assignment -name SYSTEMVERILOG_FILE Laser.sv
 set_global_assignment -name SYSTEMVERILOG_FILE ChipInterface.sv
 set_global_assignment -name SYSTEMVERILOG_FILE library.sv
 set_global_assignment -name SYSTEMVERILOG_FILE ClockDivider.sv
+set_global_assignment -name QIP_FILE fifo_128k.qip
 set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top
