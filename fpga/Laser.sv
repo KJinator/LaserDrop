@@ -139,7 +139,7 @@ module LaserReceiver #(CLKS_PER_BIT=8)
         bits_read_en = 1'b0;
         bits_read_clear = 1'b0;
         data_valid = 1'b0;
-    
+
         case (currState)
             WAIT: begin
                 clk_ctr_clear = 1'b1;
@@ -190,7 +190,7 @@ module LaserReceiver #(CLKS_PER_BIT=8)
                     if (laser_in2 == 1'b0) begin
                         nextState = FINISH;
                     end
-                    else nextState = WAIT;
+		    else nextState = WAIT;
                 end
             end
             FINISH: begin
