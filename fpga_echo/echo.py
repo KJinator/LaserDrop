@@ -2,7 +2,7 @@ import atexit
 import time
 import serial
 
-s = serial.Serial('COM5', timeout=1)
+s = serial.Serial('COM6', timeout=1)
 atexit.register(s.close)
 
 # # Read
