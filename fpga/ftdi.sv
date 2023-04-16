@@ -8,9 +8,10 @@ module FTDI_Interface (
     output logic adbus_tri, ftdi_wr, ftdi_rd, rdq_full, rdq_empty, wrq_full,
                  wrq_empty,
     output logic [7:0] data_rd, adbus_out,
-    output logic [9:0] qsize
+    output logic [9:0] rd_qsize, wr_qsize
 );
-    enum logic [3:0] { WAIT, SET_WRITE, WRITE1, WRITE2, READ1, READ2, READ3 }
+    enum logic [3:0] { WAIT, SET_WRITE, WRITE1, WRITE2, READ1, READ2, READ3,
+                        FIN1, FIN2 }
         currState, nextState;
 
     logic wrq_rdreq, store_rd, txe1, txe2, rxf1, rxf2;
@@ -26,10 +27,10 @@ module FTDI_Interface (
         .empty(rdq_empty),
         .full(rdq_full),
         .q(data_rd),
-        .usedw(qsize)
+        .usedw(rd_qsize)
     );
 
-    fifo_1k write_queue (
+    fifo_128k write_queue (
         .aclr(reset),
         .clock,
         .data(data_wr),
@@ -39,7 +40,7 @@ module FTDI_Interface (
         .empty(wrq_empty),
         .full(wrq_full),
         .q(adbus_out),
-        .usedw()
+        .usedw(wr_qsize)
     );
 
     // Description:
@@ -89,8 +90,8 @@ module FTDI_Interface (
         wrq_rdreq = 1'b0;
         case (currState)
             WAIT: begin
-                if (!rxf && rd_en && !rdq_full) nextState = READ1;
-                else if (wr_en && !txe && !wrq_empty) begin
+                if (!rxf2 && rd_en && !rdq_full) nextState = READ1;
+                else if (wr_en && !txe2 && !wrq_empty) begin
                     nextState = SET_WRITE;
                     wrq_rdreq = 1'b1;
                 end
@@ -98,10 +99,12 @@ module FTDI_Interface (
             end
             SET_WRITE: nextState = WRITE1;
             WRITE1: nextState = WRITE2;
-            WRITE2: nextState = WAIT;
+            WRITE2: nextState = FIN1;
             READ1: nextState = READ2;
             READ2: nextState = READ3;
-            READ3: nextState = WAIT;
+            READ3: nextState = FIN1;
+            FIN1: nextState = FIN2;
+            FIN2: nextState = WAIT;
         endcase
     end
 
@@ -111,13 +114,13 @@ module FTDI_Interface (
         else currState <= nextState;
     end
 
-    // // Metastability prevention
-    // always_ff @(posedge clock) begin
-    //     txe1 <= txe;
-    //     rxf1 <= rxf;
-    // end
-    // always_ff @(posedge clock) begin
-    //     txe2 <= txe1;
-    //     rxf2 <= rxf1;
-    // end
+    // Metastability prevention
+    always_ff @(posedge clock) begin
+        txe1 <= txe;
+        rxf1 <= rxf;
+    end
+    always_ff @(posedge clock) begin
+        txe2 <= txe1;
+        rxf2 <= rxf1;
+    end
 endmodule: FTDI_Interface

@@ -14,14 +14,10 @@ send5 = bytearray([0xa1, 0xa2, 0xa3, 0xa4, 0xa5] * 2)
 send6 = bytearray([0xd1, 0xd2, 0xd3, 0xd4, 0xd5] * 20)
 
 send = send2
+print(s.read(100).hex())
 
 # Write
 for seq in [send2, send3, send4, send5, send6]:
-    print(s.read(100).hex())
     s.write(seq)
     print(f"Sent {seq.hex()}")
     print(s.read(100).hex())
-
-    time.sleep(1)
-    
-print(s.read(100).hex())
