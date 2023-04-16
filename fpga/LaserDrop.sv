@@ -50,11 +50,12 @@ module LaserDrop (
     logic [31:0]    seq_savedD, seq_saved;
     logic [ 7:0][31:0]  seq;
     logic           toggle_both_lasers, constant_transmit_mode,
-                    both_lasers_on, constant_receive_mode;
+                    both_lasers_on, constant_receive_mode, send_any_size;
     logic [11:0] counter;
     logic counter_en, counter_clear;
 
     assign constant_receive_mode = SW[2];
+    assign send_any_size = SW[3];
     assign toggle_both_lasers = SW[6];
     assign both_lasers_on = SW[7];
     assign constant_transmit_mode = SW[8];
@@ -380,7 +381,7 @@ module LaserDrop (
             RX_LOAD_SEQ1: begin
                 nextState = RX_LOAD_SEQ1;
                 counter_en = 1'b1;
-                wr_en = 1'b0;
+                wr_en = send_any_size;
 
                 if (!wrq_full) begin
                     nextState = RX_LOAD_SEQ2;
@@ -393,7 +394,7 @@ module LaserDrop (
             RX_LOAD_SEQ2: begin
                 nextState = RX_LOAD_SEQ2;
                 counter_en = 1'b1;
-                wr_en = 1'b0;
+                wr_en = send_any_size;
 
                 if (!wrq_full) begin
                     nextState = RX_LOAD_SEQ3;
@@ -406,7 +407,7 @@ module LaserDrop (
             RX_LOAD_SEQ3: begin
                 nextState = RX_LOAD_SEQ3;
                 counter_en = 1'b1;
-                wr_en = 1'b0;
+                wr_en = send_any_size;
                 
                 if (!wrq_full) begin
                     nextState = RX_LOAD_SEQ4;
@@ -419,7 +420,7 @@ module LaserDrop (
             RX_LOAD_SEQ4: begin
                 nextState = RX_LOAD_SEQ4;
                 counter_en = 1'b1;
-                wr_en = 1'b0;
+                wr_en = send_any_size;
 
                 if (!wrq_full) begin
                     nextState = RX_RECEIVE;
@@ -433,7 +434,7 @@ module LaserDrop (
                 nextState = RX_RECEIVE;
                 timeout_ct_en = 1'b1;
                 timeout_ct_clear = data_valid;
-                wr_en = 1'b0;
+                wr_en = send_any_size;
 
                 if (!wrq_full) begin
                     wrreq = data_valid;
