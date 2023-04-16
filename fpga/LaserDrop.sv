@@ -40,10 +40,11 @@ module LaserDrop (
     logic [ 2:0]    seqI;
     logic [ 1:0]    laser_out;
     logic           timeout, rd_ct_en, timeout_ct_en, timeout_ct_clear,
-                    rd_ct_clear, queue_clear, data_valid, tx_done;
-    logic           wrreq, rdreq, data_ready, rdq_full, rdq_empty, wrq_full,
+                    rd_ct_clear, queue_clear, data_valid, tx_done, rd_en, wr_en,
+                    wrreq, rdreq, data_ready, rdq_full, rdq_empty, wrq_full,
                     wrq_empty, saw_hs_signal, saw_hs_rx_signal, saw_ack,
-                    saw_stop, saw_start, saw_data, seq_saved_en;
+                    saw_stop, saw_start, saw_data, seq_saved_en, wr_clear,
+                    rd_clear;
     logic [ 7:0]    data_rd, recently_received, adbus_out_recent, data_in,
                     data_wr, data_transmit, saw_seq;
     logic [31:0]    seq_savedD, seq_saved;
@@ -100,13 +101,15 @@ module LaserDrop (
         .clock,
         .reset,
         .clear(1'b0),
+        .wr_clear,
+        .rd_clear,
         // FTDI Input
         .txe,
         .rxf,
         .wrreq,
         .rdreq,
-        .wr_en(en),
-        .rd_en(en),
+        .wr_en,
+        .rd_en,
         .data_wr,
         .adbus_in,
         // Out
@@ -252,6 +255,10 @@ module LaserDrop (
         rdreq = 1'b0;
         data_wr = 8'b0;
         seq_saved_en = 1'b0;
+        rd_en = 1'b1;
+        wr_en = 1'b1;
+        rd_clear = 1'b0;
+        wr_clear = 1'b0;
 
         rd_ct_en = 1'b0;
         rd_ct_clear = 1'b0;
@@ -373,6 +380,7 @@ module LaserDrop (
             RX_LOAD_SEQ1: begin
                 nextState = RX_LOAD_SEQ1;
                 counter_en = 1'b1;
+                wr_en = 1'b0;
 
                 if (!wrq_full) begin
                     nextState = RX_LOAD_SEQ2;
@@ -385,6 +393,7 @@ module LaserDrop (
             RX_LOAD_SEQ2: begin
                 nextState = RX_LOAD_SEQ2;
                 counter_en = 1'b1;
+                wr_en = 1'b0;
 
                 if (!wrq_full) begin
                     nextState = RX_LOAD_SEQ3;
@@ -397,6 +406,7 @@ module LaserDrop (
             RX_LOAD_SEQ3: begin
                 nextState = RX_LOAD_SEQ3;
                 counter_en = 1'b1;
+                wr_en = 1'b0;
                 
                 if (!wrq_full) begin
                     nextState = RX_LOAD_SEQ4;
@@ -409,6 +419,7 @@ module LaserDrop (
             RX_LOAD_SEQ4: begin
                 nextState = RX_LOAD_SEQ4;
                 counter_en = 1'b1;
+                wr_en = 1'b0;
 
                 if (!wrq_full) begin
                     nextState = RX_RECEIVE;
@@ -422,6 +433,7 @@ module LaserDrop (
                 nextState = RX_RECEIVE;
                 timeout_ct_en = 1'b1;
                 timeout_ct_clear = data_valid;
+                wr_en = 1'b0;
 
                 if (!wrq_full) begin
                     wrreq = data_valid;
@@ -429,9 +441,16 @@ module LaserDrop (
                     rd_ct_en = data_valid;
                 end
 
-                if (rd_ct == 12'd1024 || timeout_ct == 12'd1024) begin  // ~20ms
+                if (rd_ct == 12'd1024) begin
+                    nextState = WAIT;
+                    
+                    rd_ct_clear = 1'b1;
+                    timeout_ct_clear = 1'b1;
+                end
+                else if (timeout_ct == 12'd1024) begin  // ~20ms
                     nextState = WAIT;
 
+                    wr_clear = 1'b1;
                     rd_ct_clear = 1'b1;
                     timeout_ct_clear = 1'b1;
                 end

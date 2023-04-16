@@ -2,7 +2,7 @@
 
 // FTDI Interface for asynchronous FIFO mode
 module FTDI_Interface (
-    input  logic clock, reset, clear,
+    input  logic clock, reset, rd_clear, wr_clear, clear,
     input  logic txe, rxf, wrreq, rdreq, wr_en, rd_en,
     input  logic [7:0] data_wr, adbus_in,
     output logic adbus_tri, ftdi_wr, ftdi_rd, rdq_full, rdq_empty, wrq_full,
@@ -22,7 +22,7 @@ module FTDI_Interface (
         .clock,
         .data(adbus_in),
         .rdreq,
-        .sclr(clear),
+        .sclr(rd_clear || clear),
         .wrreq(store_rd),
         .empty(rdq_empty),
         .full(rdq_full),
@@ -35,7 +35,7 @@ module FTDI_Interface (
         .clock,
         .data(data_wr),
         .rdreq(wrq_rdreq),
-        .sclr(clear),
+        .sclr(wr_clear || clear),
         .wrreq,
         .empty(wrq_empty),
         .full(wrq_full),
