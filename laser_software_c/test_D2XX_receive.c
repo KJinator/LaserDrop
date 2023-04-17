@@ -139,6 +139,17 @@ int main() {
     printf("Incomplete packet test: RxBuffer[0-3, 1023] = %x %x %x %x %x\n\n", RxBuffer2[2048], RxBuffer2[2049], RxBuffer2[2050], RxBuffer2[2051], RxBuffer2[3071]);
 
     */
+    ftStatus = FT_Read(ftHandle, RxBuffer2, 128*1024, &BytesRecieved);
+    if (ftStatus != FT_OK) {
+        printf("Read Error\n\n");
+        ftStatus = FT_Close(ftHandle);
+        if (ftStatus != FT_OK) {
+            printf("Close Error \n\n");
+        }
+        return 0;
+    }
+
+    printf("Port Open\n\n");
 
     ftStatus = FT_Read(ftHandle, RxBuffer2, 128*1024, &BytesRecieved);
     if (ftStatus != FT_OK) {

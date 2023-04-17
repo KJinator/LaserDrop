@@ -84,7 +84,7 @@ int main() {
         return 0;
     }
 
-    FT_SetTimeouts(ftHandle,2000,0);
+    FT_SetTimeouts(ftHandle,10000,0);
 
     /*
 
