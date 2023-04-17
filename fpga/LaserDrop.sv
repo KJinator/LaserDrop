@@ -33,7 +33,7 @@ module LaserDrop (
     output logic [7:0] hex1, hex2, hex3, adbus_out,
     output logic [9:0] LEDR
 );
-    logic           CLOCK_25, CLOCK_12_5, CLOCK_6_25, CLOCK_3_125;
+    logic           CLOCK_25, CLOCK_12_5, CLOCK_6_25, CLOCK_UART;
     logic [11:0]    rd_ct, timeout_ct;
     logic [ 9:0]    wr_qsize, rd_qsize;
     logic [ 3:0]    saw_dummy;
@@ -67,7 +67,7 @@ module LaserDrop (
     assign LEDR[8] = laser_rx;
     assign LEDR[9] = wrq_empty;
 
-    localparam divider = 8'd16;
+    localparam divider = 8'd12;
 
     //----------------------------LASER TRANSMITTER---------------------------//
     // Need to use clock at double the speed because using posedge (1/2)
@@ -76,7 +76,7 @@ module LaserDrop (
         .data_transmit,
         .en(en),
         // .clock(CLOCK_6_25),
-        .clock(CLOCK_3_125),
+        .clock(CLOCK_UART),
         .clock_base(clock),
         .reset,
         .data_ready,
@@ -89,7 +89,7 @@ module LaserDrop (
     //------------------------------------------------------------------------//
     //------------------------------LASER RECEIVER----------------------------//
     // Simultaneous mode lasers
-    LaserReceiver #(16) receive (
+    LaserReceiver #(divider) receive (
         .clock,
         .reset,
         .laser_in(laser_rx),
@@ -231,12 +231,12 @@ module LaserDrop (
         .clk_divided(CLOCK_6_25)
     );
 
-    ClockDivider clock_3_125 (
+    ClockDivider clock_uart (
         .clk_base(clock),
         .reset,
         .en(1'b1),
-        .divider(8'd16),
-        .clk_divided(CLOCK_3_125)
+        .divider(divider),
+        .clk_divided(CLOCK_UART)
     );
     //------------------------------------------------------------------------//
     //-------------------------STATE TRANSITION LOGIC-------------------------//

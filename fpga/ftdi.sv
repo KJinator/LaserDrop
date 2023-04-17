@@ -17,7 +17,7 @@ module FTDI_Interface (
     logic wrq_rdreq, store_rd, txe1, txe2, rxf1, rxf2;
 
     //// Datapath
-    fifo_1k read_queue (
+    fifo_128k read_queue (
         .aclr(reset),
         .clock,
         .data(adbus_in),
