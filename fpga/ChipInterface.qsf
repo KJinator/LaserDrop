@@ -292,6 +292,7 @@ set_location_assignment PIN_F13 -to GPIO_1[28]
 set_location_assignment PIN_F12 -to GPIO_1[29]
 set_location_assignment PIN_G16 -to GPIO_1[30]
 set_location_assignment PIN_G15 -to GPIO_1[31]
+set_global_assignment -name SDC_FILE ChipInterface.out.sdc
 set_global_assignment -name VERILOG_FILE fifo_1k.v
 set_global_assignment -name QIP_FILE fifo_1k.qip
 set_global_assignment -name SYSTEMVERILOG_FILE ftdi.sv
