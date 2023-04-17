@@ -48,8 +48,8 @@ module LaserDrop (
                     data_wr, data_transmit, saw_seq;
     logic [ 2:0]    seqI, saw_dummy;
     logic [ 1:0]    laser_out;
-    logic           timeout, rd_ct_en, timeout_ct_en, timeout_ct_clear,
-                    rd_ct_clear, queue_clear, data_valid, tx_done, rd_en, wr_en,
+    logic           rd_ct_en, timeout_ct_en, timeout_ct_clear,
+                    rd_ct_clear, data_valid, tx_done, rd_en, wr_en,
                     wrreq, rdreq, data_ready, rdq_full, rdq_empty, wrq_full,
                     wrq_empty, saw_hs_signal, saw_hs_rx_signal, saw_done,
                     saw_stop, saw_start, saw_data, seq_saved_en, wr_clear,

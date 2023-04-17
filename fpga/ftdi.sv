@@ -24,7 +24,7 @@ module FTDI_Interface (
     logic [11:0] qsize_saved;
     logic [7:0] data_1k, big_wrdata;
     logic   wrq_rdreq, store_rd, txe1, txe2, rxf1, rxf2, big_wrq_full,
-            big_wrq_empty, rdreq_1k, big_wrreq, save_size, wrq_full_saved,
+            big_wrq_empty, rdreq_1k, big_wrreq, save_size,
             load_ct_en, load_ct_clear;
 
     //// Datapath
@@ -80,7 +80,7 @@ module FTDI_Interface (
         .usedw(wr_qsize)
     );
 
-    Register fifo_1k_size_reg (
+    Register #(12) fifo_1k_size_reg (
         .D({ 1'b0, wrq_full, wr_qsize }),
         .en(save_size),
         .clear(1'b0),
@@ -102,7 +102,6 @@ module FTDI_Interface (
 
     assign hex3 = qsize_saved[11:4];
     assign hex1 = loaded_ct[7:0];
-    assign LED = wrq_full_saved;
 
     // Description:
     // WAIT: Give up Tri, set all lines inactive. State after READ/WRITE
