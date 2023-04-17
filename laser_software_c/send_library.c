@@ -14,10 +14,13 @@
 #include <strings.h>
 #include "send_library.h"
 
-static uint32_t start_bytes = 0xC1C2C3C4;
+static uint32_t start_bytes = 0xD1D2D3D4;
+static uint32_t stop_bytes = 0x51525354;
 static uint32_t len_final_packet;
 uint32_t num_packets;
 static char **packet_array;
+static uint32_t *error_queue;
+static size_t error_queue_len;
 
 // In 8 bit string, get ith bit
 uint8_t get_ith_bit (char *data, size_t i) {
@@ -125,6 +128,7 @@ void encode_file (char *file) {
             char *raw = calloc(BYTES_PER_PACKET, sizeof(char));
             memcpy(raw, &RAW[i * BYTES_PER_PACKET], len_final_packet);
             full_packet_encoding(raw, &buffer[8]);
+            buffer_32[0] = stop_bytes;
             free(raw);
         } else {
             full_packet_encoding(&RAW[i * BYTES_PER_PACKET], &buffer[8]);
@@ -132,6 +136,23 @@ void encode_file (char *file) {
         packet_array[tagID++] = buffer;
     }
     free(RAW);
+}
+
+void group_128 (size_t num, bool normal, uint32_t start, char *buffer) {
+    size_t s = 0;
+    if (normal) {
+        for(uint32_t j = start; j < start + num; j++) {
+            memcpy(&buffer[s], packet_array[j], PACKET_SIZE);
+            s += PACKET_SIZE;
+        }
+        return;
+    }
+
+    for (size_t i = 0; i < num; i++) {
+        memcpy(&buffer[s], packet_array[error_queue[i]], PACKET_SIZE);
+        s += 1024;
+        error_queue_len--;
+    }
 }
 
 char *get_packet_sender(uint32_t tagID) {
@@ -151,4 +172,18 @@ void free_resources_sender () {
         free(packet_array[i]);
     }
     free(packet_array);
+    free(error_queue);
+}
+
+void init_error_queue () {
+    error_queue = malloc(num_packets*sizeof(uint32_t));
+    error_queue_len = 0;
+}
+
+void append_error_queue (uint32_t tagID) {
+    error_queue[error_queue_len++] = tagID;
+}
+
+size_t get_error_queue_len () {
+    return error_queue_len;
 }

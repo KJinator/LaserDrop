@@ -1,49 +1,198 @@
-// Adopted from https://www.scaler.com/topics/c/implementation-of-queue-using-linked-list/
-
-#include <stdio.h> 
 #include <stdlib.h>
-#include "queue.h"
+#include <stdio.h>
+#include <string.h>
+#include "send_library.h"
+#include "receive_library.h"
 
-queue_t queue_new () {
-    queue_t new = calloc(1, sizeof(struct queue));
-    return new;
-}
 
-void enqueue(queue_t queue, size_t value) {
-    struct node * ptr;
-    ptr = (struct node * ) malloc(sizeof(struct node));
-    ptr->data = value;
-    ptr->next = NULL;
-    if ((queue->front == NULL) && (queue->rear == NULL)) {
-        queue->front = queue->rear = ptr;
-    } else {
-        queue->rear->next = ptr;
-        queue->rear = ptr;
+int main(int argc, char *argv[]) {
+
+    /***********   get_ith_bit and set_ith_bit Testing   ************/
+    printf("\nget_ith_bit and set_ith_bit Testing\n\n");
+    char test [2];
+    char ham [2];
+    ham[0] = 0;
+    ham[1] = 0;
+
+    test[0] = (char) 51;
+    test[1] = (char) 192;
+
+    printf("%d%d%d%d%d%d%d%d\n", get_ith_bit(test, 0), get_ith_bit(test, 1), get_ith_bit(test, 2), get_ith_bit(test, 3), get_ith_bit(test, 4), get_ith_bit(test, 5), get_ith_bit(test, 6), get_ith_bit(test, 7));
+
+    printf("%d%d%d%d%d%d%d%d\n\n", get_ith_bit(&test[1], 0), get_ith_bit(&test[1], 1), get_ith_bit(&test[1], 2), get_ith_bit(&test[1], 3), get_ith_bit(&test[1], 4), get_ith_bit(&test[1], 5), get_ith_bit(&test[1], 6), get_ith_bit(&test[1], 7));
+
+    set_ith_bit(test, 1, 0);
+    set_ith_bit(&test[1], 0, 0);
+
+    printf("%d%d%d%d%d%d%d%d\n", get_ith_bit(test, 0), get_ith_bit(test, 1), get_ith_bit(test, 2), get_ith_bit(test, 3), get_ith_bit(test, 4), get_ith_bit(test, 5), get_ith_bit(test, 6), get_ith_bit(test, 7));
+
+    printf("%d%d%d%d%d%d%d%d\n\n", get_ith_bit(&test[1], 0), get_ith_bit(&test[1], 1), get_ith_bit(&test[1], 2), get_ith_bit(&test[1], 3), get_ith_bit(&test[1], 4), get_ith_bit(&test[1], 5), get_ith_bit(&test[1], 6), get_ith_bit(&test[1], 7));
+
+    set_ith_bit(test, 0, 0);
+    set_ith_bit(&test[1], 1, 0);
+
+    /***********   HAMMING ENCODING TESTS   ************/
+    printf("\nHAMMING ENCODING TESTING\n\n");
+    sixteen_eleven_hamming(test, ham);
+
+    printf("%x %x (Should be 4B 1E)\n\n", ham[0], ham[1]);
+
+    char *test_raw = calloc(693, sizeof(char));
+    // test_raw[0] = 0x80;
+    test_raw[1] = 0x10;
+    test_raw[2] = 0x03;
+    test_raw[3] = 0x95;
+    test_raw[4] = 0xF2;
+    test_raw[5] = 0xB0;
+    test_raw[691] = 0x2;
+    test_raw[692] = 0x2F;
+
+    char *test_buffer = malloc(1008*sizeof(char));
+
+    full_packet_encoding(test_raw, test_buffer);
+
+    printf("(%hhu %hhu) (%hhu %hhu) (%hhu %hhu) (%hhu %hhu) (%hhu %hhu)\n\n", test_buffer[0], test_buffer[1], test_buffer[2], test_buffer[3], 
+                                                test_buffer[4], test_buffer[5], test_buffer[6], test_buffer[7], test_buffer[1006], test_buffer[1007]);
+
+
+    /***********   HAMMING DECODING TESTS   ************/
+    printf("\nHAMMING DECODING TESTING\n\n");
+    char *test_decode = calloc(15, sizeof(char));
+
+    bool test_decode_1 = sixteen_eleven_hamming_decode(&test_buffer[1006], test_decode, 0);
+    bool test_decode_2 = sixteen_eleven_hamming_decode(&test_buffer[1006], &test_decode[3], 4);
+    bool test_decode_3 = sixteen_eleven_hamming_decode(&test_buffer[1006], &test_decode[6], 6);
+    test_buffer[1006] ^= 2;
+    bool test_decode_4 = sixteen_eleven_hamming_decode(&test_buffer[1006], &test_decode[9], 0);
+    test_buffer[1007] ^= 1;
+    bool test_decode_5 = sixteen_eleven_hamming_decode(&test_buffer[1006], &test_decode[12], 0);
+
+    printf("Bools: %d %d %d %d %d\n\n", test_decode_1, test_decode_2, test_decode_3, test_decode_4, test_decode_5);
+    printf("test_decode1: %hhu %hhu %hhu\n", test_decode[0], test_decode[1], test_decode[2]);
+    printf("test_decode2: %hhu %hhu %hhu\n", test_decode[3], test_decode[4], test_decode[5]);
+    printf("test_decode3: %hhu %hhu %hhu\n", test_decode[6], test_decode[7], test_decode[8]);
+    printf("test_decode4: %hhu %hhu %hhu\n", test_decode[9], test_decode[10], test_decode[11]);
+    printf("test_decode5: %hhu %hhu %hhu\n\n", test_decode[12], test_decode[13], test_decode[14]);
+
+    test_buffer[1006] ^= 2;
+
+    initialize_decode(2, 693);
+
+    char *test_buffer_2 = calloc(1024, sizeof(char));
+
+    uint32_t *test_buffer_2_32 = (uint32_t *) test_buffer_2;
+
+    test_buffer_2_32[1] = 1;
+
+    memcpy(&test_buffer_2[8], test_buffer, 1008);
+
+    decode_packet(test_buffer_2);
+
+    char *test_decode_packet = get_packet_receiver(1);
+
+    printf("First 5 Bytes: %hhu %hhu %hhu %hhu %hhu, Last 2 Bytes: %hhu %hhu\n\n",
+           test_decode_packet[1], test_decode_packet[2], test_decode_packet[3], test_decode_packet[4],
+           test_decode_packet[5], test_decode_packet[691], test_decode_packet[692]);
+    
+    test_buffer_2[1007 + 8] ^= 1;
+    for (size_t k = 8; k < 1016; k += 2) {
+        test_buffer_2[k] ^= (1 + (k%2));
     }
-    // printf("Node is Inserted\n\n");
-}
 
-// Dequeue() operation on a queue
-size_t dequeue(queue_t queue) {
-    struct node * temp = queue->front;
-    size_t temp_data = queue->front->data;
-    queue->front = queue->front->next;
-    if (queue->front == NULL) queue->rear = NULL;
-    free(temp);
-    return temp_data;
-}
+    free_resources_receiver ();
 
-size_t peek (queue_t queue) {
-    return queue->front->data;
-}
 
-bool queue_empty (queue_t queue) {
-    return queue->front == NULL && queue->rear == NULL;
-}
 
-void queue_free (queue_t queue) {
-    while (!queue_empty(queue)) {
-        dequeue(queue);
+
+    initialize_decode (1, 693);
+
+    test_buffer_2_32[1] = 0;
+
+    decode_packet(test_buffer_2);
+    test_decode_packet = get_packet_receiver(0);
+    printf("First 5 Bytes: %hhu %hhu %hhu %hhu %hhu, Last 2 Bytes: %hhu %hhu\n\n",
+           test_decode_packet[1], test_decode_packet[2], test_decode_packet[3], test_decode_packet[4],
+           test_decode_packet[5], test_decode_packet[691], test_decode_packet[692]);
+
+    free_resources_receiver ();
+
+
+
+    initialize_decode (2, 693);
+    test_buffer_2_32[1] = 1;
+
+    test_buffer_2[1007 + 8] ^= 1;
+    decode_packet(test_buffer_2);
+    printf("Error Queue ID: %zu\n\n", peek_error_queue());
+
+    free_resources_receiver();
+
+
+    /***********   FULL HAMMING DEMONSTRATION   ************/
+    printf("\nFULL HAMMING DEMONSTRATION\n\n");
+    char *file = "hamming_test.c";
+    encode_file(file);
+    printf("Number of Packets = %d, Length of Final Packet = %d\n\n", get_num_packets(), get_len_final_packet());
+    char *packet0 = get_packet_sender(1);
+    uint32_t *packet0_32 = (uint32_t *) packet0;
+
+    printf("%x %x\n\n", packet0_32[0], packet0_32[1]);
+
+
+    size_t nump = get_num_packets();
+    size_t l = get_len_final_packet();
+
+    printf("%zu %zu\n", nump, l);
+
+    initialize_decode(nump, l);
+    
+    for (uint32_t y = 0; y < nump; y++) {
+        decode_packet(get_packet_sender(y));
     }
-    free(queue);
+
+    decode_full("write_to_file.txt");
+
+    free_resources_receiver();
+
+
+    initialize_decode(nump, l);
+    char *for_bugs;
+    
+    for (uint32_t z = 0; z < nump; z++) {
+        for_bugs = get_packet_sender(z);
+        for (size_t w = 8; w < 1016; w += 2) {
+            for_bugs[w] ^= 1;
+        }
+        decode_packet(for_bugs);
+    }
+
+    decode_full("write_to_file2.txt");
+
+    free_resources_receiver();
+
+    initialize_decode(nump, l);
+
+    for (uint32_t a = 0; a < nump; a++) {
+        for_bugs = get_packet_sender(a);
+        /*
+        for (size_t b = 8; b < 1016; b += 2) {
+            for_bugs[b] ^= 1;
+        }*/
+        no_decode_packet(for_bugs);
+    }
+
+    decode_full("write_to_file3.txt");
+
+
+
+
+
+    free(test_raw);
+    free(test_buffer);
+    free(test_buffer_2);
+    free_resources_sender();
+    free(test_decode);
+    free_resources_receiver();
+
+    return 0;
 }

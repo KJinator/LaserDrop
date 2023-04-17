@@ -20,6 +20,8 @@ void full_packet_encoding (char *RAW, char *buffer);
 
 void encode_file (char *file);
 
+void group_128 (size_t num, bool normal, uint32_t start, char *buffer);
+
 char *get_packet_sender(uint32_t tagID);
 
 uint32_t get_num_packets ();
@@ -27,5 +29,11 @@ uint32_t get_num_packets ();
 uint32_t get_len_final_packet ();
 
 void free_resources_sender ();
+
+void init_error_queue ();
+
+void append_error_queue (uint32_t tagID);
+
+size_t get_error_queue_len ();
 
 #endif

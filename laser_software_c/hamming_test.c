@@ -130,7 +130,7 @@ int main(int argc, char *argv[]) {
 
     /***********   FULL HAMMING DEMONSTRATION   ************/
     printf("\nFULL HAMMING DEMONSTRATION\n\n");
-    char *file = "queue.c";
+    char *file = "hamming_test.c";
     encode_file(file);
     printf("Number of Packets = %d, Length of Final Packet = %d\n\n", get_num_packets(), get_len_final_packet());
     char *packet0 = get_packet_sender(1);
@@ -151,6 +151,39 @@ int main(int argc, char *argv[]) {
     }
 
     decode_full("write_to_file.txt");
+
+    free_resources_receiver();
+
+
+    initialize_decode(nump, l);
+    char *for_bugs;
+    
+    for (uint32_t z = 0; z < nump; z++) {
+        for_bugs = get_packet_sender(z);
+        for (size_t w = 8; w < 1016; w += 2) {
+            for_bugs[w] ^= 1;
+        }
+        decode_packet(for_bugs);
+    }
+
+    decode_full("write_to_file2.txt");
+
+    free_resources_receiver();
+
+    initialize_decode(nump, l);
+
+    for (uint32_t a = 0; a < nump; a++) {
+        for_bugs = get_packet_sender(a);
+        /*
+        for (size_t b = 8; b < 1016; b += 2) {
+            for_bugs[b] ^= 1;
+        }*/
+        no_decode_packet(for_bugs);
+    }
+
+    decode_full("write_to_file3.txt");
+
+
 
 
 

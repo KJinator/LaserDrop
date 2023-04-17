@@ -4,7 +4,7 @@
 #include "ftd2xx.h"
 #include <time.h>
 
-
+/*
 int main(int argc, char *argv[]) {
     FT_HANDLE ftHandle;
     FT_STATUS ftStatus;
@@ -64,8 +64,8 @@ int main(int argc, char *argv[]) {
 
 
     return 0;
-} 
- /*
+} */
+ 
 int main(int argc, char *argv[]) {
     FT_HANDLE ftHandle;
     FT_STATUS ftStatus;
@@ -101,15 +101,20 @@ int main(int argc, char *argv[]) {
         return 0;
     }
 
+    // ftStatus = FT_SetBaudRate(ftHandle, 500000);
+
     FT_SetTimeouts(ftHandle,200,0);
     // clock_t time_start = clock();
     // ftStatus = FT_Write(ftHandle, TxBuffer, sizeof(TxBuffer), &BytesWritten);
     ftStatus = FT_Read(ftHandle, RxBuffer, sizeof(RxBuffer), &BytesRecieved);
 
+    ftStatus = FT_SetBaudRate(ftHandle, 1152000);
+
     for (size_t i = 0; i < 10; i++) {
         TxBuffer[0]++;
+        clock_t time_start = clock();
         ftStatus = FT_Write(ftHandle, TxBuffer, 2, &BytesWritten);
-        // clock_t time_write = clock();
+        clock_t time_write = clock();
         if (ftStatus != FT_OK) {
             printf("Write Error\n\n");
             ftStatus = FT_Close(ftHandle);
@@ -118,11 +123,12 @@ int main(int argc, char *argv[]) {
             }
             return 0;
         }
-        
+
         // printf("Write sucess!!!\n\n");
         
-        ftStatus = FT_Read(ftHandle, RxBuffer, 2, &BytesRecieved);
-        // clock_t time_end = clock();
+        clock_t time_read_start = clock();
+        ftStatus = FT_Read(ftHandle, RxBuffer, 1000, &BytesRecieved);
+        clock_t time_end = clock();
         
         if (ftStatus != FT_OK) {
             printf("Read Error\n\n");
@@ -135,8 +141,8 @@ int main(int argc, char *argv[]) {
 
         // printf("Bytes Read = %d, Bytes Written = %d\n\n", RxBuffer[0], TxBuffer[0]);
         printf("Bytes Read: %d %d, Bytes Written: %d %d\n\n", RxBuffer[0], RxBuffer[1], TxBuffer[0], TxBuffer[1]);
-        // printf("Time = %lf\n\n", ((double)(time_end - time_start))/CLOCKS_PER_SEC);
-        // printf("Time Write = %lf, Time Read = %lf\n\n", ((double)(time_write - time_start))/CLOCKS_PER_SEC, ((double)(time_end - time_write))/CLOCKS_PER_SEC);
+        printf("Time = %lf\n\n", ((double)(time_end - time_start))/CLOCKS_PER_SEC);
+        printf("Time Write = %lf, Time Read = %lf\n\n", ((double)(time_write - time_start))/CLOCKS_PER_SEC, ((double)(time_end - time_read_start))/CLOCKS_PER_SEC);
     }
 
     ftStatus = FT_Close(ftHandle);
@@ -146,4 +152,4 @@ int main(int argc, char *argv[]) {
 
 
     return 0;
-} */
+}

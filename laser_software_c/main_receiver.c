@@ -41,12 +41,14 @@ int main(int argc, char *argv[]) {
         return 0;
     }
 
-    FT_SetTimeouts(ftHandle,1000,0);
+    ftStatus = FT_SetBaudRate(ftHandle, 12000000);
+
+    FT_SetTimeouts(ftHandle,5000,0);
 
     ftStatus = FT_Read(ftHandle, RxBuffer, sizeof(RxBuffer), &BytesRecieved);
 
     // for (size_t i = 0; i < 100; i++) {
-        while (true) {
+        // while (true) {
         // ftStatus = FT_Read(ftHandle, RxBuffer, sizeof(RxBuffer), &BytesRecieved);
         ftStatus = FT_Read(ftHandle, RxBuffer, 1, &BytesRecieved);
 
@@ -64,7 +66,7 @@ int main(int argc, char *argv[]) {
         // printf("Time = %lf\n\n", ((double)(time_end - time_start))/CLOCKS_PER_SEC);
         // printf("Time Write = %lf, Time Read = %lf\n\n", ((double)(time_write - time_start))/CLOCKS_PER_SEC, ((double)(time_end - time_write))/CLOCKS_PER_SEC);
 
-    }
+    //}
 
     ftStatus = FT_Close(ftHandle);
     if (ftStatus != FT_OK) {
