@@ -1,17 +1,15 @@
 
-`define PKT_LEN         10'd1024
-`define STOP_PKT_LEN    10'd6
-`define ACK_PKT_LEN     10'd2
-`define FAIL_PKT_LEN    10'd2
-`define DONE_PKT_LEN    10'd2
+`define PKT_LEN         12'd1024
+// `define STOP_PKT_LEN    10'd6
+// `define ACK_PKT_LEN     10'd2
+// `define FAIL_PKT_LEN    10'd2
+// `define DONE_PKT_LEN    10'd2
 
 `define START_SEQ       32'hc1c2c3c4
 `define DATA_SEQ        32'hd1d2d3d4
 `define STOP_SEQ        32'h51525354
-`define ACK_SEQ         32'ha1a2a3a4
-`define FAIL_SEQ        8'hbb
-`define DONE_SEQ        8'haa
-`define CLOSE_SEQ       8'h22
+`define ERROR_SEQ       32'hb1b2b3b4
+`define DONE_SEQ        32'ha1a2a3a4
 
 // NOTE: may need to increase depending on how fast CPU interface is
 `define TIMEOUT_RX_LEN  10'd64
@@ -40,8 +38,14 @@ module LaserDrop (
     } currState, nextState;
 
     logic           CLOCK_25, CLOCK_12_5, CLOCK_6_25, CLOCK_UART;
-    logic [11:0]    rd_ct, timeout_ct;
-    logic [ 9:0]    wr_qsize, rd_qsize;
+
+    logic [ 7:0][31:0]  seq;
+    logic [31:0]    seq_savedD, seq_saved;
+    logic [16:0]    rd_qsize;
+    logic [11:0]    rd_ct, timeout_ct, counter;
+    logic [ 9:0]    wr_qsize;
+    logic [ 7:0]    data_rd, recently_received, adbus_out_recent, data_in,
+                    data_wr, data_transmit, saw_seq;
     logic [ 3:0]    saw_dummy;
     logic [ 2:0]    seqI;
     logic [ 1:0]    laser_out;
@@ -50,15 +54,9 @@ module LaserDrop (
                     wrreq, rdreq, data_ready, rdq_full, rdq_empty, wrq_full,
                     wrq_empty, saw_hs_signal, saw_hs_rx_signal, saw_ack,
                     saw_stop, saw_start, saw_data, seq_saved_en, wr_clear,
-                    rd_clear;
-    logic [ 7:0]    data_rd, recently_received, adbus_out_recent, data_in,
-                    data_wr, data_transmit, saw_seq;
-    logic [31:0]    seq_savedD, seq_saved;
-    logic [ 7:0][31:0]  seq;
-    logic           toggle_both_lasers, constant_transmit_mode,
-                    both_lasers_on, constant_receive_mode, send_any_size;
-    logic [11:0] counter;
-    logic counter_en, counter_clear;
+                    rd_clear, toggle_both_lasers, constant_transmit_mode,
+                    both_lasers_on, constant_receive_mode, send_any_size,
+                    counter_en, counter_clear, load_1k;
 
     localparam divider = 8'd12;
 
@@ -119,6 +117,7 @@ module LaserDrop (
         .rd_en,
         .data_wr,
         .adbus_in,
+        .load_1k,
         // Out
         .adbus_tri,
         .ftdi_wr,
@@ -130,7 +129,10 @@ module LaserDrop (
         .data_rd,
         .adbus_out,
         .rd_qsize,
-        .wr_qsize
+        .wr_qsize,
+        .hex1,
+        .hex3,
+        .LED(LEDR[2])
     );
 
     Register recently_received_reg (
@@ -151,9 +153,9 @@ module LaserDrop (
         .Q(adbus_out_recent)
     );
 
-    assign hex1 = wr_qsize[7:0];
+    // assign hex1 = wr_qsize[7:0];
     assign hex2 = recently_received;
-    assign hex3 = adbus_out_recent;
+    // assign hex3 = adbus_out_recent;
     //------------------------------------------------------------------------//
     //-----------------------------LOGIC COMPONENTS---------------------------//
     Counter #(12) rd_counter (
@@ -260,6 +262,7 @@ module LaserDrop (
         wr_en = 1'b1;
         rd_clear = 1'b0;
         wr_clear = 1'b0;
+        load_1k = 1'b0;
 
         rd_ct_en = 1'b0;
         rd_ct_clear = 1'b0;
@@ -389,7 +392,7 @@ module LaserDrop (
             RX_LOAD_SEQ1: begin
                 nextState = RX_LOAD_SEQ1;
                 counter_en = 1'b1;
-                wr_en = send_any_size;
+                // wr_en = send_any_size;
 
                 if (!wrq_full) begin
                     nextState = RX_LOAD_SEQ2;
@@ -402,7 +405,7 @@ module LaserDrop (
             RX_LOAD_SEQ2: begin
                 nextState = RX_LOAD_SEQ2;
                 counter_en = 1'b1;
-                wr_en = send_any_size;
+                // wr_en = send_any_size;
 
                 if (!wrq_full) begin
                     nextState = RX_LOAD_SEQ3;
@@ -415,7 +418,7 @@ module LaserDrop (
             RX_LOAD_SEQ3: begin
                 nextState = RX_LOAD_SEQ3;
                 counter_en = 1'b1;
-                wr_en = send_any_size;
+                // wr_en = send_any_size;
                 
                 if (!wrq_full) begin
                     nextState = RX_LOAD_SEQ4;
@@ -428,7 +431,7 @@ module LaserDrop (
             RX_LOAD_SEQ4: begin
                 nextState = RX_LOAD_SEQ4;
                 counter_en = 1'b1;
-                wr_en = send_any_size;
+                // wr_en = send_any_size;
 
                 if (!wrq_full) begin
                     nextState = RX_RECEIVE;
@@ -442,7 +445,7 @@ module LaserDrop (
                 nextState = RX_RECEIVE;
                 timeout_ct_en = 1'b1;
                 timeout_ct_clear = data_valid;
-                wr_en = send_any_size;
+                // wr_en = send_any_size;
 
                 if (!wrq_full) begin
                     wrreq = data_valid;
@@ -453,13 +456,14 @@ module LaserDrop (
                 if (rd_ct == 12'd1024) begin
                     nextState = WAIT;
                     
+                    load_1k = 1'b1;
                     rd_ct_clear = 1'b1;
                     timeout_ct_clear = 1'b1;
                 end
                 else if (timeout_ct == 12'd1024) begin  // ~20ms
                     nextState = WAIT;
 
-                    wr_clear = 1'b1;
+                    load_1k = 1'b1;
                     rd_ct_clear = 1'b1;
                     timeout_ct_clear = 1'b1;
                 end
