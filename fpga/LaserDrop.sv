@@ -33,7 +33,7 @@ module LaserDrop (
 );
     enum logic [5:0] {
         WAIT, HS_TX_INIT, HS_TX_WAIT, TX_ALIGN_UART, TX_SEND_DATA,
-        TX_WAIT_TRANSMISSION, HS_RX_INIT,
+        TX_WAIT_TRANSMISSION, HS_RX_INIT, RX_RECEIVE_FIN,
         RX_RECEIVE, RX_LOAD_SEQ1, RX_LOAD_SEQ2, RX_LOAD_SEQ3, RX_LOAD_SEQ4
     } currState, nextState;
 
@@ -92,7 +92,7 @@ module LaserDrop (
     //------------------------------------------------------------------------//
     //------------------------------LASER RECEIVER----------------------------//
     // Simultaneous mode lasers
-    LaserReceiver #(.CLKS_PER_BIT(divider)) receive (
+    LaserReceiver #(divider) receive (
         .clock,
         .reset,
         .laser_in(laser_rx),
@@ -285,7 +285,7 @@ module LaserDrop (
                     nextState = HS_RX_INIT;
                     timeout_ct_clear = 1'b1;
                 end
-                else if (saw_start || saw_data || saw_stop) begin
+                else if (saw_start || saw_data || saw_stop || saw_error || saw_done) begin
                     nextState = RX_LOAD_SEQ1;
 
                     counter_clear = 1'b1;
@@ -370,7 +370,7 @@ module LaserDrop (
                 timeout_ct_en = 1'b1;
                 timeout_ct_clear = data_valid;
 
-                if (saw_start || saw_data || saw_stop) begin
+                if (saw_start || saw_data || saw_stop || saw_error || saw_done) begin
                     nextState = RX_LOAD_SEQ1;
 
                     counter_clear = 1'b1;
@@ -468,30 +468,9 @@ module LaserDrop (
                     timeout_ct_clear = 1'b1;
                 end
             end
-            // HS_RX_FIN: begin
-            //     nextState = finished_hs ? HS_RX_FIN2 : HS_RX_FIN;
-            //     tx_ct_clear = finished_hs;
-
-            //     data1_ready = 1'b1;
-            //     data2_ready = 1'b1;
-            //     data1_tx = `HS_RX_LASER1;
-            //     data2_tx = `HS_RX_LASER2;
-            //     if (
-            //         data_valid && data1_in == `HS_TX_LASER1
-            //         && data2_in == `HS_TX_LASER2
-            //     )
-            //         saw_consecutive_en = 1'b1;
-            //     else if (data_valid) saw_consecutive_clear = 1'b1;
-            // end
-            // HS_RX_FIN2: begin
-            //     nextState = finished_hs2 ? WAIT : HS_RX_FIN2;
-            //     tx_ct_clear = finished_hs2;
-
-            //     data1_ready = 1'b1;
-            //     data2_ready = 1'b1;
-            //     data1_tx = `HS_RX_LASER1;
-            //     data2_tx = `HS_RX_LASER2;
-            // end
+            RX_RECEIVE_FIN: begin
+                nextState = WAIT;
+            end
         endcase
     end
     //------------------------------------------------------------------------//

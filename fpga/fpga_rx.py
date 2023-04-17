@@ -7,5 +7,7 @@ atexit.register(s.close)
 
 # Read
 while True:
-    print(f"Read {s.read(1024).hex()}")
+    read = s.read(1024).hex()
+    num_read = len(read) // 2
+    print(f"Read {read} ({num_read} bytes)")
 
