@@ -33,6 +33,12 @@ module LaserDrop (
     output logic [7:0] hex1, hex2, hex3, adbus_out,
     output logic [9:0] LEDR
 );
+    enum logic [5:0] {
+        WAIT, HS_TX_INIT, HS_TX_WAIT, TX_ALIGN_UART, TX_SEND_DATA,
+        TX_WAIT_TRANSMISSION, HS_RX_INIT,
+        RX_RECEIVE, RX_LOAD_SEQ1, RX_LOAD_SEQ2, RX_LOAD_SEQ3, RX_LOAD_SEQ4
+    } currState, nextState;
+
     logic           CLOCK_25, CLOCK_12_5, CLOCK_6_25, CLOCK_UART;
     logic [11:0]    rd_ct, timeout_ct;
     logic [ 9:0]    wr_qsize, rd_qsize;
@@ -54,6 +60,8 @@ module LaserDrop (
     logic [11:0] counter;
     logic counter_en, counter_clear;
 
+    localparam divider = 8'd12;
+
     assign constant_receive_mode = SW[2];
     assign send_any_size = SW[3];
     assign toggle_both_lasers = SW[6];
@@ -66,8 +74,6 @@ module LaserDrop (
     assign LEDR[6] = (currState == WAIT);
     assign LEDR[8] = laser_rx;
     assign LEDR[9] = wrq_empty;
-
-    localparam divider = 8'd12;
 
     //----------------------------LASER TRANSMITTER---------------------------//
     // Need to use clock at double the speed because using posedge (1/2)
@@ -89,7 +95,7 @@ module LaserDrop (
     //------------------------------------------------------------------------//
     //------------------------------LASER RECEIVER----------------------------//
     // Simultaneous mode lasers
-    LaserReceiver #(divider) receive (
+    LaserReceiver #(.CLKS_PER_BIT(divider)) receive (
         .clock,
         .reset,
         .laser_in(laser_rx),
@@ -240,12 +246,6 @@ module LaserDrop (
     );
     //------------------------------------------------------------------------//
     //-------------------------STATE TRANSITION LOGIC-------------------------//
-    enum logic [5:0] {
-        WAIT, HS_TX_INIT, HS_TX_WAIT, TX_ALIGN_UART, TX_SEND_DATA,
-        TX_WAIT_TRANSMISSION, HS_RX_INIT,
-        RX_RECEIVE, RX_LOAD_SEQ1, RX_LOAD_SEQ2, RX_LOAD_SEQ3, RX_LOAD_SEQ4
-    } currState, nextState;
-
     assign saw_hs_signal = data_valid && (data_in == `HS_SIGNAL);
     assign saw_hs_rx_signal = data_valid && (data_in == `HS_RX_SIGNAL);
 
@@ -282,6 +282,14 @@ module LaserDrop (
                     nextState = HS_RX_INIT;
                     timeout_ct_clear = 1'b1;
                 end
+                else if (saw_start || saw_data || saw_stop) begin
+                    nextState = RX_LOAD_SEQ1;
+
+                    counter_clear = 1'b1;
+                    seq_saved_en = 1'b1;
+                    rd_ct_clear = 1'b1;
+                    timeout_ct_clear = 1'b1;
+                end
                 else begin
                     nextState = WAIT;
                 end
@@ -308,7 +316,7 @@ module LaserDrop (
             TX_ALIGN_UART: begin
                 nextState = TX_ALIGN_UART;
                 timeout_ct_en = 1'b1;
-                if (timeout_ct == 12'd12 * divider) begin
+                if (timeout_ct == 12'd12 << 4'd4) begin
                     nextState = TX_SEND_DATA;
                     timeout_ct_clear = 1'b1;
                 end
