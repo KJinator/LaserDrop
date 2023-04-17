@@ -19,8 +19,8 @@ print(s.read(100).hex())
 # Write
 # for seq in [send2, send3, send4, send5, send6, send6, send5, send6]:
 for seq in [send2, send3, send4, send6, send6]:
-    s.write(seq + seq + seq)
-    print(f"Sent {seq.hex()} ({len(seq + seq + seq)} bytes)")
+    s.write(seq + seq)
+    print(f"Sent {seq.hex()} ({len(seq + seq)} bytes)")
     print(s.read(100).hex())
 
     time.sleep(2)

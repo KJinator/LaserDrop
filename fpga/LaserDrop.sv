@@ -447,11 +447,6 @@ module LaserDrop (
                 timeout_ct_clear = data_valid;
                 // wr_en = send_any_size;
 
-                if (!wrq_full) begin
-                    wrreq = data_valid;
-                    data_wr = data_in;
-                    rd_ct_en = data_valid;
-                end
 
                 if (rd_ct == 12'd1024) begin
                     nextState = WAIT;
@@ -466,6 +461,11 @@ module LaserDrop (
                     load_1k = 1'b1;
                     rd_ct_clear = 1'b1;
                     timeout_ct_clear = 1'b1;
+                end
+                else if (!wrq_full) begin
+                    wrreq = data_valid;
+                    data_wr = data_in;
+                    rd_ct_en = data_valid;
                 end
             end
             RX_RECEIVE_FIN: begin
