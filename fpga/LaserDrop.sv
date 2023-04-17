@@ -129,8 +129,8 @@ module LaserDrop (
         .adbus_out,
         .rd_qsize,
         .wr_qsize,
-        .hex1,
-        .hex3,
+        // .hex1,
+        // .hex3,
         .LED(LEDR[2])
     );
 
@@ -152,9 +152,9 @@ module LaserDrop (
         .Q(adbus_out_recent)
     );
 
-    // assign hex1 = wr_qsize[7:0];
+    assign hex1 = wr_qsize[7:0];
     assign hex2 = recently_received;
-    // assign hex3 = adbus_out_recent;
+    assign hex3 = adbus_out_recent;
     //------------------------------------------------------------------------//
     //-----------------------------LOGIC COMPONENTS---------------------------//
     Counter #(12) rd_counter (

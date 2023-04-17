@@ -7,7 +7,7 @@ module ChipInterface (
     input  logic CLOCK_50,
     input  logic [9:0] SW,
     input  logic [3:0] KEY,
-    output logic [17:0] LEDR,
+    output logic [9:0] LEDR,
     output logic [6:0] HEX5, HEX4, HEX3, HEX2, HEX1, HEX0,
     inout  wire  [35:0] GPIO_0, GPIO_1
 );

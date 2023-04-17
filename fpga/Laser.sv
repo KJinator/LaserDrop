@@ -190,7 +190,9 @@ module LaserReceiver #(CLKS_PER_BIT=8)
                     if (laser_in2 == 1'b0) begin
                         nextState = FINISH;
                     end
-		    else nextState = WAIT;
+                    else begin
+                        nextState = WAIT;
+                    end
                 end
             end
             FINISH: begin

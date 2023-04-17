@@ -94,10 +94,6 @@ set_location_assignment PIN_AB6 -to DRAM_RAS_N
 set_location_assignment PIN_N8 -to DRAM_UDQM
 set_location_assignment PIN_AB5 -to DRAM_WE_N
 set_location_assignment PIN_M16 -to KEY[4]
-set_location_assignment PIN_C16 -to SW[16]
-set_location_assignment PIN_D17 -to SW[15]
-set_location_assignment PIN_K20 -to SW[14]
-set_location_assignment PIN_K21 -to SW[13]
 set_location_assignment PIN_L22 -to KEY[5]
 set_location_assignment PIN_P16 -to KEY[6]
 set_location_assignment PIN_L18 -to KEY[7]
@@ -207,22 +203,8 @@ set_global_assignment -name PARTITION_NETLIST_TYPE SOURCE -entity DE0_CV_Default
 set_global_assignment -name PARTITION_FITTER_PRESERVATION_LEVEL PLACEMENT_AND_ROUTING -entity DE0_CV_Default -section_id Top
 set_global_assignment -name PARTITION_COLOR 16764057 -entity DE0_CV_Default -section_id Top
 set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -entity DE0_CV_Default -section_id Top
-set_location_assignment PIN_H16 -to GPIO_1_D0
-set_location_assignment PIN_A12 -to GPIO_1_D1
-set_location_assignment PIN_N16 -to GPIO_0_D0
-set_location_assignment PIN_B16 -to GPIO_0_D1
 set_global_assignment -name POWER_PRESET_COOLING_SOLUTION "23 MM HEAT SINK WITH 200 LFPM AIRFLOW"
 set_global_assignment -name POWER_BOARD_THERMAL_MODEL "NONE (CONSERVATIVE)"
-set_location_assignment PIN_H15 -to GPIO_1_D2
-set_location_assignment PIN_B12 -to GPIO_1_D3
-set_location_assignment PIN_H10 -to GPIO_1_D14
-set_location_assignment PIN_J11 -to GPIO_1_D15
-set_location_assignment PIN_H14 -to GPIO_1_D16
-set_location_assignment PIN_A15 -to GPIO_1_D17
-set_location_assignment PIN_N20 -to GPIO_0_D14
-set_location_assignment PIN_N19 -to GPIO_0_D15
-set_location_assignment PIN_M22 -to GPIO_0_D16
-set_location_assignment PIN_P19 -to GPIO_0_D17
 set_location_assignment PIN_G13 -to GPIO_1[32]
 set_location_assignment PIN_N16 -to GPIO_0[0]
 set_location_assignment PIN_B16 -to GPIO_0[1]

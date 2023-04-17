@@ -10,7 +10,7 @@ module FTDI_Interface (
     output logic [7:0] data_rd, adbus_out,
     output logic [9:0] wr_qsize,
     output logic [16:0] rd_qsize,
-    output logic [7:0] hex1, hex3,
+    // output logic [7:0] hex1, hex3,
     output logic LED
 );
     enum logic [3:0] { WAIT, SET_WRITE, WRITE1, WRITE2, READ1, READ2, READ3,
@@ -99,9 +99,6 @@ module FTDI_Interface (
         .reset,
         .Q(loaded_ct)
     );
-
-    assign hex3 = qsize_saved[11:4];
-    assign hex1 = loaded_ct[7:0];
 
     // Description:
     // WAIT: Give up Tri, set all lines inactive. State after READ/WRITE
