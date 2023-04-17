@@ -152,7 +152,7 @@ module FTDI_Interface (
         case (currState)
             WAIT: begin
                 if (!rxf2 && rd_en && !rdq_full) nextState = READ1;
-                else if (wr_en && !txe2 && !wrq_empty) begin
+                else if (wr_en && !txe2 && !big_wrq_empty) begin
                     nextState = SET_WRITE;
                     wrq_rdreq = 1'b1;
                 end

@@ -46,19 +46,18 @@ module LaserDrop (
     logic [ 9:0]    wr_qsize;
     logic [ 7:0]    data_rd, recently_received, adbus_out_recent, data_in,
                     data_wr, data_transmit, saw_seq;
-    logic [ 3:0]    saw_dummy;
-    logic [ 2:0]    seqI;
+    logic [ 2:0]    seqI, saw_dummy;
     logic [ 1:0]    laser_out;
     logic           timeout, rd_ct_en, timeout_ct_en, timeout_ct_clear,
                     rd_ct_clear, queue_clear, data_valid, tx_done, rd_en, wr_en,
                     wrreq, rdreq, data_ready, rdq_full, rdq_empty, wrq_full,
-                    wrq_empty, saw_hs_signal, saw_hs_rx_signal, saw_ack,
+                    wrq_empty, saw_hs_signal, saw_hs_rx_signal, saw_done,
                     saw_stop, saw_start, saw_data, seq_saved_en, wr_clear,
                     rd_clear, toggle_both_lasers, constant_transmit_mode,
                     both_lasers_on, constant_receive_mode, send_any_size,
-                    counter_en, counter_clear, load_1k;
+                    counter_en, counter_clear, load_1k, saw_error;
 
-    localparam divider = 8'd12;
+    localparam divider = 8'd16;
 
     assign constant_receive_mode = SW[2];
     assign send_any_size = SW[3];
@@ -191,7 +190,8 @@ module LaserDrop (
         .Q(counter)
     );
 
-    assign seq = { 32'b0, 32'b0, 32'b0, 32'b0, `ACK_SEQ, `DATA_SEQ, `STOP_SEQ, `START_SEQ };
+    assign seq = { 32'b0, 32'b0, 32'b0, `DONE_SEQ,
+                    `ERROR_SEQ, `DATA_SEQ, `STOP_SEQ, `START_SEQ };
     assign seq_savedD = seq[seqI];
 
     Register #(32) seq_saved_reg (
@@ -211,7 +211,7 @@ module LaserDrop (
         .data_in,
         .seq,
         .seqI,
-        .saw_seq({ saw_dummy, saw_ack, saw_data, saw_stop, saw_start })  // NOTE: Change this line with below D!!
+        .saw_seq({ saw_dummy, saw_done, saw_error, saw_data, saw_stop, saw_start })  // NOTE: Change this line with below D!!
     ); 
     //------------------------------------------------------------------------//
     //-------------------------------CLOCK DIVIDERS---------------------------//
