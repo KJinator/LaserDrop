@@ -7,7 +7,7 @@ module ChipInterface (
     input  logic CLOCK_50,
     input  logic [9:0] SW,
     input  logic [3:0] KEY,
-    output logic [17:0] LEDR,
+    output logic [9:0] LEDR,
     output logic [6:0] HEX5, HEX4, HEX3, HEX2, HEX1, HEX0,
     inout  wire  [35:0] GPIO_0, GPIO_1
 );
@@ -93,7 +93,7 @@ module ChipInterface (
         .reset(~KEY[0]),
         .en(SW[0]),
         .echo_mode(SW[1]),
-	    .SW(SW[9:0]),
+        .SW(SW[9:0]),
         .rxf(ACBUS[0]),
         .txe(ACBUS[1]),
         .laser_rx(GREEN_RX),
@@ -106,7 +106,7 @@ module ChipInterface (
         .adbus_tri,
         .hex1,
         .hex2,
-		.hex3,
+        .hex3,
         .adbus_out(ADBUS)
     );
 
@@ -119,8 +119,8 @@ module ChipInterface (
         .bcd(hex1[3:0]),
         .segment(HEX4)
     );
-	 
-	 BCDtoSevenSegment hex2_1 (
+
+     BCDtoSevenSegment hex2_1 (
         .bcd(hex2[7:4]),
         .segment(HEX3)
     );
@@ -139,7 +139,7 @@ module ChipInterface (
         .bcd(hex3[3:0]),
         .segment(HEX0)
     );
-	 
+     
 endmodule: ChipInterface
 
 

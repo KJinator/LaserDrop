@@ -8,11 +8,11 @@ module TB;
   wire  [1:0][17:0] ledr;
   reg   [1:0][7:0] ADBUS;
 
-  ChipInterface dut_tx (
+  ChipInterface dut (
     .CLOCK_50(clock),
     .GPIO_0(GPIO_0[0]),
     .GPIO_1(GPIO_1[0]),
-    .SW({ 9'b0, 1'b1 }),
+    .SW({ 1'b0, 1'b0, 6'b1, 2'b01 }),
     .KEY({ 3'b1, resetN }),
     .LEDR(ledr[0]),
     .HEX5(HEX_D[0][5]),
@@ -21,13 +21,13 @@ module TB;
     .HEX2(HEX_D[0][2]),
     .HEX1(HEX_D[0][1]),
     .HEX0(HEX_D[0][0])
-);
+  );
 
   ChipInterface dut_rx (
     .CLOCK_50(clock),
     .GPIO_0(GPIO_0[1]),
     .GPIO_1(GPIO_1[1]),
-    .SW({ 9'b0, 1'b1 }),
+    .SW({ 1'b0, 1'b0, 6'b1, 2'b01 }),
     .KEY({ 3'b1, resetN }),
     .LEDR(ledr[1]),
     .HEX5(HEX_D[1][5]),
@@ -72,7 +72,7 @@ module TB;
   end
 
   logic [7:0] num_pkt_rx;
-  parameter num_pkts = 2;
+  parameter num_pkts = 3;
 
   assign rxf_tri = 2'b11;
   assign txe_tri = 2'b11;
@@ -82,45 +82,25 @@ module TB;
   assign GPIO_0[1][17] = txe_tri[1] ? txe[1] : 1'bz;
 
   initial begin
-    txe[0] = 1'b1;
-    rxf[0] = 1'b1;
+    txe[1] = 2'b11;
+    rxf[1] = 2'b11;
     ADBUS[0] = 8'dz;
+    ADBUS[1] = 8'dz;
 
     #20;
     fork
       #10;
       for (int num_pkt = 0; num_pkt < num_pkts; num_pkt++) begin
         rxf[0] = 1'b0;
-        wait(~dut_tx.main.ftdi_rd); #1;
+        wait(~dut.main.ftdi_rd); #1;
 
-        if (num_pkt < num_pkts - 1) begin
-          ADBUS[0] = `START_SEQ;
-          wait(dut_tx.main.ftdi_rd); #1
-          ADBUS[0] = 8'dz;
-          rxf[0] = 1'b1;
-
-          for (int byte_num=1; byte_num < `START_PKT_LEN; byte_num++) begin
-            #2
-            rxf[0] = 1'b0;
-
-            wait(~dut_tx.main.ftdi_rd); #1
-            ADBUS[0] = byte_num;
-            wait(dut_tx.main.ftdi_rd); #1
-            ADBUS[0] = 8'dz;
-            rxf[0] = 1'b1;
-          end
-        end
-        else begin
-          ADBUS[0] = `STOP_SEQ;
-          wait(dut_tx.main.ftdi_rd); #1
-          ADBUS[0] = 8'dz;
-          rxf[0] = 1'b1;
-
-          #2;
+        for (int byte_num=8'h1; byte_num < 8'hff; byte_num++) begin
+          #2
           rxf[0] = 1'b0;
-          wait(~dut_tx.main.ftdi_rd); #1
-          ADBUS[0] = 8'd1;
-          wait(dut_tx.main.ftdi_rd); #1
+
+          wait(~dut.main.ftdi_rd); #1
+          ADBUS[0] = byte_num;
+          wait(dut.main.ftdi_rd); #1
           ADBUS[0] = 8'dz;
           rxf[0] = 1'b1;
         end
@@ -130,7 +110,7 @@ module TB;
       #10;
       forever begin
         txe[0] = 1'b0;
-        wait(~dut_tx.main.ftdi_wr); #1
+        wait(~dut.main.ftdi_wr); #1
         txe[0] = 1'b1;
         #1;
       end
@@ -138,80 +118,22 @@ module TB;
   end
 
   initial begin
-    txe[1] = 1'b1;
-    rxf[1] = 1'b1;
-    ADBUS[1] = 8'dz;
-    #10;
-    for (num_pkt_rx = 0; num_pkt_rx < num_pkts; num_pkt_rx++) begin
-      int pkt_len;
-      /*
-      if (num_pkt_rx == num_pkts - 1) begin
-        pkt_len = `STOP_PKT_LEN;
-      end else
-        pkt_len = `START_PKT_LEN;
-      */
-      pkt_len = (num_pkt_rx == num_pkts - 1) ? (`STOP_PKT_LEN) : (`START_PKT_LEN);
-      $display("Pkt_len: %d", pkt_len);
-      for (int i = 0; i < pkt_len; i++) begin
-        txe[1] = 1'b0;
-        @(posedge ~dut_rx.main.ftdi_wr);
-        @(posedge clock);
-        txe[1] = 1'b1;
-      end
-
-      $display("@%0t: Pulling rxf[1] down at line 155", $time);
-      rxf[1]  = 1'b0;
-      wait(~dut_rx.main.ftdi_rd);
-
-      if (num_pkt_rx < num_pkts - 1) begin
-        ADBUS[1] = `ACK_SEQ;
-        @(posedge dut_rx.main.ftdi_rd); #1;
-        ADBUS[1] = 8'dz;
-        rxf[1] = 1'b1;
-
-        #2;
-        rxf[1] = 1'b0;
-
-        wait(~dut_rx.main.ftdi_rd); #1;
-        ADBUS[1] = 8'h77;
-        wait(dut_rx.main.ftdi_rd); #1;
-        ADBUS[1] = 8'dz;
-        rxf[1] = 1'b1;
-      end
-      else begin
-        ADBUS[1] = `DONE_SEQ;
-        wait(dut_rx.main.ftdi_rd); #1;
-        ADBUS[1] = 8'dz;
-        rxf[1] = 1'b1;
-
-        #2;
-        rxf[1] = 1'b0;
-        wait(~dut_rx.main.ftdi_rd); #1;
-        ADBUS[1] = 8'd1;
-        wait(dut_rx.main.ftdi_rd); #1;
-        ADBUS[1] = 8'dz;
-        rxf[1] = 1'b1;
-      end
-    end
-  end
-
-
-  initial begin
+    // resetN = 1'b1;
+    // resetN <= 1'b0;
     resetN = 1'b1;
-    resetN <= 1'b0;
+    #1 resetN = 1'b0;
     #1
     resetN = 1'b1;
 
     for (int i = 0; i < 10; i++) begin
-      @(posedge dut_tx.main.data_valid);
-      @(posedge dut_tx.main.data_valid);
-      @(posedge dut_tx.main.data_valid);
+      @(posedge dut.main.data_valid);
+      @(posedge dut.main.data_valid);
+      @(posedge dut.main.data_valid);
     end
     #100;
 
     $display("@%0t: Data1: %h, Data2: %h", $time,
-             dut_tx.data1_in,
-             dut_tx.data2_in
+             dut.hex1, dut.hex2
             );
     $display("@%0t: Finished!", $time);
     $finish;

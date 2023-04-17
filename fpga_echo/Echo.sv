@@ -21,7 +21,8 @@ module Echo (
     LaserTransmitter transmit (
         .data_transmit,
         .en(~echo_mode & en),
-        .clock(CLOCK_6_25),
+        // .clock(CLOCK_6_25),
+        .clock(CLOCK_3_125),
         .clock_base(clock),
         .reset,
         .data_ready,
@@ -29,14 +30,13 @@ module Echo (
         .done(tx_done)
     );
 
-    assign laser_tx[0] = SW[6] ? laser_out[0] : (laser_out[1] | SW[7]);
-    assign laser_tx[1] = laser_out[1];
+    assign laser_tx[0] = SW[6] ? (laser_out[1] | SW[7]) : laser_out[0];
+    assign laser_tx[1] = laser_out[1] | SW[7];
 
     // Simultaneous mode lasers
-    LaserReceiver receive (
+    LaserReceiver #(16) receive (
         .clock,
         .reset,
-        .sample_clock(clock),
         .laser_in(laser_rx),
         .data_valid,
         .data_in
@@ -106,7 +106,7 @@ module Echo (
         .reset,
         .en(1'b1),
         .divider(8'd16),
-        .clk_divided(clock_3_125)
+        .clk_divided(CLOCK_3_125)
     );
 	 
 	Register adbus_out_recent_reg (
@@ -180,11 +180,7 @@ module Echo (
                         data_wr = data_in;
                     end
                     
-                    if (!rdq_empty) begin
-                        rdreq = 1'b1;
-                        nextState = VALID_DATA;
-                    end
-                    else if (tx_done) nextState = WAIT;
+                    if (tx_done) nextState = WAIT;
                     else nextState = WAIT_TRANSMISSION;
                 end
             end

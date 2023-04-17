@@ -66,6 +66,29 @@ module Decoder
 
 endmodule : Decoder
 
+module Encoder
+  (input  logic [7:0] D,
+   input  logic       en,
+   output logic [2:0] Y);
+
+  always_comb begin
+    Y = 0;
+    
+    if (en)
+      case (D)
+        8'b0000_0001: Y = 3'd0;
+        8'b0000_0010: Y = 3'd1;
+        8'b0000_0100: Y = 3'd2;
+        8'b0000_1000: Y = 3'd3;
+        8'b0001_0000: Y = 3'd4;
+        8'b0010_0000: Y = 3'd5;
+        8'b0100_0000: Y = 3'd6;
+        8'b1000_0000: Y = 3'd7;
+        default: Y = 3'd0;
+      endcase
+  end
+endmodule: Encoder
+
 // A register with D input and Q outputs.
 // Priority: en > clear, checked at clock edge.
 module Register
@@ -76,7 +99,7 @@ module Register
 
   always_ff @(posedge clock, posedge reset)
     if (reset) Q <= 0;
-	 else if (clear) Q <= 0;
+    else if (clear) Q <= 0;
     else if (en) Q <= D;
 
 endmodule : Register
@@ -207,7 +230,7 @@ module EchoQueue
       write_i <= 6'b0;
     end
 	 else if (clear) begin
-	   queue <= 512'd0;
+      queue <= 512'd0;
       size <= 8'b0;
       read_i <= 6'b0;
       write_i <= 6'b0;
