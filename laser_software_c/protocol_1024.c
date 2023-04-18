@@ -55,11 +55,11 @@ void sender_protocol () {
     memset(&TxBuffer_start[4], 0x00, 4);
 
     full_packet_encoding(buffer, &TxBuffer_start[8]);
-    for(int i = 0; i < 1024; i++)
+    /*for(int i = 0; i < 1024; i++)
     {
         printf("%hhx, ", TxBuffer_start[i]);
     }
-    printf("\n");
+    printf("\n");*/
 
     ftStatus = FT_OpenEx("LaserDrop White", FT_OPEN_BY_DESCRIPTION, &ftHandle);
 
@@ -117,14 +117,15 @@ void sender_protocol () {
     TxBuffer[2] = 0xD3;
     TxBuffer[3] = 0xD4;
 
-    for (uint32_t i = 1; i < num_packets; i++) {
+    for (uint32_t i = 0; i < num_packets; i++) {
         printf("Sending Packet %u\n", i);
 
+        char *RawPacket = get_packet_sender(i);
+        memcpy(TxBuffer, RawPacket, 1024);
         TxBuffer[4] = i % 0xFF;
         TxBuffer[5] = (i >> 8) % 0xFF;
         TxBuffer[6] = (i >> 16) % 0xFF;
         TxBuffer[7] = (i >> 24) % 0xFF;
-        full_packet_encoding(buffer[1024*i], &TxBuffer[8]);
 
         ftStatus = FT_Write(ftHandle, TxBuffer, 1024, &BytesWritten);
 
@@ -139,7 +140,7 @@ void sender_protocol () {
         printf("Write Success: %u\n", BytesWritten);
 
         if (i % 128 == 0 || i == num_packets - 1) {
-            printf("128 packets received\n\n");
+            printf("All packets sent\n\n");
             while (RxBuffer_int[0] != ACK) {
                 ftStatus = FT_Read(ftHandle, RxBuffer, 1024, &BytesRecieved);
                 if (ftStatus != FT_OK) {
@@ -162,11 +163,14 @@ void sender_protocol () {
         sleep(1);
     }
 
+    printf("ACK Received\n");
+
     size_t num128_error;
     uint32_t start_count_error;
     size_t total_send_error;
 
     while (get_error_queue_len() && RxBuffer_int[0] != DONE) {
+        printf("Error Queue Emptying\n");
         num128_error = (get_error_queue_len() % 128 != 0) + (get_error_queue_len() / 128);
         uint32_t start_count_error = 0;
 
