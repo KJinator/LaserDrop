@@ -89,9 +89,9 @@ endmodule: LaserTransmitter
 // clock cycle if a whole byte with valid start and stop bits read on both.
 // NOTE: currently coded so this only works when data received simultaneously on
 //       both lasers.
-module LaserReceiver #(CLKS_PER_BIT=8)
-    (input logic clock, reset,
-     input logic laser_in,
+module LaserReceiver
+    (input logic clock, reset, laser_in,
+     input logic [7:0] divider,
      output logic data_valid,
      output logic [7:0] data_in);
 
@@ -149,7 +149,7 @@ module LaserReceiver #(CLKS_PER_BIT=8)
                 else nextState = WAIT;
             end
             START: begin
-                if (clock_counter == ((CLKS_PER_BIT-1) >> 1'b1)) begin
+                if (clock_counter == ((divider-1) >> 1'b1)) begin
                     if (laser_in2 == 1'b1) begin
                         clk_ctr_clear = 1'b1;
                         nextState = RECEIVE;
@@ -162,7 +162,7 @@ module LaserReceiver #(CLKS_PER_BIT=8)
                 end
             end
             RECEIVE: begin
-                if (clock_counter < CLKS_PER_BIT - 1) begin
+                if (clock_counter < divider - 1) begin
                     clk_ctr_en = 1'b1;
                     nextState = RECEIVE;
                 end
@@ -180,7 +180,7 @@ module LaserReceiver #(CLKS_PER_BIT=8)
                 end
             end
             STOP: begin
-                if (clock_counter < CLKS_PER_BIT - 1) begin
+                if (clock_counter < divider - 1) begin
                     clk_ctr_en = 1'b1;
                     nextState = STOP;
                 end
@@ -203,7 +203,7 @@ module LaserReceiver #(CLKS_PER_BIT=8)
     end
 
     always_ff @(posedge clock) begin
-        if (currState == RECEIVE && clock_counter == CLKS_PER_BIT - 1) begin
+        if (currState == RECEIVE && clock_counter == divider - 1) begin
             data_in[bits_read] <= laser_in2;
         end
         else if (currState == WAIT) begin

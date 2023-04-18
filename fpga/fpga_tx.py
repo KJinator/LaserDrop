@@ -2,7 +2,7 @@ import atexit
 import time
 import serial
 
-s = serial.Serial('COM5', timeout=1)
+s = serial.Serial('COM8', timeout=1)
 atexit.register(s.close)
 
 
@@ -18,9 +18,10 @@ print(s.read(100).hex())
 
 # Write
 # for seq in [send2, send3, send4, send5, send6, send6, send5, send6]:
-for seq in [send2, send3, send4, send6, send6]:
-    s.write(seq + seq)
-    print(f"Sent {seq.hex()} ({len(seq + seq)} bytes)")
+for seq in [send2, send4, send6, send6, send5, send6]:
+    message = seq * 5
+    s.write(message)
+    print(f"Sent {message.hex()} ({len(message)} bytes)")
     print(s.read(100).hex())
 
     time.sleep(2)
