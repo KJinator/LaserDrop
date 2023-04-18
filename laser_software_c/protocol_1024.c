@@ -68,7 +68,7 @@ void sender_protocol () {
         return;
     }
 
-    ftStatus = FT_SetBaudRate(ftHandle, 1152000);
+    ftStatus = FT_SetBaudRate(ftHandle, 3000000);
     if(ftStatus != FT_OK) {
         printf("Baudrate Error\n\n");
         return;
@@ -210,9 +210,6 @@ void sender_protocol () {
 void receiver_protocol () {
     FT_HANDLE ftHandle;
     FT_STATUS ftStatus;
-    DWORD dwVID, dwPID;
-    dwVID = 0x0403;
-    dwPID = 0x6045;
     DWORD BytesWritten, BytesRecieved;
     char file [691];
     char buffer [693];
@@ -231,7 +228,7 @@ void receiver_protocol () {
         return;
     }
 
-    ftStatus = FT_SetBaudRate(ftHandle, 1152000);
+    ftStatus = FT_SetBaudRate(ftHandle, 3000000);
     if(ftStatus != FT_OK) {
         printf("Baudrate Error\n\n");
         return;
