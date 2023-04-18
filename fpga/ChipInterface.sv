@@ -56,7 +56,7 @@ module ChipInterface (
     assign GPIO_0[30] = IR_AMB_n;
     assign GPIO_0[31] = 1'bz;
     assign GPIO_0[32] = 1'bz;           // Input: IR RX
-    assign GPIO_0[33] = 1'bz;
+    // assign GPIO_0[33] = 1'bz;
     assign GPIO_0[34] = IR_EN_n;        // Output: High-Z
     assign GPIO_0[35] = 1'bz;
 
@@ -97,6 +97,8 @@ module ChipInterface (
         .ftdi_rd(ACBUS[2]),
         .ftdi_wr(ACBUS[3]),
         .adbus_tri,
+        .clock_start(GPIO_0[35]),
+        .clock_start_out(GPIO_0[33]),
         .hex1,
         .hex2,
         .hex3,

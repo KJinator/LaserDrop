@@ -133,12 +133,12 @@ set_clock_uncertainty -fall_from [get_clocks {CLOCK_FTDI}] -fall_to [get_clocks 
 # Set Output Delay
 #**************************************************************
 
-set_output_delay -add_delay  -clock [get_clocks {CLOCK_UART}]  0.2 [get_ports {GPIO_0[13]}]
-set_output_delay -add_delay  -clock [get_clocks {CLOCK_UART}]  0.2 [get_ports {GPIO_0[15]}]
-set_output_delay -add_delay  -clock [get_clocks {CLOCK_UART}]  0.2 [get_ports {GPIO_0[20]}]
-set_output_delay -add_delay  -clock [get_clocks {CLOCK_UART}]  0.2 [get_ports {GPIO_0[22]}]
-set_output_delay -add_delay  -clock [get_clocks {CLOCK_UART}]  0.2 [get_ports {GPIO_0[24]}]
-set_output_delay -add_delay  -clock [get_clocks {CLOCK_UART}]  0.2 [get_ports {GPIO_0[30]}]
+# set_output_delay -add_delay  -clock [get_clocks {CLOCK_UART}]  0.2 [get_ports {GPIO_0[13]}]
+# set_output_delay -add_delay  -clock [get_clocks {CLOCK_UART}]  0.2 [get_ports {GPIO_0[15]}]
+# set_output_delay -add_delay  -clock [get_clocks {CLOCK_UART}]  0.2 [get_ports {GPIO_0[20]}]
+# set_output_delay -add_delay  -clock [get_clocks {CLOCK_UART}]  0.2 [get_ports {GPIO_0[22]}]
+# set_output_delay -add_delay  -clock [get_clocks {CLOCK_UART}]  0.2 [get_ports {GPIO_0[24]}]
+# set_output_delay -add_delay  -clock [get_clocks {CLOCK_UART}]  0.2 [get_ports {GPIO_0[30]}]
 # set_output_delay -add_delay  -clock [get_clocks {CLOCK_UART}]  0 [get_ports {HEX0[0]}]
 # set_output_delay -add_delay  -clock [get_clocks {CLOCK_UART}]  0 [get_ports {HEX0[1]}]
 # set_output_delay -add_delay  -clock [get_clocks {CLOCK_UART}]  0 [get_ports {HEX0[2]}]

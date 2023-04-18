@@ -23,10 +23,10 @@
 
 module LaserDrop (
     input logic clock, reset, en,
-    input logic rxf, txe, laser_rx,
+    input logic rxf, txe, laser_rx, clock_start,
     input logic [7:0] adbus_in,
     input logic [9:0] SW,
-    output logic ftdi_rd, ftdi_wr, adbus_tri,
+    output logic ftdi_rd, ftdi_wr, adbus_tri, clock_start_out,
     output logic [1:0] laser_tx,
     output logic [7:0] hex1, hex2, hex3, adbus_out,
     output logic [9:0] LEDR
@@ -68,7 +68,7 @@ module LaserDrop (
     assign LEDR[1:0] = laser_tx;
     assign LEDR[4] = tx_done;
     assign LEDR[5] = data_valid;
-    assign LEDR[6] = (currState == WAIT);
+    assign LEDR[6] = clock_start;
     assign LEDR[8] = laser_rx;
     assign LEDR[9] = wrq_empty;
 
@@ -110,6 +110,7 @@ module LaserDrop (
         .rd_clear,
         .debug_mode,
         .load_1k,
+        .clock_start,
         // FTDI Input
         .txe,
         .rxf,
@@ -297,6 +298,7 @@ module LaserDrop (
         tx_ct_clear = 1'b0;
 
         nextState = WAIT;
+        clock_start_out = 1'b0;
 
         case (currState)
             WAIT: begin
@@ -307,6 +309,8 @@ module LaserDrop (
                 if (!rdq_empty) begin
                     nextState = HS_TX_INIT;
                     rdreq = 1'b1;
+                    clock_start_out = 1'b1;
+                    counter_clear = 1'b1;
                 end
                 else if (saw_hs_signal) begin
                     nextState = HS_RX_INIT;
@@ -316,11 +320,19 @@ module LaserDrop (
                 end
             end
             HS_TX_INIT: begin
-                if (saw_hs_rx_signal) nextState = HS_TX_WAIT;
+                if (saw_hs_rx_signal) begin
+                    nextState = HS_TX_WAIT;
+                    counter_clear = 1'b1;
+                end
                 else nextState = HS_TX_INIT;
 
                 data_ready = 1'b1;
                 data_transmit = `HS_SIGNAL;
+
+                counter_en = 1'b1;
+                if (counter < 32'd5) begin
+                    clock_start_out = 1'b1;
+                end
 
                 if (constant_receive_mode && !wrq_full) begin
                     wrreq = data_valid;
