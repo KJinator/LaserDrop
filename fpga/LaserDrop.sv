@@ -130,7 +130,7 @@ module LaserDrop (
         .data_rd,
         .adbus_out,
         .rd_qsize,
-        .wr_qsize,
+        .wr_qsize
     );
 
     Register recently_received_reg (
@@ -514,7 +514,7 @@ module SequenceDetector (
         for (seeI = 0; seeI < 8; seeI++) begin: forLoopSee
             assign seeD[seeI] = (seq[seeI][31:24] == data_in);
 
-            Register saw_seq_reg (
+            Register #(1) saw_seq_reg (
                 .D(seeD[seeI]),
                 .en(see_en),
                 .clear(see_clear),
@@ -538,7 +538,7 @@ module SequenceDetector (
 
         case (currState)
             WAIT: begin
-                if (seeD > 8'b0 && data_valid) begin
+                if (seeD > 8'b0 && data_valid && en) begin
                     see_en = 1'b1;
                     nextState = SAW1;
                 end

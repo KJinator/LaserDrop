@@ -9,9 +9,7 @@ module FTDI_Interface (
                  wrq_empty,
     output logic [7:0] data_rd, adbus_out,
     output logic [9:0] wr_qsize,
-    output logic [16:0] rd_qsize,
-    // output logic [7:0] hex1, hex3,
-    output logic LED
+    output logic [16:0] rd_qsize
 );
     enum logic [3:0] { WAIT, SET_WRITE, WRITE1, WRITE2, READ1, READ2, READ3,
                         FIN1, FIN2 }
