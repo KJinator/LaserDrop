@@ -259,17 +259,16 @@ void receiver_protocol () {
 
     ftStatus = FT_Write(ftHandle, TxBuffer, 1024, &BytesWritten);
 
+    initialize_decode(buffer_int[0], buffer_int[1]);
     memcpy(buffer, decode_packet2(RxBuffer), 693);
 
     file[0] = 'A';
     memcpy(&file[1], &buffer[8], 690);
-    initialize_decode(buffer_int[0], buffer_int[1]);
 
     size_t num_packets = get_num_packets_receiver();
     size_t num128 = (num_packets % 128 != 0) + (num_packets / 128);
     uint32_t start_count = 0;
     uint32_t count = 0;
-
 
     while (!finished() || get_num_errors_left() > 0) {
         // size_t total_send = ((num128 == 1 && num_packets % 128 == 0) || (i < num128 - 1)) ? 128 : (num_packets % 128);
