@@ -34,7 +34,8 @@ module LaserDrop (
     enum logic [5:0] {
         WAIT, HS_TX_INIT, HS_TX_WAIT, TX_ALIGN_UART, TX_SEND_DATA,
         TX_WAIT_TRANSMISSION, HS_RX_INIT, RX_RECEIVE_FIN,
-        RX_RECEIVE, RX_LOAD_SEQ1, RX_LOAD_SEQ2, RX_LOAD_SEQ3, RX_LOAD_SEQ4
+        RX_RECEIVE, RX_LOAD_SEQ1, RX_LOAD_SEQ2, RX_LOAD_SEQ3, RX_LOAD_SEQ4,
+        TX_FIN
     } currState, nextState;
 
     logic           CLOCK_25, CLOCK_12_5, CLOCK_6_25, CLOCK_UART;
@@ -42,28 +43,27 @@ module LaserDrop (
     logic [ 7:0][31:0]  seq;
     logic [31:0]    seq_savedD, seq_saved;
     logic [16:0]    rd_qsize;
-    logic [11:0]    rd_ct, timeout_ct, counter;
+    logic [11:0]    rd_ct, timeout_ct, counter, tx_ct;
     logic [ 9:0]    wr_qsize;
     logic [ 7:0]    data_rd, recently_received, adbus_out_recent, data_in,
-                    data_wr, data_transmit, saw_seq;
+                    data_wr, data_transmit, saw_seq, last_transmitted, divider;
     logic [ 2:0]    seqI, saw_dummy;
     logic [ 1:0]    laser_out;
-    logic           rd_ct_en, timeout_ct_en, timeout_ct_clear,
-                    rd_ct_clear, data_valid, tx_done, rd_en, wr_en,
+    logic           rd_ct_en, timeout_ct_en, timeout_ct_clear, tx_ct_clear,
+                    rd_ct_clear, data_valid, tx_done, rd_en, wr_en, tx_ct_en,
                     wrreq, rdreq, data_ready, rdq_full, rdq_empty, wrq_full,
                     wrq_empty, saw_hs_signal, saw_hs_rx_signal, saw_done,
                     saw_stop, saw_start, saw_data, seq_saved_en, wr_clear,
                     rd_clear, toggle_both_lasers, constant_transmit_mode,
                     both_lasers_on, constant_receive_mode, send_any_size,
-                    counter_en, counter_clear, load_1k, saw_error;
+                    counter_en, counter_clear, load_1k, saw_error, debug_mode;
 
-    localparam divider = 8'd16;
-
-    assign constant_receive_mode = SW[2];
-    assign send_any_size = SW[3];
-    assign toggle_both_lasers = SW[6];
-    assign both_lasers_on = SW[7];
-    assign constant_transmit_mode = SW[8];
+    assign constant_receive_mode = SW[1];
+    // assign send_any_size = SW[3];
+    assign toggle_both_lasers = SW[2];
+    assign both_lasers_on = SW[3];
+    assign divider = { 3'b0, SW[8:4] };
+    assign debug_mode = SW[9];
 
     assign LEDR[1:0] = laser_tx;
     assign LEDR[4] = tx_done;
@@ -92,10 +92,11 @@ module LaserDrop (
     //------------------------------------------------------------------------//
     //------------------------------LASER RECEIVER----------------------------//
     // Simultaneous mode lasers
-    LaserReceiver #(divider) receive (
+    LaserReceiver receive (
         .clock,
         .reset,
         .laser_in(laser_rx),
+        .divider,
         .data_valid,
         .data_in
     );
@@ -107,6 +108,8 @@ module LaserDrop (
         .clear(1'b0),
         .wr_clear,
         .rd_clear,
+        .debug_mode,
+        .load_1k,
         // FTDI Input
         .txe,
         .rxf,
@@ -116,7 +119,6 @@ module LaserDrop (
         .rd_en,
         .data_wr,
         .adbus_in,
-        .load_1k,
         // Out
         .adbus_tri,
         .ftdi_wr,
@@ -128,10 +130,7 @@ module LaserDrop (
         .data_rd,
         .adbus_out,
         .rd_qsize,
-        .wr_qsize,
-        // .hex1,
-        // .hex3,
-        .LED(LEDR[2])
+        .wr_qsize
     );
 
     Register recently_received_reg (
@@ -151,8 +150,18 @@ module LaserDrop (
         .reset,
         .Q(adbus_out_recent)
     );
+    
+    Register last_transmitted_reg (
+        .D(data_transmit),
+        .en(data_ready),
+        .clear(1'b0),
+        .clock,
+        .reset,
+        .Q(last_transmitted)
+    );
 
-    assign hex1 = wr_qsize[7:0];
+    // assign hex1 = wr_qsize[7:0];
+    assign hex1 = last_transmitted;
     assign hex2 = recently_received;
     assign hex3 = adbus_out_recent;
     //------------------------------------------------------------------------//
@@ -168,6 +177,17 @@ module LaserDrop (
         .Q(rd_ct)
     );
 
+    Counter #(12) tx_counter (
+        .D(12'b0),
+        .en(tx_ct_en),
+        .clear(tx_ct_clear),
+        .load(1'b0),
+        .clock,
+        .up(1'b1),
+        .reset,
+        .Q(tx_ct)
+    );
+
     Counter #(12) timeout_counter (
         .D(12'b0),
         .en(timeout_ct_en),
@@ -179,8 +199,8 @@ module LaserDrop (
         .Q(timeout_ct)
     );
     
-    Counter #(8) gen_counter (
-        .D(8'b0),
+    Counter #(12) gen_counter (
+        .D(12'b0),
         .en(counter_en),
         .clear(counter_clear),
         .load(1'b0),
@@ -273,25 +293,23 @@ module LaserDrop (
         counter_en = 1'b0;
         counter_clear = 1'b0;
 
+        tx_ct_en = 1'b0;
+        tx_ct_clear = 1'b0;
+
         nextState = WAIT;
 
         case (currState)
             WAIT: begin
+                timeout_ct_clear = 1'b1;
+                tx_ct_clear = 1'b1;
+                rd_ct_clear = 1'b1;
+
                 if (!rdq_empty) begin
                     nextState = HS_TX_INIT;
                     rdreq = 1'b1;
                 end
                 else if (saw_hs_signal) begin
                     nextState = HS_RX_INIT;
-                    timeout_ct_clear = 1'b1;
-                end
-                else if (saw_start || saw_data || saw_stop || saw_error || saw_done) begin
-                    nextState = RX_LOAD_SEQ1;
-
-                    counter_clear = 1'b1;
-                    seq_saved_en = 1'b1;
-                    rd_ct_clear = 1'b1;
-                    timeout_ct_clear = 1'b1;
                 end
                 else begin
                     nextState = WAIT;
@@ -335,33 +353,25 @@ module LaserDrop (
                 end
             end
             TX_WAIT_TRANSMISSION: begin
-                if (tx_done && !rdq_empty) begin
+                if (tx_done && !rdq_empty && tx_ct < 12'd1023) begin
                     nextState = TX_SEND_DATA;
                     rdreq = 1'b1;
                 end
-                else if (tx_done) nextState = WAIT;
-                else nextState = TX_WAIT_TRANSMISSION;
+                else if (tx_done) begin
+                    nextState = TX_FIN;
+                    tx_ct_clear = 1'b1;
+                    timeout_ct_clear = 1'b1;
+                end
+                else begin
+                    nextState = TX_WAIT_TRANSMISSION;
+                end
 
+                tx_ct_en = tx_done;
                 if (constant_receive_mode && !wrq_full) begin
                     wrreq = data_valid;
                     data_wr = data_in;
                 end
             end
-            // HS_TX_FIN: begin
-            //     nextState = saw_hs_signal ? HS_TX_FIN2 : HS_TX_FIN;
-
-            //     data_ready = 1'b1;
-            //     data_tx = `HS_SIGNAL;
-            // end
-            // HS_TX_FIN2: begin
-            //     nextState = finished_hs2 ? WAIT : HS_TX_FIN2;
-            //     timeout_ct_clear = finished_hs2;
-
-            //     data_ready = 1'b1;
-            //     data2_ready = 1'b1;
-            //     data1_tx = `HS_TX_LASER1;
-            //     data2_tx = `HS_TX_LASER2;
-            // end
             HS_RX_INIT: begin
                 nextState = HS_RX_INIT;
 
@@ -375,7 +385,7 @@ module LaserDrop (
 
                     counter_clear = 1'b1;
                     seq_saved_en = 1'b1;
-                    rd_ct_clear = 1'b1;
+                    rd_ct_en = 1'b1;
                     timeout_ct_clear = 1'b1;
                 end
                 else if (timeout_ct == 12'd1024) begin  // ~20ms
@@ -392,7 +402,6 @@ module LaserDrop (
             RX_LOAD_SEQ1: begin
                 nextState = RX_LOAD_SEQ1;
                 counter_en = 1'b1;
-                // wr_en = send_any_size;
 
                 if (!wrq_full) begin
                     nextState = RX_LOAD_SEQ2;
@@ -405,7 +414,6 @@ module LaserDrop (
             RX_LOAD_SEQ2: begin
                 nextState = RX_LOAD_SEQ2;
                 counter_en = 1'b1;
-                // wr_en = send_any_size;
 
                 if (!wrq_full) begin
                     nextState = RX_LOAD_SEQ3;
@@ -418,7 +426,6 @@ module LaserDrop (
             RX_LOAD_SEQ3: begin
                 nextState = RX_LOAD_SEQ3;
                 counter_en = 1'b1;
-                // wr_en = send_any_size;
                 
                 if (!wrq_full) begin
                     nextState = RX_LOAD_SEQ4;
@@ -431,13 +438,13 @@ module LaserDrop (
             RX_LOAD_SEQ4: begin
                 nextState = RX_LOAD_SEQ4;
                 counter_en = 1'b1;
-                // wr_en = send_any_size;
 
                 if (!wrq_full) begin
                     nextState = RX_RECEIVE;
                 
                     data_wr = seq_saved[7:0];
                     wrreq = 1'b1;
+                    timeout_ct_clear = 1'b1;
                     rd_ct_en = 1'b1;
                 end
             end
@@ -445,17 +452,15 @@ module LaserDrop (
                 nextState = RX_RECEIVE;
                 timeout_ct_en = 1'b1;
                 timeout_ct_clear = data_valid;
-                // wr_en = send_any_size;
 
-
-                if (rd_ct == 12'd1024) begin
+                if (rd_ct > 12'd1024) begin
                     nextState = WAIT;
                     
                     load_1k = 1'b1;
                     rd_ct_clear = 1'b1;
                     timeout_ct_clear = 1'b1;
                 end
-                else if (timeout_ct == 12'd1024) begin  // ~20ms
+                else if (timeout_ct > (12'd12 << 4'd4)) begin  // ~20ms
                     nextState = WAIT;
 
                     load_1k = 1'b1;
@@ -464,12 +469,21 @@ module LaserDrop (
                 end
                 else if (!wrq_full) begin
                     wrreq = data_valid;
-                    data_wr = data_in;
+                    data_wr = (data_in[2:0] == 3'b000 && debug_mode) ? rd_ct[7:0] : data_in;
                     rd_ct_en = data_valid;
                 end
             end
             RX_RECEIVE_FIN: begin
                 nextState = WAIT;
+            end
+            TX_FIN: begin
+                timeout_ct_en = 1'b1;
+
+                if (timeout_ct > (12'd16 << 4'd4)) begin
+                    nextState = WAIT;
+
+                    timeout_ct_clear = 1'b1;
+                end
             end
         endcase
     end
@@ -500,7 +514,7 @@ module SequenceDetector (
         for (seeI = 0; seeI < 8; seeI++) begin: forLoopSee
             assign seeD[seeI] = (seq[seeI][31:24] == data_in);
 
-            Register saw_seq_reg (
+            Register #(1) saw_seq_reg (
                 .D(seeD[seeI]),
                 .en(see_en),
                 .clear(see_clear),
@@ -524,7 +538,7 @@ module SequenceDetector (
 
         case (currState)
             WAIT: begin
-                if (seeD > 8'b0 && data_valid) begin
+                if (seeD > 8'b0 && data_valid && en) begin
                     see_en = 1'b1;
                     nextState = SAW1;
                 end

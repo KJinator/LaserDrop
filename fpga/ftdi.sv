@@ -2,16 +2,14 @@
 
 // FTDI Interface for asynchronous FIFO mode
 module FTDI_Interface (
-    input  logic clock, reset, rd_clear, wr_clear, clear, load_1k,
+    input  logic clock, reset, rd_clear, wr_clear, clear, load_1k, debug_mode,
     input  logic txe, rxf, wrreq, rdreq, wr_en, rd_en,
     input  logic [7:0] data_wr, adbus_in,
     output logic adbus_tri, ftdi_wr, ftdi_rd, rdq_full, rdq_empty, wrq_full,
                  wrq_empty,
     output logic [7:0] data_rd, adbus_out,
     output logic [9:0] wr_qsize,
-    output logic [16:0] rd_qsize,
-    // output logic [7:0] hex1, hex3,
-    output logic LED
+    output logic [16:0] rd_qsize
 );
     enum logic [3:0] { WAIT, SET_WRITE, WRITE1, WRITE2, READ1, READ2, READ3,
                         FIN1, FIN2 }
@@ -133,10 +131,13 @@ module FTDI_Interface (
             end
             READ1: begin
                 ftdi_rd = 1'b0;
-                store_rd = 1'b1;
             end
             // RD active pulse width: min 30ns
             READ2: begin
+                ftdi_rd = 1'b0;
+                store_rd = 1'b1;
+            end
+            READ3: begin
                 ftdi_rd = 1'b0;
             end
         endcase
@@ -200,21 +201,7 @@ module FTDI_Interface (
                 nextState_1k = LOAD_1K;
 
                 big_wrreq = 1'b1;
-                big_wrdata = data_1k;
-
-                if (loaded_ct == 12'd1024) begin
-                    nextState_1k = WAIT_1K;
-                    load_ct_clear = 1'b1;
-                end
-                else if (loaded_ct == qsize_saved) begin
-                    nextState_1k = PAD_1K;
-                    load_ct_en = 1'b1;
-                end
-                else if (!wrq_empty && !big_wrq_full) begin
-                    nextState_1k = WRITE_1K;
-                    rdreq_1k = 1'b1;
-                    load_ct_en = 1'b1;
-                end
+                big_wrdata = (data_1k[2:0] == 3'b110 && debug_mode) ? loaded_ct[7:0] : data_1k;
             end
             PAD_1K: begin
                 if (loaded_ct == 12'd1024) begin
@@ -223,9 +210,11 @@ module FTDI_Interface (
                 end
                 else nextState_1k = PAD_1K;
 
-                big_wrreq = 1'b1;
-                big_wrdata = 8'b0000_0001;
-                load_ct_en = 1'b1;
+                if (!big_wrq_full) begin
+                    big_wrreq = 1'b1;
+                    big_wrdata = (loaded_ct[2:0] == 3'b110 && debug_mode) ? loaded_ct[7:0] : 8'b0000_0001;
+                    load_ct_en = 1'b1;
+                end
             end
         endcase
     end
