@@ -6,6 +6,7 @@
 #include "receive_library.h"
 #include "ftd2xx.h"
 #include <time.h>
+#include <string.h>
 
 static const uint32_t ACK = 0xB4B3B2B1;
 static const uint32_t DONE = 0xA1A2A3A4;
@@ -15,9 +16,6 @@ static const uint32_t START_REC = 0xC4C3C2C1;
 void sender_protocol () {
     FT_HANDLE ftHandle;
     FT_STATUS ftStatus;
-    DWORD dwVID, dwPID;
-    dwVID = 0x0403;
-    dwPID = 0x6045;
     DWORD BytesWritten, BytesRecieved;
     char file [691];
     char buffer [693];
@@ -55,15 +53,7 @@ void sender_protocol () {
 
     full_packet_encoding(buffer, &TxBuffer_start[8]);
 
-    ftStatus = FT_SetVIDPID(dwVID, dwPID);
-
-    if (ftStatus != FT_OK) {
-        printf("SetVIDPID Error\n\n");
-        return;
-    }
-
-    // ftStatus = FT_OpenEx("USB <-> Serial Converter", FT_OPEN_BY_DESCRIPTION, &ftHandle);
-    ftStatus = FT_OpenEx("FT7SF9VH", FT_OPEN_BY_SERIAL_NUMBER, &ftHandle);
+    ftStatus = FT_OpenEx("LaserDrop Black", FT_OPEN_BY_DESCRIPTION, &ftHandle);
 
     if(ftStatus != FT_OK) {
         printf("Open Error\n\n");
@@ -207,15 +197,7 @@ void receiver_protocol () {
     uint32_t *TxBuffer_int = (uint32_t *) TxBuffer;
     uint32_t *buffer_int = (uint32_t *) buffer;
 
-    ftStatus = FT_SetVIDPID(dwVID, dwPID);
-
-    if (ftStatus != FT_OK) {
-        printf("SetVIDPID Error\n\n");
-        return;
-    }
-
-    // ftStatus = FT_OpenEx("USB <-> Serial Converter", FT_OPEN_BY_DESCRIPTION, &ftHandle);
-    ftStatus = FT_OpenEx("FT7RTCZO", FT_OPEN_BY_SERIAL_NUMBER, &ftHandle);
+    ftStatus = FT_OpenEx("LaserDrop White", FT_OPEN_BY_DESCRIPTION, &ftHandle);
 
     if(ftStatus != FT_OK) {
         printf("Open Error\n\n");

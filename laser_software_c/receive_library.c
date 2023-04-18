@@ -62,7 +62,7 @@ bool sixteen_eleven_hamming_decode (char *data, char *buffer, size_t start) {
         free(data_bits);
         return false;
     }
-    
+
 
     data_bits[combined] ^= 1;
     size_t char_index = start;
@@ -108,7 +108,7 @@ bool no_decode (char *data, char *buffer, size_t start) {
         free(data_bits);
         return false;
     }
-    
+
 
     // data_bits[combined] ^= 1;
     size_t char_index = start;
@@ -223,7 +223,7 @@ void decode_full (char *file) {
             memcpy(&reconstructed_data[recon_ind], decoded_packets[i], BYTES_PER_PACKET);
         }
         recon_ind += BYTES_PER_PACKET;
-    } 
+    }
     FILE *fptr = fopen(file, "wb");
     fwrite(reconstructed_data, sizeof(char), file_len, fptr);
     fclose(fptr);

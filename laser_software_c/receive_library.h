@@ -36,4 +36,8 @@ uint32_t get_num_packets_receiver ();
 
 uint32_t get_len_final_packet_receiver ();
 
+bool finished ();
+
+uint32_t deq_error_queue ();
+
 #endif

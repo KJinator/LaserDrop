@@ -6,6 +6,7 @@
 #include "receive_library.h"
 #include "ftd2xx.h"
 #include <time.h>
+#include <string.h>
 
 static const uint32_t ACK = 0xB4B3B2B1;
 static const uint32_t DONE = 0xA1A2A3A4;
@@ -55,18 +56,16 @@ void sender_protocol () {
 
     full_packet_encoding(buffer, &TxBuffer_start[8]);
 
-    ftStatus = FT_SetVIDPID(dwVID, dwPID);
-
-    if (ftStatus != FT_OK) {
-        printf("SetVIDPID Error\n\n");
-        return;
-    }
-
-    // ftStatus = FT_OpenEx("USB <-> Serial Converter", FT_OPEN_BY_DESCRIPTION, &ftHandle);
-    ftStatus = FT_OpenEx("FT7SF9VH", FT_OPEN_BY_SERIAL_NUMBER, &ftHandle);
+    ftStatus = FT_OpenEx("LaserDrop White", FT_OPEN_BY_DESCRIPTION, &ftHandle);
 
     if(ftStatus != FT_OK) {
         printf("Open Error\n\n");
+        return;
+    }
+
+    ftStatus = FT_SetBaudRate(ftHandle, 115200);
+    if(ftStatus != FT_OK) {
+        printf("Baudrate Error\n\n");
         return;
     }
 
@@ -89,7 +88,7 @@ void sender_protocol () {
             return;
         }
 
-        printf("Start sent: %lu, %x %x %x %x\n\n", BytesWritten, TxBuffer_start[0], TxBuffer_start[1], TxBuffer_start[2], TxBuffer_start[3]);
+        printf("Start sent: %u, %x %x %x %x\n\n", BytesWritten, TxBuffer_start[0], TxBuffer_start[1], TxBuffer_start[2], TxBuffer_start[3]);
 
         ftStatus = FT_Read(ftHandle, RxBuffer, 1024, &BytesRecieved);
         if (ftStatus != FT_OK) {
@@ -220,18 +219,16 @@ void receiver_protocol () {
     uint32_t *TxBuffer_int = (uint32_t *) TxBuffer;
     uint32_t *buffer_int = (uint32_t *) buffer;
 
-    ftStatus = FT_SetVIDPID(dwVID, dwPID);
-
-    if (ftStatus != FT_OK) {
-        printf("SetVIDPID Error\n\n");
-        return;
-    }
-
-    // ftStatus = FT_OpenEx("USB <-> Serial Converter", FT_OPEN_BY_DESCRIPTION, &ftHandle);
-    ftStatus = FT_OpenEx("FT7RTCZO", FT_OPEN_BY_SERIAL_NUMBER, &ftHandle);
+    ftStatus = FT_OpenEx("LaserDrop Black", FT_OPEN_BY_DESCRIPTION, &ftHandle);
 
     if(ftStatus != FT_OK) {
         printf("Open Error\n\n");
+        return;
+    }
+
+    ftStatus = FT_SetBaudRate(ftHandle, 115200);
+    if(ftStatus != FT_OK) {
+        printf("Baudrate Error\n\n");
         return;
     }
 
@@ -253,7 +250,7 @@ void receiver_protocol () {
             }
             return;
         }
-        printf("Start received? %lu, %x %x\n\n", BytesRecieved, RxBuffer_int[0], START);
+        printf("Start received? %u, %x %x\n\n", BytesRecieved, RxBuffer_int[0], START);
     } while (RxBuffer_int[0] != START_REC);
 
     printf("Start Received!!\n\n");
@@ -262,17 +259,16 @@ void receiver_protocol () {
 
     ftStatus = FT_Write(ftHandle, TxBuffer, 1024, &BytesWritten);
 
+    initialize_decode(buffer_int[0], buffer_int[1]);
     memcpy(buffer, decode_packet2(RxBuffer), 693);
 
     file[0] = 'A';
     memcpy(&file[1], &buffer[8], 690);
-    initialize_decode(buffer_int[0], buffer_int[1]);
 
     size_t num_packets = get_num_packets_receiver();
     size_t num128 = (num_packets % 128 != 0) + (num_packets / 128);
     uint32_t start_count = 0;
     uint32_t count = 0;
-
 
     while (!finished() || get_num_errors_left() > 0) {
         // size_t total_send = ((num128 == 1 && num_packets % 128 == 0) || (i < num128 - 1)) ? 128 : (num_packets % 128);
