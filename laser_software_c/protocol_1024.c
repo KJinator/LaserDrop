@@ -50,16 +50,10 @@ void sender_protocol () {
 
     buffer_int[0] = get_num_packets();
     buffer_int[1] = get_len_final_packet();
-    memcpy(buffer, file, sizeof(file));
 
     memset(&TxBuffer_start[4], 0x00, 4);
 
     full_packet_encoding(buffer, &TxBuffer_start[8]);
-    /*for(int i = 0; i < 1024; i++)
-    {
-        printf("%hhx, ", TxBuffer_start[i]);
-    }
-    printf("\n");*/
 
     ftStatus = FT_OpenEx("LaserDrop White", FT_OPEN_BY_DESCRIPTION, &ftHandle);
 
@@ -261,8 +255,8 @@ void receiver_protocol () {
 
     ftStatus = FT_Write(ftHandle, TxBuffer, 1024, &BytesWritten);
 
-    initialize_decode(buffer_int[0], buffer_int[1]);
     memcpy(buffer, decode_packet2(RxBuffer), 693);
+    initialize_decode(buffer_int[0], buffer_int[1]);
 
     file[0] = 'A';
     memcpy(&file[1], &buffer[8], 690);
