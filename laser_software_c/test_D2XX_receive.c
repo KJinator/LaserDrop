@@ -49,7 +49,9 @@ int main() {
         return 0;
     }
 
-    FT_SetTimeouts(ftHandle,2000,0);
+    printf("Open!\n\n");
+
+    FT_SetTimeouts(ftHandle,10000,0);
 /*
     ftStatus = FT_Read(ftHandle, RxBuffer, 1024, &BytesRecieved);
     if (ftStatus != FT_OK) {
@@ -139,7 +141,8 @@ int main() {
     printf("Incomplete packet test: RxBuffer[0-3, 1023] = %x %x %x %x %x\n\n", RxBuffer2[2048], RxBuffer2[2049], RxBuffer2[2050], RxBuffer2[2051], RxBuffer2[3071]);
 
     */
-    ftStatus = FT_Read(ftHandle, RxBuffer2, 128*1024, &BytesRecieved);
+   
+    ftStatus = FT_Read(ftHandle, RxBuffer2, 1024, &BytesRecieved);
     if (ftStatus != FT_OK) {
         printf("Read Error\n\n");
         ftStatus = FT_Close(ftHandle);
@@ -150,7 +153,8 @@ int main() {
     }
 
     printf("Port Open\n\n");
-
+    
+    /*
     ftStatus = FT_Read(ftHandle, RxBuffer2, 128*1024, &BytesRecieved);
     if (ftStatus != FT_OK) {
         printf("Read Error\n\n");
@@ -160,18 +164,19 @@ int main() {
         }
         return 0;
     }
+    */
 
-/*
+
     printf("Incomplete packet test: RxBuffer[0-3, 1023] = %x %x %x %x %x\n\n", RxBuffer2[0], RxBuffer2[1], RxBuffer2[2], RxBuffer2[3], RxBuffer2[1023]);
-    printf("Incomplete packet test: RxBuffer[0-3, 1023] = %x %x %x %x %x\n\n", RxBuffer2[1024], RxBuffer2[1025], RxBuffer2[1026], RxBuffer2[1027], RxBuffer2[2047]);
-    printf("Incomplete packet test: RxBuffer[0-3, 1023] = %x %x %x %x %x\n\n", RxBuffer2[2048], RxBuffer2[2049], RxBuffer2[2050], RxBuffer2[2051], RxBuffer2[3071]);
+    // printf("Incomplete packet test: RxBuffer[0-3, 1023] = %x %x %x %x %x\n\n", RxBuffer2[1024], RxBuffer2[1025], RxBuffer2[1026], RxBuffer2[1027], RxBuffer2[2047]);
+    // printf("Incomplete packet test: RxBuffer[0-3, 1023] = %x %x %x %x %x\n\n", RxBuffer2[2048], RxBuffer2[2049], RxBuffer2[2050], RxBuffer2[2051], RxBuffer2[3071]);
 
-    printf("Incomplete packet test: RxBuffer[0-3, 1023] = %x %x %x %x %x\n\n", RxBuffer2[1024*7], RxBuffer2[1024*7+1], RxBuffer2[2], RxBuffer2[3], RxBuffer2[1023]);
-*/
+    // printf("Incomplete packet test: RxBuffer[0-3, 1023] = %x %x %x %x %x\n\n", RxBuffer2[1024*7], RxBuffer2[1024*7+1], RxBuffer2[2], RxBuffer2[3], RxBuffer2[1023]);
 
-    for (size_t x = 0; x < 128; x++) {
-        printf("Incomplete packet test: RxBuffer[%zu]] = %x %x %x %x\n\n", x, RxBuffer2[x*1024], RxBuffer2[x*1024 + 1], RxBuffer2[x*1024 + 2], RxBuffer2[ x*1024 + 3]);
-    }
+
+    // for (size_t x = 0; x < 128; x += 16) {
+        // printf("Incomplete packet test: RxBuffer[%zu]] = %x %x %x %x\n\n", x, RxBuffer2[x*1024], RxBuffer2[x*1024 + 1], RxBuffer2[x*1024 + 2], RxBuffer2[ x*1024 + 3]);
+    // }
 
     printf("BytesReceived (4) = %u\n\n", BytesRecieved);
 

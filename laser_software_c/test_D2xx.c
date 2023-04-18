@@ -21,6 +21,7 @@ int main() {
 
     memset(TxBuffer1, 0, sizeof(TxBuffer1));
     memset(TxBuffer2, 0, sizeof(TxBuffer2));
+    memset(TxBuffer3, 0, sizeof(TxBuffer3));
     memset(RxBuffer, 0, sizeof(RxBuffer));
 
     TxBuffer1[0] = 0xC1;
@@ -83,8 +84,9 @@ int main() {
         printf("Open Error\n\n");
         return 0;
     }
+    printf("Open!!\n\n");
 
-    FT_SetTimeouts(ftHandle,10000,0);
+    FT_SetTimeouts(ftHandle,2000,0);
 
     /*
 
@@ -132,7 +134,7 @@ int main() {
 
     */
 
-    ftStatus = FT_Write(ftHandle, TxBuffer3, 1024*128, &BytesWritten);
+    ftStatus = FT_Write(ftHandle, TxBuffer3, 1024, &BytesWritten);
     if (ftStatus != FT_OK) {
         printf("Write Error\n\n");
         ftStatus = FT_Close(ftHandle);

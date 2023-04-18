@@ -72,7 +72,7 @@ void sender_protocol () {
 
     printf("Sender Open!!\n\n");
 
-    FT_SetTimeouts(ftHandle,200,0);
+    FT_SetTimeouts(ftHandle,2000,0);
 
     // ftStatus = FT_Read(ftHandle, RxBuffer, sizeof(RxBuffer), &BytesRecieved);
 
@@ -110,12 +110,10 @@ void sender_protocol () {
     size_t num128 = (num_packets % 128 != 0) + (num_packets / 128);
     uint32_t start_count = 0;
 
-    for (uint32_t i = 0; i < num128; i++) {
-        size_t total_send = ((num128 == 1 && num_packets % 128 == 0) || (i < num128 - 1)) ? 128 : (num_packets % 128);
-        group_128(total_send, true, start_count, TxBuffer);
+    for (uint32_t i = 0; i < num_packets; i++) {
         while (RxBuffer_int[0] != ACK) {
-            printf("Sending Packet128 %u\n", i);
-            ftStatus = FT_Write(ftHandle, TxBuffer, 1024*128, &BytesWritten);
+            printf("Sending Packet %u\n", i);
+            ftStatus = FT_Write(ftHandle, TxBuffer, 1024, &BytesWritten);
 
             if (ftStatus != FT_OK) {
                 printf("Write Error\n\n");
@@ -136,17 +134,32 @@ void sender_protocol () {
                 }
                 return;
             }
-            printf("Read Success\n\n");
+            printf("Read Success: BytesReceived = %u\n\n", BytesRecieved);
+        }
+        RxBuffer_int[0] = 0;
+
+        if (i % 128 == 0 || i == num_packets - 1) {
+            printf("128 packets received\n\n");
+            while (RxBuffer_int[0] != ACK) {
+                ftStatus = FT_Read(ftHandle, RxBuffer, 1024, &BytesRecieved);
+                if (ftStatus != FT_OK) {
+                    printf("Read Error\n\n");
+                    ftStatus = FT_Close(ftHandle);
+                    if (ftStatus != FT_OK) {
+                        printf("Close Error \n\n");
+                    }
+                    return;
+                }
+            }
+            errorBuffer = decode_packet2(RxBuffer);
+            uint32_t *errorBuffer_int = (uint32_t *) errorBuffer;
+            for (size_t i = 0; i < RxBuffer_int[1]; i++) {
+                append_error_queue(errorBuffer_int[i]);
+            }
+            free(errorBuffer);
         }
 
-        errorBuffer = decode_packet2(RxBuffer);
-        uint32_t *errorBuffer_int = (uint32_t *) errorBuffer;
-        for (size_t i = 0; i < RxBuffer_int[1]; i++) {
-            append_error_queue(errorBuffer_int[i]);
-        }
-        free(errorBuffer);
-
-
+        RxBuffer_int[0] = 0;
     }
 
     size_t num128_error;
@@ -258,13 +271,14 @@ void receiver_protocol () {
     size_t num_packets = get_num_packets_receiver();
     size_t num128 = (num_packets % 128 != 0) + (num_packets / 128);
     uint32_t start_count = 0;
+    uint32_t count = 0;
 
 
     while (!finished() || get_num_errors_left() > 0) {
         // size_t total_send = ((num128 == 1 && num_packets % 128 == 0) || (i < num128 - 1)) ? 128 : (num_packets % 128);
         // group_128(total_send, true, start_count, TxBuffer);
         printf("Hello\n\n");
-        ftStatus = FT_Read(ftHandle, RxBuffer, 1024*128, &BytesRecieved);
+        ftStatus = FT_Read(ftHandle, RxBuffer, 1024, &BytesRecieved);
         printf("Goodbye\n\n");
 
         if (ftStatus != FT_OK) {
@@ -278,13 +292,31 @@ void receiver_protocol () {
 
         printf("Packet Read, BytesReceived = %u\n\n", BytesRecieved);
 
-        if (BytesRecieved != 128*1024) {
+        if (BytesRecieved != 1024) {
             continue;
         }
 
-        decode128(RxBuffer);
+        decode_packet(RxBuffer);
         TxBuffer_int[0] = ACK;
-        TxBuffer_int[1] = get_num_errors_left();
+
+        ftStatus = FT_Write(ftHandle, TxBuffer, 1024, &BytesWritten);
+
+        if (ftStatus != FT_OK) {
+            printf("Write Error\n\n");
+            ftStatus = FT_Close(ftHandle);
+            if (ftStatus != FT_OK) {
+                printf("Close Error \n\n");
+            }
+            return;
+        }
+
+        count++;
+
+        if (count % 128 != 0 && count != num_packets) {
+            continue;
+        }
+
+        // TxBuffer_int[1] = get_num_errors_left();
         size_t i = 0;
 
         for (; get_num_errors_left() > 0; decrement_num_errors_left()) {
