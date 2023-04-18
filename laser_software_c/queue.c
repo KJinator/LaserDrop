@@ -1,6 +1,6 @@
 // Adopted from https://www.scaler.com/topics/c/implementation-of-queue-using-linked-list/
 
-#include <stdio.h> 
+#include <stdio.h>
 #include <stdlib.h>
 #include "queue.h"
 
