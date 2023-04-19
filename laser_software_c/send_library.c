@@ -20,7 +20,7 @@ static uint32_t stop_bytes = 0x54535251;
 static uint32_t len_final_packet;
 uint32_t num_packets;
 static char **packet_array;
-static uint32_t *error_queue;
+static queue_t error_queue;
 static size_t error_queue_len;
 
 // In 8 bit string, get ith bit
@@ -139,6 +139,7 @@ void encode_file (char *file) {
     free(RAW);
 }
 
+/*
 void group_128 (size_t num, bool normal, uint32_t start, char *buffer) {
     size_t s = 0;
     if (normal) {
@@ -155,6 +156,7 @@ void group_128 (size_t num, bool normal, uint32_t start, char *buffer) {
         error_queue_len--;
     }
 }
+*/
 
 char *get_packet_sender(uint32_t tagID) {
     return packet_array[tagID];
@@ -173,16 +175,23 @@ void free_resources_sender () {
         free(packet_array[i]);
     }
     free(packet_array);
-    free(error_queue);
+    queue_free(error_queue);
 }
 
 void init_error_queue () {
-    error_queue = malloc(num_packets*sizeof(uint32_t));
+    // error_queue = malloc(num_packets*sizeof(uint32_t));
+    error_queue = queue_new();
     error_queue_len = 0;
 }
 
 void append_error_queue (uint32_t tagID) {
-    error_queue[error_queue_len++] = tagID;
+    enqueue(error_queue, tagID);
+    error_queue_len++;
+}
+
+char *dequeue_error_queue () {
+    error_queue_len--;
+    return get_packet_sender(dequeue(error_queue));
 }
 
 size_t get_error_queue_len () {

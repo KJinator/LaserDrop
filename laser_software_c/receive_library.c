@@ -142,8 +142,13 @@ char *decode_packet (char *ham_data) {
         if (!sixteen_eleven_hamming_decode(&ham_data[2*i + 8], &buffer[buffer_index], char_index)) {
             enqueue(error_queue, tagID);
             num_errors_left++;
-            num_errors++;
-            packet_count++;
+            if (!all_packets_sent) {
+                num_errors++;
+                packet_count++;
+            }
+            if (!all_packets_sent && packet_count == num_packets) {
+                all_packets_sent = true;
+            }
             free(buffer);
             return NULL;
         }
@@ -159,6 +164,9 @@ char *decode_packet (char *ham_data) {
     } else {
         num_errors--;
     }
+
+    if (!all_packets_sent && packet_count == num_packets)
+        all_packets_sent = true;
 
     return buffer;
 }
@@ -248,6 +256,10 @@ void free_resources_receiver () {
     free(decoded_packets);
 }
 
+uint32_t get_num_errors () {
+    return num_errors;
+}
+
 uint32_t get_num_errors_left () {
     return num_errors_left;
 }
@@ -265,6 +277,10 @@ uint32_t get_len_final_packet_receiver () {
 }
 
 bool finished () {
+    return all_packets_sent && num_errors == 0;
+}
+
+bool all_packets_were_sent () {
     return all_packets_sent;
 }
 

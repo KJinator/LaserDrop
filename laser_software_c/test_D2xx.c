@@ -78,7 +78,8 @@ int main() {
     printf("Device VID = %x; Device PID = %x\n\n", dwVID, dwPID);
     
     // ftStatus = FT_OpenEx("USB <-> Serial Converter", FT_OPEN_BY_DESCRIPTION, &ftHandle);
-    ftStatus = FT_OpenEx("FT7SF9VH", FT_OPEN_BY_SERIAL_NUMBER, &ftHandle);
+    // ftStatus = FT_OpenEx("FT7SF9VH", FT_OPEN_BY_SERIAL_NUMBER, &ftHandle);
+    ftStatus = FT_OpenEx("LaserDrop White", FT_OPEN_BY_DESCRIPTION, &ftHandle);
 
     if(ftStatus != FT_OK) {
         printf("Open Error\n\n");

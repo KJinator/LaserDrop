@@ -4,3 +4,5 @@
 **/fpga/incremental_db/**
 *.bak
 *.qsf
+**/test_D2XX
+**/test_D2XX_receive

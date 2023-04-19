@@ -28,6 +28,8 @@ size_t peek_error_queue ();
 
 void free_resources_receiver ();
 
+uint32_t get_num_errors ();
+
 uint32_t get_num_errors_left ();
 
 void decrement_num_errors_left();
@@ -37,6 +39,8 @@ uint32_t get_num_packets_receiver ();
 uint32_t get_len_final_packet_receiver ();
 
 bool finished ();
+
+bool all_packets_were_sent ();
 
 uint32_t deq_error_queue ();
 
