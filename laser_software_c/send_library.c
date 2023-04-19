@@ -16,7 +16,7 @@
 
 // static uint32_t start_bytes = 0xD1D2D3D4;
 static uint32_t start_bytes = 0xC4C3C2C1;
-static uint32_t stop_bytes = 0x51525354;
+static uint32_t stop_bytes = 0x54535251;
 static uint32_t len_final_packet;
 uint32_t num_packets;
 static char **packet_array;
