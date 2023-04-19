@@ -295,8 +295,8 @@ void receiver_protocol () {
     printf("%s\n\n", &buffer[8]);
 
     size_t num_packets = get_num_packets_receiver();
-    size_t num128 = (num_packets % 128 != 0) + (num_packets / 128);
-    uint32_t start_count = 0;
+    // size_t num128 = (num_packets % 128 != 0) + (num_packets / 128);
+    // uint32_t start_count = 0;
     uint32_t count = 0;
 
     while (!finished()) {
