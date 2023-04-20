@@ -65,7 +65,7 @@ void sender_protocol () {
         return;
     }
 
-    ftStatus = FT_SetBaudRate(ftHandle, 5000);
+    ftStatus = FT_SetBaudRate(ftHandle, 7000000);
     if(ftStatus != FT_OK) {
         printf("Baudrate Error\n\n");
         return;
@@ -91,6 +91,11 @@ void sender_protocol () {
         }
 
         printf("Start sent: %u, %x %x %x %x\n\n", BytesWritten, TxBuffer_start[0], TxBuffer_start[1], TxBuffer_start[2], TxBuffer_start[3]);
+        for(int i = 0; i < BytesWritten; i++)
+        {
+            printf("%hhx, ", TxBuffer_start[i]);
+        }
+        printf("\n");
 
         ftStatus = FT_Read(ftHandle, RxBuffer, 1024, &BytesRecieved);
         if (ftStatus != FT_OK) {
@@ -251,7 +256,7 @@ void receiver_protocol () {
         return;
     }
 
-    ftStatus = FT_SetBaudRate(ftHandle, 3000000);
+    ftStatus = FT_SetBaudRate(ftHandle, 7000000);
     if(ftStatus != FT_OK) {
         printf("Baudrate Error\n\n");
         return;
@@ -273,10 +278,16 @@ void receiver_protocol () {
             }
             return;
         }
-        printf("Start not received");
+        printf("Start not received\n");
     } while (RxBuffer_int[0] != START_REC);
 
     printf("Start Received!!\n\n");
+
+    for(int i = 0; i < BytesRecieved; i++)
+    {
+        printf("%hhx, ", RxBuffer[i]);
+    }
+    printf("\n");
 
     TxBuffer_int[0] = ACK;
 
