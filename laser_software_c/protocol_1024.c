@@ -73,7 +73,7 @@ void sender_protocol () {
 
     printf("Sender Open!!\n\n");
 
-    FT_SetTimeouts(ftHandle,1000,0);
+    FT_SetTimeouts(ftHandle,1000,1000);
 
     ftStatus = FT_Read(ftHandle, RxBuffer, sizeof(RxBuffer), &BytesRecieved);
 
@@ -259,7 +259,7 @@ void receiver_protocol () {
 
     printf("Receiver Open!!\n\n");
 
-    FT_SetTimeouts(ftHandle,200,0);
+    FT_SetTimeouts(ftHandle,1000,1000);
 
     ftStatus = FT_Read(ftHandle, RxBuffer, sizeof(RxBuffer), &BytesRecieved);
 
