@@ -118,13 +118,13 @@ void sender_protocol () {
         char *RawPacket = get_packet_sender(i);
         memcpy(TxBuffer, RawPacket, 1024);
 
-        if (i % 2 == 0) {
+        /*if (i % 2 == 0) {
             TxBuffer[9] ^= 0x1;
         }
         else {
             TxBuffer[20] ^= 0x1;
             TxBuffer[21] ^= 0x2;
-        }
+        }*/
 
         ftStatus = FT_Write(ftHandle, TxBuffer, 1024, &BytesWritten);
 
@@ -176,10 +176,10 @@ void sender_protocol () {
         }
         char *RawPacket1 = dequeue_error_queue();
         memcpy(TxBuffer, RawPacket1, 1024);
-        if (kj < 5 && kj % 2 == 0) {
+        /*if (kj < 5 && kj % 2 == 0) {
             TxBuffer[9] ^= 0x3;
         }
-        kj++;
+        kj++;*/
 
         ftStatus = FT_Write(ftHandle, TxBuffer, 1024, &BytesWritten);
 
