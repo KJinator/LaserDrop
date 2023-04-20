@@ -14,7 +14,7 @@ bool no_decode (char *data, char *buffer, size_t start);
 
 char *decode_packet (char *ham_data);
 
-char *decode_packet2 (char *ham_data);
+char *decode_packet_no_queue (char *ham_data);
 
 void no_decode_packet (char *ham_data);
 

@@ -173,15 +173,12 @@ char *decode_packet (char *ham_data) {
 
 // ham_data is 1024 byte subset of data that was hamming encoded
 // buffer is 693 bytes and contains transmitted, decoded data
-char *decode_packet2 (char *ham_data) {
+char *decode_packet_no_queue (char *ham_data) {
     char *buffer = malloc(BYTES_PER_PACKET*sizeof(char));
     size_t buffer_index = 0;
     size_t char_index = 0;
-    uint32_t *ham_32 = (uint32_t *) ham_data;
-    size_t tagID = ham_32[1];
     for (size_t i = 0; i < NUM_HAM; i++) {
         if (!sixteen_eleven_hamming_decode(&ham_data[2*i + 8], &buffer[buffer_index], char_index)) {
-            enqueue(error_queue, tagID);
             free(buffer);
             return NULL;
         }
