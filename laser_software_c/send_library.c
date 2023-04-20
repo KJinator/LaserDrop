@@ -191,7 +191,8 @@ void append_error_queue (uint32_t tagID) {
 
 char *dequeue_error_queue () {
     error_queue_len--;
-    return get_packet_sender(dequeue(error_queue));
+    uint32_t i = dequeue((error_queue));
+    return packet_array[i];
 }
 
 size_t get_error_queue_len () {

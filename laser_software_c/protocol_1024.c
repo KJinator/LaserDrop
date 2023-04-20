@@ -35,6 +35,7 @@ void sender_protocol () {
     memset(buffer, 0, sizeof(buffer));
     memset(TxBuffer_start, 0, sizeof(TxBuffer_start));
     memset(RxBuffer, 0, sizeof(RxBuffer));
+    memset(TxBuffer, 0, sizeof(RxBuffer));
 
     memset(file, 0, sizeof(file));
 
@@ -122,11 +123,14 @@ void sender_protocol () {
         printf("Sending Packet (i) %u\n", i);
 
         char *RawPacket = get_packet_sender(i);
+        printf("%zu\n\n", sizeof(*RawPacket));
         memcpy(TxBuffer, RawPacket, 1024);
         // TxBuffer[4] = i % 0xFF;
         // TxBuffer[5] = (i >> 8) % 0xFF;
         // TxBuffer[6] = (i >> 16) % 0xFF;
         // TxBuffer[7] = (i >> 24) % 0xFF;
+
+        TxBuffer[9] ^= 0x3;
 
         ftStatus = FT_Write(ftHandle, TxBuffer, 1024, &BytesWritten);
 
@@ -158,8 +162,9 @@ void sender_protocol () {
             {
                 errorBuffer = decode_packet2(RxBuffer);
                 uint32_t *errorBuffer_int = (uint32_t *) errorBuffer;
+                printf("RxBuffer_int[1] = %u\n\n", RxBuffer_int[1]);
                 for (size_t i = 0; i < RxBuffer_int[1]; i++) {
-                    append_error_queue(errorBuffer_int[i]);
+                    append_error_queue(errorBuffer_int[i+2]);
                 }
                 free(errorBuffer);
             }
@@ -176,9 +181,14 @@ void sender_protocol () {
     size_t total_send_error;
     uint32_t error_count = 0;
 
+    printf("BEFORE LOOP: get_error_queue_len() = %d, RxBuffer_int[0] = %x\n\n", get_error_queue_len(), RxBuffer_int[0] != DONE_REV);
+
     while (get_error_queue_len() && RxBuffer_int[0] != DONE_REV) {
-        char *RawPacket = dequeue_error_queue();
-        memcpy(TxBuffer, RawPacket, 1024);
+        printf("get_error_queue_len() = %d, RxBuffer_int[0] = %x\n\n", get_error_queue_len(), RxBuffer_int[0]);
+        char *RawPacket1 = dequeue_error_queue();
+        printf("Hi %zu\n\n", sizeof(*RawPacket1));
+        memcpy(TxBuffer, RawPacket1, 1024);
+        printf("Hello\n\n");
 
         ftStatus = FT_Write(ftHandle, TxBuffer, 1024, &BytesWritten);
 
@@ -194,8 +204,9 @@ void sender_protocol () {
 
         error_count++;
 
+        printf("get_error_queue_len() = %zu\n\n", get_error_queue_len());
         if ((error_count != 0 && error_count % 128 == 0) || !get_error_queue_len()) {
-            while (RxBuffer_int[0] != DONE_REV && RxBuffer_int[0] != ERROR_REQ) {
+            do {
                 ftStatus = FT_Read(ftHandle, RxBuffer, 1024, &BytesRecieved);
                 if (ftStatus != FT_OK) {
                     printf("Read Error\n\n");
@@ -205,14 +216,16 @@ void sender_protocol () {
                     }
                     return;
                 }
-            }
-            if(RxBuffer_int[0] == ERROR_REQ)
-            {
+            } while (RxBuffer_int[0] != DONE_REV && RxBuffer_int[0] != ERROR_REQ);
+
+            if(RxBuffer_int[0] == ERROR_REQ) {
                 errorBuffer = decode_packet2(RxBuffer);
                 uint32_t *errorBuffer_int = (uint32_t *) errorBuffer;
+                printf("RxBuffer_int[1] = %x\n\n", RxBuffer_int[1]);
                 for (size_t i = 0; i < RxBuffer_int[1]; i++) {
                     append_error_queue(errorBuffer_int[i]);
                 }
+                printf("%u\n\n", get_error_queue_len());
                 free(errorBuffer);
             }
         }
@@ -242,6 +255,8 @@ void receiver_protocol () {
     bool all_sent = false;
 
     memset(buffer, 0, sizeof(buffer));
+    memset(TxBuffer, 0, sizeof(TxBuffer));
+    memset(RxBuffer, 0, sizeof(RxBuffer));
 
     ftStatus = FT_OpenEx("LaserDrop Black", FT_OPEN_BY_DESCRIPTION, &ftHandle);
 
@@ -322,15 +337,7 @@ void receiver_protocol () {
         }
 
         decode_packet(RxBuffer);
-
-        if (ftStatus != FT_OK) {
-            printf("Write Error\n\n");
-            ftStatus = FT_Close(ftHandle);
-            if (ftStatus != FT_OK) {
-                printf("Close Error \n\n");
-            }
-            return;
-        }
+        printf("get_num_errors_left() = %u\n\n", get_num_errors_left());
 
         count++;
 
@@ -345,11 +352,12 @@ void receiver_protocol () {
             if(finished())
             {
                 printf("No Errors in Queue\n");
-                TxBuffer[0] = 0xA1;
-                TxBuffer[1] = 0xA2;
-                TxBuffer[2] = 0xA3;
-                TxBuffer[3] = 0xA4;
+                // TxBuffer[0] = 0xA1;
+                // TxBuffer[1] = 0xA2;
+                // TxBuffer[2] = 0xA3;
+                // TxBuffer[3] = 0xA4;
                 // TxBuffer_int[1] = 0;
+                TxBuffer_int[0] = DONE_REV;
                 ftStatus = FT_Write(ftHandle, TxBuffer, 1024, &BytesWritten);
 
                 if (ftStatus != FT_OK) {
@@ -361,17 +369,20 @@ void receiver_protocol () {
                     return;
                 }
             } else {
-                // TxBuffer_int[1] = get_num_errors_left();
-                uint32_t i = 0;
+                printf("Inside loop: get_num_errors_left() = %u\n\n", get_num_errors_left());
+                TxBuffer_int[0] = ERROR_REQ;
+                TxBuffer_int[1] = get_num_errors_left();
+                uint32_t i = 2;
 
                 for (; get_num_errors_left() > 0; decrement_num_errors_left()) {
                     buffer_int[i++] = deq_error_queue();
                 }
 
                 full_packet_encoding(buffer, &TxBuffer[8]);
+                printf("%x\n\n", TxBuffer_int[0]);
 
-                TxBuffer_int[0] = ERROR_REQ;
-                TxBuffer_int[1] = i;
+                // TxBuffer_int[0] = ERROR_REQ;
+                // TxBuffer_int[1] = i;
 
                 ftStatus = FT_Write(ftHandle, TxBuffer, 1024, &BytesWritten);
 
