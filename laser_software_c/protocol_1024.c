@@ -113,7 +113,7 @@ void sender_protocol () {
     TxBuffer[3] = 0xD4;
 
     for (uint32_t i = 0; i < num_packets; i++) {
-        printf("Sending Packet (i) %u\n", i);
+        printf("Sending Packet %u\n", i);
 
         char *RawPacket = get_packet_sender(i);
         memcpy(TxBuffer, RawPacket, 1024);
@@ -136,10 +136,8 @@ void sender_protocol () {
             }
             return;
         }
-        printf("Write Success: %u\n", BytesWritten);
 
         if ((i != 0 && i % 128 == 127) ||  i == num_packets - 1) {
-            printf("Need Ack\n\n");
             RxBuffer_int[0] = 0;
             while (RxBuffer_int[0] != DONE_REV && RxBuffer_int[0] != ERROR_REQ) {
                 ftStatus = FT_Read(ftHandle, RxBuffer, 1024, &BytesRecieved);
@@ -199,9 +197,7 @@ void sender_protocol () {
 
         if ((error_count != 0 && error_count % 128 == 0) || !get_error_queue_len()) {
             do {
-                printf("here\n");
                 ftStatus = FT_Read(ftHandle, RxBuffer, 1024, &BytesRecieved);
-                printf("here2\n");
                 if (ftStatus != FT_OK) {
                     printf("Read Error\n\n");
                     ftStatus = FT_Close(ftHandle);
@@ -210,7 +206,7 @@ void sender_protocol () {
                     }
                     return;
                 }
-            } while (BytesRecieved == 1024 || (RxBuffer_int[0] != DONE_REV && RxBuffer_int[0] != ERROR_REQ));
+            } while (BytesRecieved != 1024 || (RxBuffer_int[0] != DONE_REV && RxBuffer_int[0] != ERROR_REQ));
 
             if(RxBuffer_int[0] == ERROR_REQ) {
                 errorBuffer = decode_packet_no_queue(RxBuffer);
@@ -301,7 +297,6 @@ void receiver_protocol () {
     uint32_t count = 0;
 
     while (!finished()) {
-        printf("here\n");
         ftStatus = FT_Read(ftHandle, RxBuffer, 1024, &BytesRecieved);
 
         if (ftStatus != FT_OK) {
@@ -314,12 +309,12 @@ void receiver_protocol () {
         }
 
         if (BytesRecieved != 1024) {
+            printf("Nothing received\n");
             continue;
         }
         else
         {
-            printf("Packet %u Read, BytesReceived = %u\n", count, BytesRecieved);
-            printf("Packet ID: %u\n\n", RxBuffer_int[1]);
+            printf("Packet %u Read, BytesReceived = %u\n", RxBuffer_int[1], BytesRecieved);
         }
 
         decode_packet(RxBuffer);
