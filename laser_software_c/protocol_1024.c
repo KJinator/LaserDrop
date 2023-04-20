@@ -51,6 +51,8 @@ void sender_protocol () {
 
     buffer_int[0] = get_num_packets();
     buffer_int[1] = get_len_final_packet();
+    char *filename_pointer = (char *)(&buffer_int[2]);
+    strcpy(filename_pointer, file);
 
     memcpy(&buffer[8], file, sizeof(file));
     printf("%s\n\n", &buffer[8]);
@@ -116,7 +118,7 @@ void sender_protocol () {
 
         char *RawPacket = get_packet_sender(i);
         memcpy(TxBuffer, RawPacket, 1024);
-        
+
         if (i % 2 == 0) {
             TxBuffer[9] ^= 0x3;
         }
