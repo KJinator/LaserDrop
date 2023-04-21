@@ -25,6 +25,7 @@ void sender_protocol () {
     char TxBuffer_start [1024];
     char RxBuffer[1024];
     char TxBuffer [1024*128];
+    char *TxBuffer_int = (uint32_t *) TxBuffer;
     char *errorBuffer;
     uint32_t *RxBuffer_int = (uint32_t *) RxBuffer;
     uint32_t *buffer_int = (uint32_t *) buffer;
@@ -79,8 +80,11 @@ void sender_protocol () {
 
     printf("Flush Success\n\n");
 
+    int help = 0;
+    // TxBuffer_start[10] ^= 0x3;
+
     while (RxBuffer_int[0] != ACK) {
-        ftStatus = FT_Write(ftHandle, TxBuffer_start, sizeof(TxBuffer_start), &BytesWritten);
+        ftStatus = FT_Write(ftHandle, TxBuffer_start, 1024, &BytesWritten);
         if (ftStatus != FT_OK) {
             printf("Write Error\n\n");
             ftStatus = FT_Close(ftHandle);
@@ -89,13 +93,21 @@ void sender_protocol () {
             }
             return;
         }
+        help++;
+        /*
+        if (help == 10) {
+            TxBuffer_start[10] ^= 0x3;
+        }
+        */
 
         printf("Start sent: %u, %x %x %x %x\n\n", BytesWritten, TxBuffer_start[0], TxBuffer_start[1], TxBuffer_start[2], TxBuffer_start[3]);
+        /*
         for(int i = 0; i < BytesWritten; i++)
         {
             printf("%hhx, ", TxBuffer_start[i]);
         }
         printf("\n");
+        */
 
         ftStatus = FT_Read(ftHandle, RxBuffer, 1024, &BytesRecieved);
         if (ftStatus != FT_OK) {
@@ -123,13 +135,15 @@ void sender_protocol () {
         char *RawPacket = get_packet_sender(i);
         memcpy(TxBuffer, RawPacket, 1024);
 
-        /*if (i % 2 == 0) {
+/*
+        if (i % 2 == 0) {
             TxBuffer[9] ^= 0x1;
         }
         else {
             TxBuffer[20] ^= 0x1;
             TxBuffer[21] ^= 0x2;
-        }*/
+        }
+*/
 
         ftStatus = FT_Write(ftHandle, TxBuffer, 1024, &BytesWritten);
 
@@ -143,8 +157,7 @@ void sender_protocol () {
         }
 
         if ((i != 0 && i % 128 == 127) ||  i == num_packets - 1) {
-            RxBuffer_int[0] = 0;
-            while (RxBuffer_int[0] != DONE_REV && RxBuffer_int[0] != ERROR_REQ) {
+            do {
                 ftStatus = FT_Read(ftHandle, RxBuffer, 1024, &BytesRecieved);
                 if (ftStatus != FT_OK) {
                     printf("Read Error\n\n");
@@ -154,16 +167,36 @@ void sender_protocol () {
                     }
                     return;
                 }
-            }
-            if(RxBuffer_int[0] == ERROR_REQ)
-            {
+            
+            
                 errorBuffer = decode_packet_no_queue(RxBuffer);
-                uint32_t *errorBuffer_int = (uint32_t *) errorBuffer;
-                for (size_t i = 0; i < RxBuffer_int[1]; i++) {
-                    append_error_queue(errorBuffer_int[i+2]);
+
+                printf("errorBuffer: %x\n\n", errorBuffer);
+
+                if(RxBuffer_int[0] == ERROR_REQ && errorBuffer != NULL) {
+                    printf("Choke Point 3\n");
+                    uint32_t *errorBuffer_int = (uint32_t *) errorBuffer;
+                    printf("Choke Point 4\n");
+                    for (size_t i = 0; i < RxBuffer_int[1]; i++) {
+                        append_error_queue(errorBuffer_int[i+2]);
+                    }
+                    free(errorBuffer);
+                    printf("Choke Point 5\n");
+                    TxBuffer[0] = 0xB1;
+                    TxBuffer[1] = 0xB2;
+                    TxBuffer[2] = 0xB3;
+                    TxBuffer[3] = 0xB4;
+                    ftStatus = FT_Write(ftHandle, TxBuffer, 1024, &BytesWritten);
+                    if (ftStatus != FT_OK) {
+                        printf("Read Error\n\n");
+                        ftStatus = FT_Close(ftHandle);
+                        if (ftStatus != FT_OK) {
+                            printf("Close Error \n\n");
+                        }
+                        return;
+                    }
                 }
-                free(errorBuffer);
-            }
+            } while ((RxBuffer_int[0] != DONE_REV && RxBuffer_int[0] != ERROR_REQ) || (RxBuffer_int[0] == ERROR_REQ && errorBuffer == NULL));
         }
 
     }
@@ -181,10 +214,10 @@ void sender_protocol () {
         }
         char *RawPacket1 = dequeue_error_queue();
         memcpy(TxBuffer, RawPacket1, 1024);
-        /*if (kj < 5 && kj % 2 == 0) {
+        /* if (kj < 5 && kj % 2 == 0) {
             TxBuffer[9] ^= 0x3;
         }
-        kj++;*/
+        kj++; */
 
         ftStatus = FT_Write(ftHandle, TxBuffer, 1024, &BytesWritten);
 
@@ -211,6 +244,48 @@ void sender_protocol () {
                     }
                     return;
                 }
+            
+            
+                errorBuffer = decode_packet_no_queue(RxBuffer);
+
+                printf("errorBuffer: %x\n\n", errorBuffer);
+
+                if(RxBuffer_int[0] == ERROR_REQ && errorBuffer != NULL) {
+                    printf("Choke Point 3\n");
+                    uint32_t *errorBuffer_int = (uint32_t *) errorBuffer;
+                    printf("Choke Point 4\n");
+                    for (size_t i = 0; i < RxBuffer_int[1]; i++) {
+                        append_error_queue(errorBuffer_int[i+2]);
+                    }
+                    free(errorBuffer);
+                    printf("Choke Point 5\n");
+                    TxBuffer[0] = 0xB1;
+                    TxBuffer[1] = 0xB2;
+                    TxBuffer[2] = 0xB3;
+                    TxBuffer[3] = 0xB4;
+                    ftStatus = FT_Write(ftHandle, TxBuffer, 1024, &BytesWritten);
+                    if (ftStatus != FT_OK) {
+                        printf("Read Error\n\n");
+                        ftStatus = FT_Close(ftHandle);
+                        if (ftStatus != FT_OK) {
+                            printf("Close Error \n\n");
+                        }
+                        return;
+                    }
+                }
+            } while (BytesRecieved != 1024 || (RxBuffer_int[0] != DONE_REV && RxBuffer_int[0] != ERROR_REQ) || (RxBuffer_int[0] == ERROR_REQ && errorBuffer == NULL));
+
+/*
+            do {
+                ftStatus = FT_Read(ftHandle, RxBuffer, 1024, &BytesRecieved);
+                if (ftStatus != FT_OK) {
+                    printf("Read Error\n\n");
+                    ftStatus = FT_Close(ftHandle);
+                    if (ftStatus != FT_OK) {
+                        printf("Close Error \n\n");
+                    }
+                    return;
+                }
             } while (BytesRecieved != 1024 || (RxBuffer_int[0] != DONE_REV && RxBuffer_int[0] != ERROR_REQ));
 
             if(RxBuffer_int[0] == ERROR_REQ) {
@@ -221,6 +296,7 @@ void sender_protocol () {
                 }
                 free(errorBuffer);
             }
+*/
         }
     }
 
@@ -244,6 +320,7 @@ void receiver_protocol () {
     uint32_t *TxBuffer_int = (uint32_t *) TxBuffer;
     uint32_t *buffer_int = (uint32_t *) buffer;
     bool all_sent = false;
+    char *decoded;
 
     memset(buffer, 0, sizeof(buffer));
     memset(TxBuffer, 0, sizeof(TxBuffer));
@@ -278,22 +355,29 @@ void receiver_protocol () {
             }
             return;
         }
-        printf("Start not received\n");
-    } while (RxBuffer_int[0] != START_REC);
+        // printf("Start not received\n");
+        decoded = decode_packet_no_queue(RxBuffer);
+        if (RxBuffer_int[0] == START_REC) {
+            printf("Something Received\n");
+        }
+        printf("decoded: %x\n\n", decoded);
+    } while (RxBuffer_int[0] != START_REC || (RxBuffer_int[0] == START_REC && decoded == NULL));
 
     printf("Start Received!!\n\n");
 
+    /*
     for(int i = 0; i < BytesRecieved; i++)
     {
         printf("%hhx, ", RxBuffer[i]);
     }
     printf("\n");
+    */
 
     TxBuffer_int[0] = ACK;
 
     ftStatus = FT_Write(ftHandle, TxBuffer, 1024, &BytesWritten);
 
-    memcpy(buffer, decode_packet_no_queue(RxBuffer), 693);
+    memcpy(buffer, decoded, 693);
     initialize_decode(buffer_int[0], buffer_int[1]);
 
     file[0] = 'c';
@@ -365,16 +449,41 @@ void receiver_protocol () {
 
                 full_packet_encoding(buffer, &TxBuffer[8]);
 
-                ftStatus = FT_Write(ftHandle, TxBuffer, 1024, &BytesWritten);
+                int help1 = 0;
+                // TxBuffer[10] ^= 0x3;
 
-                if (ftStatus != FT_OK) {
-                    printf("Write Error\n\n");
-                    ftStatus = FT_Close(ftHandle);
+                do {
+                    ftStatus = FT_Write(ftHandle, TxBuffer, 1024, &BytesWritten);
+
                     if (ftStatus != FT_OK) {
-                        printf("Close Error \n\n");
+                        printf("Write Error\n\n");
+                        ftStatus = FT_Close(ftHandle);
+                        if (ftStatus != FT_OK) {
+                            printf("Close Error \n\n");
+                        }
+                        return;
                     }
-                    return;
-                }
+
+                    help1++;
+
+                    /*if (help1 == 10) {
+                        TxBuffer[10] ^= 0x3;
+                    }*/
+
+                    printf("Error Sent: %u, %x\n", BytesWritten, TxBuffer_int[0]);
+
+                    ftStatus = FT_Read(ftHandle, RxBuffer, 1024, &BytesWritten);
+
+                    if (ftStatus != FT_OK) {
+                        printf("Read Error\n\n");
+                        ftStatus = FT_Close(ftHandle);
+                        if (ftStatus != FT_OK) {
+                            printf("Close Error \n\n");
+                        }
+                        return;
+                    }
+                    printf("RxBuffer[0] = %x\n\n", RxBuffer_int[0]);
+                } while (RxBuffer_int[0] != ACK);
             }
         }
     }
