@@ -1,11 +1,13 @@
 # LaserDrop
 KJ Newman, Anju Ito, and Roger Lacson Senior Capstone
 
+## C
 To compile code, run:
 gcc send_library.c receive_library.c queue.c protocol_1024.c -o test -Wall -Wextra -lftd2xx -lpthread -lobjc -framework IOKit -framework CoreFoundation -Wl,-rpath /usr/local/lib -L/usr/local/lib
 
 
-## FPGA Configuration (More details can be found in output_files/FinalVDuty):
+## FPGA Configuration:
+(More details can be found in output_files/FinalVDuty)
 - KEY0: RESET
 - SW[0]: (ON) Turns the whole FPGA on/off.
 - SW[1]: (OFF) Constant Receive Mode. For debug. Will send over handshaking, etc. bits.
