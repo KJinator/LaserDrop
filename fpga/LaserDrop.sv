@@ -26,7 +26,7 @@ module LaserDrop (
     input logic rxf, txe, laser_rx, clock_start,
     input logic [7:0] adbus_in,
     input logic [9:0] SW,
-    output logic ftdi_rd, ftdi_wr, adbus_tri, clock_start_out,
+    output logic ftdi_rd, ftdi_wr, adbus_tri, clock_start_out, ambient_light_n,
     output logic [1:0] laser_tx,
     output logic [7:0] hex1, hex2, hex3, adbus_out,
     output logic [9:0] LEDR
@@ -56,13 +56,15 @@ module LaserDrop (
                     saw_stop, saw_start, saw_data, seq_saved_en, wr_clear,
                     rd_clear, toggle_both_lasers, constant_transmit_mode,
                     both_lasers_on, constant_receive_mode, send_any_size,
-                    counter_en, counter_clear, load_1k, saw_error, debug_mode;
+                    counter_en, counter_clear, load_1k, saw_error, debug_mode,
+                    reset;
 
     assign constant_receive_mode = SW[1];
     // assign send_any_size = SW[3];
     assign toggle_both_lasers = SW[2];
     assign both_lasers_on = SW[3];
-    assign divider = { 3'b0, SW[8:4] };
+    assign ambient_light_n = SW[4];
+    assign divider = { 3'b0, SW[8:5], 3'b0 };
     assign debug_mode = SW[9];
 
     assign LEDR[1:0] = laser_tx;
@@ -116,8 +118,8 @@ module LaserDrop (
         .rxf,
         .wrreq,
         .rdreq,
-        .wr_en,
-        .rd_en,
+        .wr_en(wr_en && en),
+        .rd_en(rd_en && en),
         .data_wr,
         .adbus_in,
         // Out
@@ -472,7 +474,7 @@ module LaserDrop (
                     rd_ct_clear = 1'b1;
                     timeout_ct_clear = 1'b1;
                 end
-                else if (timeout_ct > (12'd12 << 4'd4)) begin  // ~20ms
+                else if (timeout_ct == 12'd1024) begin  // ~20ms
                     nextState = WAIT;
 
                     load_1k = 1'b1;

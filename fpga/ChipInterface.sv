@@ -11,7 +11,7 @@ module ChipInterface (
     output logic [6:0] HEX5, HEX4, HEX3, HEX2, HEX1, HEX0,
     inout  wire  [35:0] GPIO_0, GPIO_1
 );
-    logic adbus_tri;
+    logic adbus_tri, reset, reset1, ambient_light_n;
     logic [7:0] hex1, hex2, hex3;
 
     //------------------------FPGA Pin Configurations-------------------------//
@@ -74,8 +74,8 @@ module ChipInterface (
     // Pull-up, pull-down resistor exist. Output should be high z
     assign GREEN_EN_n = 1'bz;                       // default 1 (on)
     assign IR_EN_n = 1'bz;                          // default 1 (on)
-    assign GREEN_AMB_n = SW[9] ? 1'b1 : 1'b0;       // default 0 (on)
-    assign IR_AMB_n = SW[9] ? 1'b1 : 1'b0;          // default 0 (on)
+    assign GREEN_AMB_n = ambient_light_n ? 1'b1 : 1'b0;       // default 0 (on)
+    assign IR_AMB_n = ambient_light_n ? 1'b1 : 1'b0;          // default 0 (on)
     assign RESET_FTDI = 1'bz;                       // default
 
     assign GPIO_1 = { 36'bz };
@@ -85,7 +85,7 @@ module ChipInterface (
 
     LaserDrop main (
         .clock(CLOCK_50),
-        .reset(~KEY[0]),
+        .reset_in(reset),
         .en(SW[0]),
         .SW(SW[9:0]),
         .LEDR(LEDR[9:0]),
@@ -99,6 +99,7 @@ module ChipInterface (
         .adbus_tri,
         .clock_start(GPIO_0[35]),
         .clock_start_out(GPIO_0[33]),
+        .ambient_light_n,
         .hex1,
         .hex2,
         .hex3,
@@ -134,7 +135,11 @@ module ChipInterface (
         .bcd(hex3[3:0]),
         .segment(HEX0)
     );
-     
+
+    always_ff @(posedge CLOCK_50) begin
+        reset1 <= ~KEY[0];
+        reset <= reset1;
+    end
 endmodule: ChipInterface
 
 

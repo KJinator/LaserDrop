@@ -111,7 +111,7 @@ module FTDI_Interface (
 
     logic [11:0] loaded_idx;
     assign loaded_idx = loaded_ct - 12'd1021;
-    ByteMultiplexer #(32) (
+    ByteMultiplexer #(32) timer_multiplexer (
         .I(timer),
         .S_byte(loaded_idx[4:0]),
         .Y(timer_mux)
