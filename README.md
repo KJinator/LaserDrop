@@ -5,7 +5,7 @@ To compile code, run:
 gcc send_library.c receive_library.c queue.c protocol_1024.c -o test -Wall -Wextra -lftd2xx -lpthread -lobjc -framework IOKit -framework CoreFoundation -Wl,-rpath /usr/local/lib -L/usr/local/lib
 
 
-FPGA Configuration:
+## FPGA Configuration (More details can be found in output_files/FinalVDuty):
 - KEY0: RESET
 - SW[0]: (ON) Turns the whole FPGA on/off.
 - SW[1]: (OFF) Constant Receive Mode. For debug. Will send over handshaking, etc. bits.
@@ -17,4 +17,3 @@ FPGA Configuration:
 - HEX0/1: Last byte sent to FTDI chip.
 - HEX2/3: Last byte received over lasers.
 - HEX4/5: Last byte sent over lasers.
-More details can be found in output_files/FinalVDuty
