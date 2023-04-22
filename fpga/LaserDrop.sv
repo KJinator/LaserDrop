@@ -63,7 +63,7 @@ module LaserDrop (
     assign toggle_both_lasers = SW[2];
     assign both_lasers_on = SW[3];
     assign ambient_light_n = SW[4];
-    assign divider = { 3'b0, SW[8:5], 3'b0 };
+    assign divider = { 3'b0, SW[8:5], 1'b0 };
     assign debug_mode = SW[9];
 
     assign LEDR[1:0] = laser_tx;
@@ -265,7 +265,7 @@ module LaserDrop (
         .clk_base(clock),
         .reset,
         .en(1'b1),
-        .divider(divider << 1'b1),
+        .divider(divider >> 1'b1),
         .clk_divided(CLOCK_UART)
     );
     //------------------------------------------------------------------------//
