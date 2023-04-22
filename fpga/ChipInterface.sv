@@ -85,7 +85,7 @@ module ChipInterface (
 
     LaserDrop main (
         .clock(CLOCK_50),
-        .reset_in(reset),
+        .reset,
         .en(SW[0]),
         .SW(SW[9:0]),
         .LEDR(LEDR[9:0]),

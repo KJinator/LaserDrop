@@ -56,8 +56,7 @@ module LaserDrop (
                     saw_stop, saw_start, saw_data, seq_saved_en, wr_clear,
                     rd_clear, toggle_both_lasers, constant_transmit_mode,
                     both_lasers_on, constant_receive_mode, send_any_size,
-                    counter_en, counter_clear, load_1k, saw_error, debug_mode,
-                    reset;
+                    counter_en, counter_clear, load_1k, saw_error, debug_mode;
 
     assign constant_receive_mode = SW[1];
     // assign send_any_size = SW[3];
@@ -266,7 +265,7 @@ module LaserDrop (
         .clk_base(clock),
         .reset,
         .en(1'b1),
-        .divider(divider),
+        .divider(divider << 1'b1),
         .clk_divided(CLOCK_UART)
     );
     //------------------------------------------------------------------------//
@@ -405,6 +404,7 @@ module LaserDrop (
                 else if (timeout_ct == 12'd1024) begin  // ~20ms
                     nextState = WAIT;
 
+                    load_1k = 1'b1;
                     timeout_ct_clear = 1'b1;
                 end
 

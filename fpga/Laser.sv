@@ -11,8 +11,8 @@ module LaserTransmitter (
     output logic done
 );
     logic [7:0] data;
-    logic [10:0] data_compiled;
-    logic [3:0] count;
+    logic [19:0] data_compiled;
+    logic [5:0] count;
     logic load, count_en, count_reset, mux_out;
 
     enum logic [1:0] { WAIT, SEND, DONE } currState, nextState;
@@ -27,12 +27,17 @@ module LaserTransmitter (
     );
 
     // 1'b1 is start bit, and it wraps around to 0 at the end -> sent LSB first
-    assign data_compiled = { data, 1'b1, 1'b0};
+    // assign data_compiled = { data, 1'b1, 1'b0};
+    assign data_compiled = {
+        1'b0, data[7], 1'b0, data[6], 1'b0, data[5], 1'b0, data[4],
+        1'b0, data[3], 1'b0, data[2], 1'b0, data[1], 1'b0, data[0],
+        1'b0, 1'b1, 1'b0, 1'b0
+    };
 
     assign mux_out = data_compiled[count];
 
-    Counter #(4) bit_count (
-        .D(4'b0),
+    Counter #(6) bit_count (
+        .D(6'b0),
         .en(count_en),
         .clear(1'b0),
         .load(1'b0),
@@ -49,7 +54,7 @@ module LaserTransmitter (
             // TODO: depending on timing, have space to optimize one clock cycle
             SEND: begin
                 if (~en) nextState = WAIT;
-                else if (count == 4'd10) nextState = DONE;
+                else if (count == 6'd20) nextState = DONE;
                 else nextState = SEND;
             end
             DONE: nextState = WAIT;
@@ -149,7 +154,7 @@ module LaserReceiver
                 else nextState = WAIT;
             end
             START: begin
-                if (clock_counter == ((divider-1) >> 1'b1)) begin
+                if (clock_counter == ((divider-1) >> 3'd2)) begin
                     if (laser_in2 == 1'b1) begin
                         clk_ctr_clear = 1'b1;
                         nextState = RECEIVE;
