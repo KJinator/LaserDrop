@@ -13,6 +13,68 @@ static const uint32_t DONE_REV = 0xA4A3A2A1;
 static const uint32_t ERROR_REQ = 0xB4B3B2B1;
 static const uint32_t START_REC = 0xC4C3C2C1;
 
+void print_fterror(FT_STATUS status) {
+    switch(status) {
+        case 0:
+            printf("Error code: FT_OK\n");
+            break;
+        case 1:
+            printf("Error code: FT_INVALID_HANDLE\n");
+            break;
+        case 2:
+            printf("Error code: FT_DEVICE_NOT_FOUND\n");
+            break;
+        case 3:
+            printf("Error code: FT_DEVICE_NOT_OPENED\n");
+            break;
+        case 4:
+            printf("Error code: FT_IO_ERROR\n");
+            break;
+        case 5:
+            printf("Error code: FT_INSUFFICIENT_RESOURCES\n");
+            break;
+        case 6:
+            printf("Error code: FT_INVALID_PARAMETER\n");
+            break;
+        case 7:
+            printf("Error code: FT_INVALID_BAUDRATE\n");
+            break;
+        case 8:
+            printf("Error code: FT_DEVICE_NOT_OPENED_FOR_ERASE\n");
+            break;
+        case 9:
+            printf("Error code: FT_DEVICE_NOT_OPENED_FOR_WRITE\n");
+            break;
+        case 10:
+            printf("Error code: FT_FAILED_TO_WRITE_DEVICE_ID\n");
+            break;
+        case 11:
+            printf("Error code: FT_EEPROM_READ_FAILED\n");
+            break;
+        case 12:
+            printf("Error code: FT_EEPROM_WRITE_FAILED\n");
+            break;
+        case 13:
+            printf("Error code: FT_EEPROM_ERASE_FAILED\n");
+            break;
+        case 14:
+            printf("Error code: FT_EEPROM_NOT_PRESENT\n");
+            break;
+        case 15:
+            printf("Error code: FT_EEPROM_NOT_PROGRAMMED\n");
+            break;
+        case 16:
+            printf("Error code: FT_INVALID_ARGS\n");
+            break;
+        case 17:
+            printf("Error code: FT_NOT_SUPPORTED\n");
+            break;
+        case 18:
+            printf("Error code: FT_OTHER_ERROR\n");
+            break;
+    }
+}
+
 void sender_protocol () {
     FT_HANDLE ftHandle;
     FT_STATUS ftStatus;
@@ -63,12 +125,14 @@ void sender_protocol () {
 
     if(ftStatus != FT_OK) {
         printf("Open Error\n\n");
+        print_fterror(ftStatus);
         return;
     }
 
     ftStatus = FT_SetBaudRate(ftHandle, 7000000);
     if(ftStatus != FT_OK) {
         printf("Baudrate Error\n\n");
+        print_fterror(ftStatus);
         return;
     }
 
@@ -87,9 +151,11 @@ void sender_protocol () {
         ftStatus = FT_Write(ftHandle, TxBuffer_start, 1024, &BytesWritten);
         if (ftStatus != FT_OK) {
             printf("Write Error\n\n");
+            print_fterror(ftStatus);
             ftStatus = FT_Close(ftHandle);
             if (ftStatus != FT_OK) {
                 printf("Close Error \n\n");
+                print_fterror(ftStatus);
             }
             return;
         }
@@ -100,9 +166,11 @@ void sender_protocol () {
         ftStatus = FT_Read(ftHandle, RxBuffer, 1024, &BytesRecieved);
         if (ftStatus != FT_OK) {
             printf("Read Error\n\n");
+            print_fterror(ftStatus);
             ftStatus = FT_Close(ftHandle);
             if (ftStatus != FT_OK) {
                 printf("Close Error \n\n");
+                print_fterror(ftStatus);
             }
             return;
         }
@@ -126,9 +194,11 @@ void sender_protocol () {
 
         if (ftStatus != FT_OK) {
             printf("Write Error\n\n");
+            print_fterror(ftStatus);
             ftStatus = FT_Close(ftHandle);
             if (ftStatus != FT_OK) {
                 printf("Close Error \n\n");
+                print_fterror(ftStatus);
             }
             return;
         }
@@ -138,9 +208,11 @@ void sender_protocol () {
                 ftStatus = FT_Read(ftHandle, RxBuffer, 1024, &BytesRecieved);
                 if (ftStatus != FT_OK) {
                     printf("Read Error\n\n");
+                    print_fterror(ftStatus);
                     ftStatus = FT_Close(ftHandle);
                     if (ftStatus != FT_OK) {
                         printf("Close Error \n\n");
+                        print_fterror(ftStatus);
                     }
                     return;
                 }
@@ -161,9 +233,11 @@ void sender_protocol () {
                     ftStatus = FT_Write(ftHandle, TxBuffer, 1024, &BytesWritten);
                     if (ftStatus != FT_OK) {
                         printf("Read Error\n\n");
+                        print_fterror(ftStatus);
                         ftStatus = FT_Close(ftHandle);
                         if (ftStatus != FT_OK) {
                             printf("Close Error \n\n");
+                            print_fterror(ftStatus);
                         }
                         return;
                     }
@@ -193,9 +267,11 @@ void sender_protocol () {
 
         if (ftStatus != FT_OK) {
             printf("Write Error\n\n");
+            print_fterror(ftStatus);
             ftStatus = FT_Close(ftHandle);
             if (ftStatus != FT_OK) {
                 printf("Close Error \n\n");
+                print_fterror(ftStatus);
             }
             return;
         }
@@ -207,9 +283,11 @@ void sender_protocol () {
                 ftStatus = FT_Read(ftHandle, RxBuffer, 1024, &BytesRecieved);
                 if (ftStatus != FT_OK) {
                     printf("Read Error\n\n");
+                    print_fterror(ftStatus);
                     ftStatus = FT_Close(ftHandle);
                     if (ftStatus != FT_OK) {
                         printf("Close Error \n\n");
+                        print_fterror(ftStatus);
                     }
                     return;
                 }
@@ -230,9 +308,11 @@ void sender_protocol () {
                     ftStatus = FT_Write(ftHandle, TxBuffer, 1024, &BytesWritten);
                     if (ftStatus != FT_OK) {
                         printf("Read Error\n\n");
+                        print_fterror(ftStatus);
                         ftStatus = FT_Close(ftHandle);
                         if (ftStatus != FT_OK) {
                             printf("Close Error \n\n");
+                            print_fterror(ftStatus);
                         }
                         return;
                     }
@@ -246,6 +326,7 @@ void sender_protocol () {
     ftStatus = FT_Close(ftHandle);
     if (ftStatus != FT_OK) {
         printf("Close Error \n\n");
+        print_fterror(ftStatus);
     }
 }
 
@@ -271,12 +352,14 @@ void receiver_protocol () {
 
     if(ftStatus != FT_OK) {
         printf("Open Error\n\n");
+        print_fterror(ftStatus);
         return;
     }
 
     ftStatus = FT_SetBaudRate(ftHandle, 7000000);
     if(ftStatus != FT_OK) {
         printf("Baudrate Error\n\n");
+        print_fterror(ftStatus);
         return;
     }
 
@@ -290,9 +373,11 @@ void receiver_protocol () {
         ftStatus = FT_Read(ftHandle, RxBuffer, 1024, &BytesRecieved);
         if (ftStatus != FT_OK) {
             printf("Read Error\n\n");
+            print_fterror(ftStatus);
             ftStatus = FT_Close(ftHandle);
             if (ftStatus != FT_OK) {
                 printf("Close Error \n\n");
+                print_fterror(ftStatus);
             }
             return;
         }
@@ -337,9 +422,11 @@ void receiver_protocol () {
 
         if (ftStatus != FT_OK) {
             printf("Read Error\n\n");
+            print_fterror(ftStatus);
             ftStatus = FT_Close(ftHandle);
             if (ftStatus != FT_OK) {
                 printf("Close Error \n\n");
+                print_fterror(ftStatus);
             }
             return;
         }
@@ -372,9 +459,11 @@ void receiver_protocol () {
 
                 if (ftStatus != FT_OK) {
                     printf("Write Error\n\n");
+                    print_fterror(ftStatus);
                     ftStatus = FT_Close(ftHandle);
                     if (ftStatus != FT_OK) {
                         printf("Close Error \n\n");
+                        print_fterror(ftStatus);
                     }
                     return;
                 }
@@ -398,32 +487,29 @@ void receiver_protocol () {
 
                     if (ftStatus != FT_OK) {
                         printf("Write Error\n\n");
+                        print_fterror(ftStatus);
                         ftStatus = FT_Close(ftHandle);
                         if (ftStatus != FT_OK) {
                             printf("Close Error \n\n");
+                            print_fterror(ftStatus);
                         }
                         return;
                     }
 
                     help1++;
 
-                    /*if (help1 == 10) {
-                        TxBuffer[10] ^= 0x3;
-                    }*/
-
-                    //printf("Error Sent: %u, %x\n", BytesWritten, TxBuffer_int[0]);
-
                     ftStatus = FT_Read(ftHandle, RxBuffer, 1024, &BytesWritten);
 
                     if (ftStatus != FT_OK) {
                         printf("Read Error\n\n");
+                        print_fterror(ftStatus);
                         ftStatus = FT_Close(ftHandle);
                         if (ftStatus != FT_OK) {
                             printf("Close Error \n\n");
+                            print_fterror(ftStatus);
                         }
                         return;
                     }
-                    //printf("RxBuffer[0] = %x\n\n", RxBuffer_int[0]);
                 } while (RxBuffer_int[0] != ACK);
             }
         }
@@ -437,6 +523,7 @@ void receiver_protocol () {
     ftStatus = FT_Close(ftHandle);
     if (ftStatus != FT_OK) {
         printf("Close Error \n\n");
+        print_fterror(ftStatus);
     }
 }
 
