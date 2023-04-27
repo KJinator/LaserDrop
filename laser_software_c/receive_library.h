@@ -12,7 +12,7 @@ bool sixteen_eleven_hamming_decode (char *data, char *buffer, size_t start);
 
 bool no_decode (char *data, char *buffer, size_t start);
 
-char *decode_packet (char *ham_data);
+uint32_t decode_packet (char *ham_data);
 
 char *decode_packet_no_queue (char *ham_data);
 
@@ -43,5 +43,7 @@ bool finished ();
 bool all_packets_were_sent ();
 
 uint32_t deq_error_queue ();
+
+void enq_error_queue (uint32_t tagID);
 
 #endif

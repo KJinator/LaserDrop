@@ -121,7 +121,8 @@ void sender_protocol () {
 
     full_packet_encoding(buffer, &TxBuffer_start[8]);
 
-    ftStatus = FT_OpenEx("LaserDrop White", FT_OPEN_BY_DESCRIPTION, &ftHandle);
+    // ftStatus = FT_OpenEx("LaserDrop White", FT_OPEN_BY_DESCRIPTION, &ftHandle);
+    ftStatus = FT_OpenEx("LaserDrop Black", FT_OPEN_BY_DESCRIPTION, &ftHandle);
 
     if(ftStatus != FT_OK) {
         printf("Open Error\n\n");
@@ -144,21 +145,26 @@ void sender_protocol () {
 
     printf("Flush Success\n\n");
 
-    int help = 0;
+    uint32_t help = 0;
     // TxBuffer_start[10] ^= 0x3;
 
-    while (RxBuffer_int[0] != ACK) {
-        ftStatus = FT_Write(ftHandle, TxBuffer_start, 1024, &BytesWritten);
-        if (ftStatus != FT_OK) {
-            printf("Write Error\n\n");
-            print_fterror(ftStatus);
-            ftStatus = FT_Close(ftHandle);
+
+
+    do {
+        if (RxBuffer_int[0] == ERROR_REQ || help == 0) {
+            ftStatus = FT_Write(ftHandle, TxBuffer_start, 1024, &BytesWritten);
             if (ftStatus != FT_OK) {
-                printf("Close Error \n\n");
+                printf("Write Error\n\n");
                 print_fterror(ftStatus);
+                ftStatus = FT_Close(ftHandle);
+                if (ftStatus != FT_OK) {
+                    printf("Close Error \n\n");
+                    print_fterror(ftStatus);
+                }
+                return;
             }
-            return;
         }
+        
         help++;
 
         printf("Start sent: %u, %x %x %x %x\n\n", BytesWritten, TxBuffer_start[0], TxBuffer_start[1], TxBuffer_start[2], TxBuffer_start[3]);
@@ -174,7 +180,8 @@ void sender_protocol () {
             }
             return;
         }
-    }
+    } while (RxBuffer_int[0] != ACK);
+
 
     printf("Start Success\n\n");
     RxBuffer_int[0] = 0;
@@ -348,7 +355,8 @@ void receiver_protocol () {
     memset(TxBuffer, 0, sizeof(TxBuffer));
     memset(RxBuffer, 0, sizeof(RxBuffer));
 
-    ftStatus = FT_OpenEx("LaserDrop Black", FT_OPEN_BY_DESCRIPTION, &ftHandle);
+    // ftStatus = FT_OpenEx("LaserDrop Black", FT_OPEN_BY_DESCRIPTION, &ftHandle);
+    ftStatus = FT_OpenEx("LaserDrop White", FT_OPEN_BY_DESCRIPTION, &ftHandle);
 
     if(ftStatus != FT_OK) {
         printf("Open Error\n\n");
@@ -387,6 +395,14 @@ void receiver_protocol () {
             printf("Something Received\n");
         }
         printf("decoded: %x\n\n", decoded);
+
+    
+        if (RxBuffer_int[0] != START_REC || (RxBuffer_int[0] == START_REC && decoded == NULL)) {
+            TxBuffer_int[0] = ERROR_REQ;
+            ftStatus = FT_Write(ftHandle, TxBuffer, 1024, &BytesWritten);
+
+        }
+    
     } while (RxBuffer_int[0] != START_REC || (RxBuffer_int[0] == START_REC && decoded == NULL));
 
     printf("Start Received!!\n\n");
@@ -440,7 +456,14 @@ void receiver_protocol () {
             //printf("Packet %u Read, BytesReceived = %u\n", RxBuffer_int[1], BytesRecieved);
         }
 
-        decode_packet(RxBuffer);
+        uint32_t currTag = decode_packet(RxBuffer);
+
+        if (currTag > count) {
+            for (uint32_t u = count; u < currTag; u++) {
+                enq_error_queue(u);
+            }
+            count = currTag;
+        }
 
         count++;
 
@@ -479,22 +502,25 @@ void receiver_protocol () {
 
                 full_packet_encoding(buffer, &TxBuffer[8]);
 
-                int help1 = 0;
+                uint32_t help1 = 0;
                 // TxBuffer[10] ^= 0x3;
 
                 do {
-                    ftStatus = FT_Write(ftHandle, TxBuffer, 1024, &BytesWritten);
+                    if (RxBuffer_int[0] == ERROR_REQ || help1 == 0) {
+                        ftStatus = FT_Write(ftHandle, TxBuffer, 1024, &BytesWritten);
 
-                    if (ftStatus != FT_OK) {
-                        printf("Write Error\n\n");
-                        print_fterror(ftStatus);
-                        ftStatus = FT_Close(ftHandle);
                         if (ftStatus != FT_OK) {
-                            printf("Close Error \n\n");
+                            printf("Write Error\n\n");
                             print_fterror(ftStatus);
-                        }
-                        return;
+                            ftStatus = FT_Close(ftHandle);
+                            if (ftStatus != FT_OK) {
+                                printf("Close Error \n\n");
+                                print_fterror(ftStatus);
+                            }
+                            return;
+                        }  
                     }
+                    
 
                     help1++;
 

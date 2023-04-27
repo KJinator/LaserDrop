@@ -7,7 +7,8 @@ import pyftdi.ftdi as f
 f.Ftdi.show_devices()
 '''
 
-s = pyftdi.serialext.serial_for_url('ftdi://ftdi:232:FT89ZXSQ/1', baudrate=3000000, timeout=1)
+# s = pyftdi.serialext.serial_for_url('ftdi://ftdi:232:FT89ZXSQ/1', baudrate=3000000, timeout=1)
+s = pyftdi.serialext.serial_for_url('ftdi://ftdi:232:FT87CJN9/1', baudrate=3000000, timeout=1)
 atexit.register(s.close)
 
 # Read

@@ -132,7 +132,7 @@ bool no_decode (char *data, char *buffer, size_t start) {
 
 // ham_data is 1024 byte subset of data that was hamming encoded
 // buffer is 693 bytes and contains transmitted, decoded data
-char *decode_packet (char *ham_data) {
+uint32_t decode_packet (char *ham_data) {
     char *buffer = malloc(BYTES_PER_PACKET*sizeof(char));
     size_t buffer_index = 0;
     size_t char_index = 0;
@@ -150,7 +150,7 @@ char *decode_packet (char *ham_data) {
                 all_packets_sent = true;
             }
             free(buffer);
-            return NULL;
+            return 0;
         }
         buffer_index += (char_index > 4) + 1;
         char_index = (char_index + 11) % 8;
@@ -168,7 +168,7 @@ char *decode_packet (char *ham_data) {
     if (!all_packets_sent && packet_count == num_packets)
         all_packets_sent = true;
 
-    return buffer;
+    return tagID;
 }
 
 // ham_data is 1024 byte subset of data that was hamming encoded
@@ -283,4 +283,8 @@ bool all_packets_were_sent () {
 
 uint32_t deq_error_queue () {
     return (uint32_t) dequeue(error_queue);
+}
+
+void enq_error_queue (uint32_t tagID) {
+    enqueue(error_queue, tagID);
 }
