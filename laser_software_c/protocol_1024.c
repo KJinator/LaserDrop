@@ -99,6 +99,14 @@ void sender_protocol () {
 
     init_error_queue ();
 
+    char device_name[30];
+    do {
+        printf("Enter Device Name (White or Black): ");
+        scanf("  %s", device_name);
+    } while (strcmp(device_name, "White") && strcmp(device_name, "Black"));
+    char device_name_full[30] = "LaserDrop ";
+    strcat(device_name_full, device_name);
+
     while (access(file, F_OK) != 0) {
         printf("Enter File Name: ");
         scanf("  %s", &file);
@@ -117,7 +125,7 @@ void sender_protocol () {
 
     full_packet_encoding(buffer, &TxBuffer_start[8]);
 
-    ftStatus = FT_OpenEx("LaserDrop White", FT_OPEN_BY_DESCRIPTION, &ftHandle);
+    ftStatus = FT_OpenEx(device_name_full, FT_OPEN_BY_DESCRIPTION, &ftHandle);
 
     if(ftStatus != FT_OK) {
         printf("Open Error\n\n");
@@ -126,7 +134,7 @@ void sender_protocol () {
         return;
     }
 
-    ftStatus = FT_SetBaudRate(ftHandle, 7000000);
+    ftStatus = FT_SetBaudRate(ftHandle, 12000000);
     if(ftStatus != FT_OK) {
         printf("Baudrate Error\n\n");
         print_fterror(ftStatus);
@@ -390,7 +398,15 @@ void receiver_protocol () {
     memset(TxBuffer, 0, sizeof(TxBuffer));
     memset(RxBuffer, 0, sizeof(RxBuffer));
 
-    ftStatus = FT_OpenEx("LaserDrop Black", FT_OPEN_BY_DESCRIPTION, &ftHandle);
+    char device_name[30];
+    do {
+        printf("Enter Device Name (White or Black): ");
+        scanf("  %s", device_name);
+    } while (strcmp(device_name, "White") && strcmp(device_name, "Black"));
+    char device_name_full[30] = "LaserDrop ";
+    strcat(device_name_full, device_name);
+
+    ftStatus = FT_OpenEx(device_name_full, FT_OPEN_BY_DESCRIPTION, &ftHandle);
 
     if(ftStatus != FT_OK) {
         printf("Open Error\n\n");
@@ -398,7 +414,7 @@ void receiver_protocol () {
         return;
     }
 
-    ftStatus = FT_SetBaudRate(ftHandle, 7000000);
+    ftStatus = FT_SetBaudRate(ftHandle, 12000000);
     if(ftStatus != FT_OK) {
         printf("Baudrate Error\n\n");
         print_fterror(ftStatus);
