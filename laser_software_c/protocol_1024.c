@@ -87,7 +87,6 @@ void sender_protocol () {
     char TxBuffer_start [1024];
     char RxBuffer[1024];
     char TxBuffer [1024*128];
-    char *TxBuffer_int = (uint32_t *) TxBuffer;
     char *errorBuffer;
     uint32_t *RxBuffer_int = (uint32_t *) RxBuffer;
     uint32_t *buffer_int = (uint32_t *) buffer;
@@ -113,11 +112,8 @@ void sender_protocol () {
 
     buffer_int[0] = get_num_packets();
     buffer_int[1] = get_len_final_packet();
-    /*char *filename_pointer = (char *)(&buffer_int[2]);
-    strcpy(filename_pointer, file);*/
 
     memcpy(&buffer[8], file, sizeof(file));
-    printf("%s\n\n", &buffer[8]);
 
     full_packet_encoding(buffer, &TxBuffer_start[8]);
 
@@ -138,13 +134,9 @@ void sender_protocol () {
         return;
     }
 
-    printf("Sender Open!!\n\n");
-
     FT_SetTimeouts(ftHandle,1000,1000);
 
     ftStatus = FT_Read(ftHandle, RxBuffer, sizeof(RxBuffer), &BytesRecieved);
-
-    printf("Flush Success\n\n");
 
     uint32_t help = 0;
 
@@ -164,10 +156,8 @@ void sender_protocol () {
                 return;
             }
         }
-        
-        help++;
 
-        printf("Start sent: %u, %x %x %x %x\n\n", BytesWritten, TxBuffer_start[0], TxBuffer_start[1], TxBuffer_start[2], TxBuffer_start[3]);
+        help++;
 
         ftStatus = FT_Read(ftHandle, RxBuffer, 1024, &BytesRecieved);
         if (ftStatus != FT_OK) {
@@ -181,11 +171,8 @@ void sender_protocol () {
             free_resources_sender();
             return;
         }
-        printf("RxBuffer_int[0] = %x\n\n", RxBuffer_int[0]);
     }
 
-
-    printf("Start Success\n\n");
     RxBuffer_int[0] = 0;
 
     size_t num_packets = get_num_packets();
@@ -283,9 +270,6 @@ void sender_protocol () {
 
     uint32_t error_count = 0;
 
-    int kj = 0;
-    bool helper = true;
-
     while (get_error_queue_len() && RxBuffer_int[0] != DONE_REV) {
         if(RxBuffer_int[0] == DONE_REV)
         {
@@ -293,10 +277,6 @@ void sender_protocol () {
         }
         char *RawPacket1 = dequeue_error_queue();
         memcpy(TxBuffer, RawPacket1, 1024);
-        /* if (kj < 5 && kj % 2 == 0) {
-            TxBuffer[9] ^= 0x3;
-        }
-        kj++; */
 
         ftStatus = FT_Write(ftHandle, TxBuffer, 1024, &BytesWritten);
 
@@ -389,6 +369,7 @@ void sender_protocol () {
         printf("Close Error \n\n");
         print_fterror(ftStatus);
     }
+    printf("Transmission Complete\n");
 }
 
 void receiver_protocol () {
@@ -424,8 +405,6 @@ void receiver_protocol () {
         return;
     }
 
-    printf("Receiver Open!!\n\n");
-
     FT_SetTimeouts(ftHandle,1000,1000);
 
     ftStatus = FT_Read(ftHandle, RxBuffer, sizeof(RxBuffer), &BytesRecieved);
@@ -443,10 +422,8 @@ void receiver_protocol () {
             free_resources_receiver();
             return;
         }
-        // printf("Start not received\n");
         decoded = decode_packet_no_queue(RxBuffer);
         if (RxBuffer_int[0] == START_REC) {
-            printf("Something Received\n");
             if (decoded == NULL) {
                 printf("Transmitted Error\n\n");
                 TxBuffer_int[0] = ERROR_REQ;
@@ -484,18 +461,11 @@ void receiver_protocol () {
                 return;
             }
         }
-        printf("decoded: %x\n\n", decoded);
     } while (RxBuffer_int[0] != START_REC || (RxBuffer_int[0] == START_REC && decoded == NULL));
 
-    printf("Start Received!!\n\n");
+    printf("Start Received!!\n");
 
-    /*
-    for(int i = 0; i < BytesRecieved; i++)
-    {
-        printf("%hhx, ", RxBuffer[i]);
-    }
-    printf("\n");
-    */
+    clock_t begin = clock();
 
     TxBuffer_int[0] = ACK;
 
@@ -544,13 +514,9 @@ void receiver_protocol () {
         }
 
         if (BytesRecieved != 1024) {
-            printf("Nothing received\n");
+            printf("Too few bytes received\n");
             enq_error_queue(count++);
             continue;
-        }
-        else
-        {
-            //printf("Packet %u Read, BytesReceived = %u\n", RxBuffer_int[1], BytesRecieved);
         }
 
         decode_packet(RxBuffer);
@@ -565,7 +531,6 @@ void receiver_protocol () {
             }
 
             if(finished()) {
-                //printf("No Errors in Queue\n");
                 TxBuffer_int[0] = DONE_REV;
                 ftStatus = FT_Write(ftHandle, TxBuffer, 1024, &BytesWritten);
 
@@ -581,7 +546,6 @@ void receiver_protocol () {
                     return;
                 }
             } else {
-                //printf("Inside loop: get_num_errors_left() = %u\n\n", get_num_errors_left());
                 TxBuffer_int[0] = ERROR_REQ;
                 TxBuffer_int[1] = get_num_errors_left();
                 uint32_t i = 2;
@@ -608,7 +572,7 @@ void receiver_protocol () {
                             }
                             free_resources_receiver();
                             return;
-                        }    
+                        }
                     }
 
                     help1++;
@@ -631,7 +595,11 @@ void receiver_protocol () {
         }
     }
 
+    clock_t end = clock();
+    double time_spent = (double)(end - begin) / CLOCKS_PER_SEC * 2.0;
     printf("Receiving Complete\n");
+    printf("Transmission time: %f seconds\n", time_spent);
+    printf("Effective transmission speed: %lf Mbps\n", (((double)num_packets) * 8.0 * 693.0) / (time_spent * 1000000.0));
 
     decode_full(file);
 
